@@ -1,15 +1,1913 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wetter Altenburg</title>
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        iframe { width: 100%; height: 100%; border: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0d131a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Altenburg – Stündliche Wettermodelle</title>
+  <style>
+    :root {
+      --bg: #0d131a;
+      --panel-bg: #111923;
+      --card-bg: #16212e;
+      --header-bg: #202d3c;
+      --border: #293849;
+      --text: #eaf0f6;
+      --text-muted: #9baaba;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --negative: #ff6b6b;
+      --positive: #38bdf8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 10px 8px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      padding-top: max(10px, env(safe-area-inset-top));
+    }
+    @media (min-width: 640px) {
+      body { padding: 16px; }
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    @media (min-width: 640px) {
+      .container { padding: 20px; }
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+    @media (min-width: 768px) {
+      .header {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+    }
+    @media (min-width: 640px) {
+      h1 { font-size: 20px; }
+    }
+    .sub { color: var(--text-muted); font-size: 12px; margin-top: 3px; }
+    .location { font-weight: 600; color: #60a5fa; margin-top: 3px; font-size: 12px; }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    @media (min-width: 640px) {
+      .actions {
+        flex-direction: row;
+        align-items: center;
+        width: auto;
+      }
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      min-height: 40px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.5; cursor: wait; }
+
+    /* Mobile View Switcher Tabs */
+    .view-switch {
+      display: flex;
+      width: 100%;
+      background: #090d14;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+    @media (min-width: 640px) {
+      .view-switch { width: auto; display: inline-flex; }
+    }
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-height: 42px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    details {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #cbd5e1;
+      user-select: none;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .model-quick-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .quick-btn {
+      background: #111923;
+      color: #cbd5e1;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      min-height: 28px;
+    }
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 10px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    @media (min-width: 640px) {
+      .model-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+    .model-grid label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #e2e8f0;
+      cursor: pointer;
+      min-height: 32px;
+      padding: 2px 4px;
+      border-radius: 6px;
+    }
+    .model-grid label:active { background: #1e2c3d; }
+    .model-grid input {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-bottom: 12px;
+      padding: 8px 10px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+      border: 1px solid #1a2634;
+    }
+    @media (min-width: 640px) {
+      .status-bar { flex-direction: row; align-items: center; }
+    }
+
+    /* Mobile Day Jump Navigation Bar */
+    .day-scroll-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 0 10px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .day-scroll-bar::-webkit-scrollbar { display: none; }
+    .day-chip {
+      flex-shrink: 0;
+      background: #16212e;
+      color: #cbd5e1;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      min-height: 32px;
+    }
+    .day-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* Trend-Analyse Modul */
+    .trend-module {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .trend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .trend-header-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .trend-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 768px) {
+      .trend-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .trend-card {
+      background: #141d28;
+      border: 1px solid #26374a;
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .trend-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .trend-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      font-family: monospace;
+    }
+    .trend-badge.indigo {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #c7d2fe;
+    }
+    .trend-headline-box {
+      background: #182332;
+      border: 1px solid #2b3c4f;
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #f1f5f9;
+      line-height: 1.45;
+    }
+    .trend-stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 480px) {
+      .trend-stat-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .trend-stat-chip {
+      background: #101720;
+      border: 1px solid #223142;
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 10px;
+    }
+    .trend-stat-chip span:first-child {
+      display: block;
+      color: var(--text-muted);
+      font-size: 9px;
+    }
+    .trend-stat-chip span:last-child {
+      font-weight: 700;
+      font-family: monospace;
+      color: #e2e8f0;
+      font-size: 11px;
+    }
+    .trend-bullet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+    .trend-bullet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.4;
+    }
+    .trend-footer-consensus {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #202e3f;
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Table View with Sticky Header & Sticky First Column on Mobile */
+    .table-container {
+      max-height: 65vh;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-bg);
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--header-bg);
+      color: #e2e8f0;
+      font-weight: 600;
+      z-index: 10;
+    }
+    /* Sticky First Column on Mobile for easy reading */
+    th:first-child, td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      background: #141f2c;
+      border-right: 2px solid #2e4157;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.3);
+    }
+    th:first-child {
+      z-index: 15;
+      background: #1b2635;
+    }
+    tbody tr:nth-child(even) td { background: var(--card-bg); }
+    tbody tr:nth-child(even) td:first-child { background: #182332; }
+    tbody tr:hover td { background: #1e2c3d; }
+    tbody tr:hover td:first-child { background: #223246; }
+    .negative { color: var(--negative) !important; font-weight: 600; }
+    small { display: block; color: var(--text-muted); font-size: 10px; }
+
+    /* Chart View */
+    .chart-container {
+      display: none;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    @media (min-width: 640px) {
+      .chart-container { padding: 16px; }
+    }
+    .chart-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    @media (min-width: 640px) {
+      .chart-controls {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+    .chart-controls-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+    .chart-btn-group {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .chart-pill {
+      flex: 1;
+      background: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 34px;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .chart-pill.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .model-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .model-pills::-webkit-scrollbar { display: none; }
+    .model-tag-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #16212e;
+      color: #cbd5e1;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      min-height: 32px;
+      white-space: nowrap;
+    }
+    .model-tag-btn.active {
+      border-color: #60a5fa;
+      background: #1e3a5f;
+      color: #fff;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .chart-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 14px;
+    }
+    @media (min-width: 640px) {
+      .chart-card { padding: 14px; }
+    }
+    .chart-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    @media (min-width: 500px) {
+      .chart-card-header {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+    .chart-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chart-card-subtitle {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .svg-wrapper {
+      position: relative;
+      width: 100%;
+      overflow-x: auto;
+      background: #0b1118;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      touch-action: pan-x pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      min-width: 650px;
+      cursor: crosshair;
+    }
+
+    /* Mobile Sticky Readout HUD */
+    .chart-hud {
+      margin-top: 14px;
+      margin-bottom: 8px;
+      padding: 10px 14px;
+      background: #16212e;
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+      font-size: 11px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hud-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-title {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 13px;
+    }
+    .hud-pill {
+      background: rgba(30, 58, 138, 0.7);
+      color: #93c5fd;
+      border: 1px solid rgba(37, 99, 235, 0.5);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-weight: 700;
+      font-size: 11px;
+    }
+    .hud-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: #94a3b8;
+    }
+    .hud-stats strong { color: #f1f5f9; }
+
+    .mobile-tip {
+      font-size: 10px;
+      color: #60a5fa;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .note { margin-top: 12px; font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+    /* Cookie Consent Banner according to § 25 TDDDG / DSGVO */
+    .cookie-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 12px;
+    }
+    @media (min-width: 640px) {
+      .cookie-backdrop { align-items: center; }
+    }
+    .cookie-card {
+      background: #111923;
+      border: 1px solid #2e4056;
+      border-radius: 16px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .cookie-header {
+      padding: 14px 16px;
+      background: #162230;
+      border-bottom: 1px solid #223346;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cookie-body {
+      padding: 16px;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .cookie-actions {
+      padding: 12px 16px;
+      background: #141e2b;
+      border-top: 1px solid #223346;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    @media (min-width: 640px) {
+      .cookie-actions { flex-direction: row; }
+    }
+    .cookie-btn {
+      flex: 1;
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .cookie-btn-reject {
+      background: #223143;
+      color: #f1f5f9;
+      border: 1px solid #3d5573;
+    }
+    .cookie-btn-reject:hover { background: #2c3e55; }
+    .cookie-btn-accept {
+      background: var(--accent);
+      color: #fff;
+      border: 1px solid var(--accent);
+    }
+    .cookie-btn-accept:hover { background: #1d4ed8; }
+    .cookie-footer-link {
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 11px;
+    }
+    .cookie-footer-link:hover { color: #fff; }
+  </style>
 </head>
 <body>
-    <iframe src="https://wetter-altenburg.lima-city.at/"></iframe>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Altenburg – Stündliche Wettermodelle</h1>
+        <div class="sub">17 Wettermodelle im Multimodell-Vergleich (inkl. 6 hochauflösende Regionalmodelle)</div>
+        <div class="location">📍 Altenburg, Thüringen (50.988° N, 12.437° O)</div>
+      </div>
+      <div class="actions">
+        <div class="view-switch">
+          <button id="viewTableBtn" class="tab-btn active" type="button">📊 Tabelle</button>
+          <button id="viewChartBtn" class="tab-btn" type="button">📈 Ensemble-Charts</button>
+        </div>
+        <button id="refreshBtn" type="button">Aktualisieren</button>
+      </div>
+    </div>
+
+    <details>
+      <summary>
+        <span>Wettermodelle (<span id="modelCountLabel">17</span>/17 aktiv)</span>
+        <span style="font-size: 11px; color: var(--accent);">Tippen zum Anpassen ▾</span>
+      </summary>
+      <div class="model-quick-bar">
+        <button type="button" class="quick-btn" id="qAll">Alle 17</button>
+        <button type="button" class="quick-btn" id="qRegional" style="color: #6ee7b7; border-color: #059669;">Regional (6)</button>
+        <button type="button" class="quick-btn" id="qDwd" style="color: #5eead4; border-color: #0d9488;">DWD Fokus (3)</button>
+        <button type="button" class="quick-btn" id="qGlobal">Global (11)</button>
+        <button type="button" class="quick-btn" id="qMajor">Kern (4)</button>
+        <button type="button" class="quick-btn" id="qNone">Keine</button>
+      </div>
+      <div class="model-grid" id="modelList"></div>
+    </details>
+
+    <div class="status-bar">
+      <div id="status">Vorhersage wird geladen …</div>
+      <div id="summary"></div>
+    </div>
+
+    <!-- TREND-ANALYSE MODUL (HEUTE & MORGEN) -->
+    <div id="trendSection" class="trend-module" style="display:none;"></div>
+
+    <!-- TAB 1: STUNDENTABELLE -->
+    <div id="tableSection">
+      <!-- Mobile Day Filter Chips -->
+      <div class="day-scroll-bar" id="dayScrollBar"></div>
+
+      <div id="tableContainer" class="table-container">
+        <table>
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody">
+            <tr><td colspan="8">Lade Daten von open-meteo.com …</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mobile-tip">
+        <span>👉 Auf dem Handy: Tabelle horizontal wischen (Datum & Uhrzeit bleiben links fixiert)</span>
+      </div>
+    </div>
+
+    <!-- TAB 2: MODELL-ENSEMBLE CHARTS -->
+    <div id="chartContainer" class="chart-container">
+      <div class="chart-controls">
+        <div class="chart-controls-title">
+          Ensemble-Visualisierung (Min/Max Spanne)
+        </div>
+        <div class="chart-btn-group">
+          <button type="button" class="chart-pill" data-days="3">3 Tage</button>
+          <button type="button" class="chart-pill active" data-days="5">5 Tage</button>
+          <button type="button" class="chart-pill" data-days="7">7 Tage</button>
+          <button type="button" class="chart-pill" data-days="16">16 Tage</button>
+        </div>
+      </div>
+
+      <div class="model-pills" id="modelPillRow"></div>
+
+      <!-- 1. TEMPERATUR ENSEMBLEBAND -->
+      <div class="chart-hud" id="chartHud1"></div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>Temperatur-Ensembleband (°C)</span>
+            <span class="chart-card-subtitle">(Min / Max Spanne)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #f59e0b; margin-right: 8px;">— Höchst</span>
+            <span style="color: #06b6d4;">— Tiefst</span>
+          </div>
+        </div>
+        <div class="svg-wrapper">
+          <svg id="tempSvg" viewBox="0 0 960 210"></svg>
+        </div>
+      </div>
+
+      <!-- 2. REGENWAHRSCHEINLICHKEIT ENSEMBLEBAND -->
+      <div class="chart-hud" id="chartHud2"></div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>Regenwahrscheinlichkeit-Ensembleband (%)</span>
+            <span class="chart-card-subtitle">(0 – 100%)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #38bdf8; margin-right: 8px;">— Max</span>
+            <span style="color: #64748b;">— Min</span>
+          </div>
+        </div>
+        <div class="svg-wrapper">
+          <svg id="rainSvg" viewBox="0 0 960 210"></svg>
+        </div>
+      </div>
+
+      <!-- 3. SONNENSCHEINDAUER ENSEMBLEBAND -->
+      <div class="chart-hud" id="chartHud3"></div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>Sonnenscheindauer-Ensembleband (Min / h)</span>
+            <span class="chart-card-subtitle">(0 – 60 min)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #fbbf24; margin-right: 8px;">— Max</span>
+            <span style="color: #78716c;">— Min</span>
+          </div>
+        </div>
+        <div class="svg-wrapper">
+          <svg id="sunSvg" viewBox="0 0 960 210"></svg>
+        </div>
+      </div>
+
+      <div class="mobile-tip">
+        <span>👆 Finger auflegen & wischen: zeigt sofort die Werte aller drei Dimensionen zeitgleich an.</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Hinweise:</strong> Datenquelle: Open-Meteo.com API für Altenburg (Thüringen).
+      Alle Berechnungen (Spannen, Vektor-Windrichtung) basieren auf den aktiven Modellen.
+    <footer style="margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;">
+      <div>Altenburger Wettermodell-Vergleich · § 25 TDDDG &amp; DSGVO konform</div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <button type="button" id="openCookieSettingsBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">🍪 Cookie-Einstellungen</button>
+        <span>·</span>
+        <button type="button" id="openPrivacyBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">Datenschutz &amp; Impressum</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Cookie Consent Modal (§ 25 TDDDG / DSGVO) -->
+  <div id="cookieModal" class="cookie-backdrop" style="display:none;">
+    <div class="cookie-card">
+      <div class="cookie-header">
+        <span style="font-size: 20px;">🍪</span>
+        <div>
+          <div style="font-weight: 700; color: #fff; font-size: 13px;">Privatsphäre &amp; Datenspeicherung</div>
+          <div style="font-size: 10px; color: var(--text-muted); font-family: monospace;">§ 25 TDDDG / DSGVO konform</div>
+        </div>
+      </div>
+      <div class="cookie-body">
+        <p style="margin-bottom: 10px;">
+          Wir nutzen ausschließlich den <strong>lokalen Browserspeicher (Local Storage)</strong> Ihres Endgeräts, um Ihre Einstellungen (z.&nbsp;B. Modellauswahl, Tab-Ansicht) zu speichern. Wir setzen keine Werbe-Cookies ein.
+        </p>
+
+        <div id="cookieDetailsSection" style="display:none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+          <div style="background: #141f2c; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #25374b;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <strong style="color: #f1f5f9; font-size: 11px;">1. Technisch notwendig</strong>
+              <span style="font-size: 10px; background: rgba(5,150,105,0.25); color: #34d399; padding: 1px 6px; border-radius: 4px;">Immer aktiv</span>
+            </div>
+            <div style="font-size: 10px; color: var(--text-muted);">Speichert aktive Wettermodelle und diesen Zustimmungsstatus (§ 25 Abs. 2 TDDDG).</div>
+          </div>
+
+          <div style="background: #141f2c; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #25374b;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <strong style="color: #f1f5f9; font-size: 11px;">2. Erweiterte Präferenzen</strong>
+              <input type="checkbox" id="prefOptCheck" style="accent-color: var(--accent);">
+            </div>
+            <div style="font-size: 10px; color: var(--text-muted);">Merken von Filterpräferenzen und Diagrammzeiträumen über Sitzungen hinweg.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 11px;">
+          <button type="button" id="cookiePrivacyLink" class="cookie-footer-link" style="background:none; border:none; padding:0;">Datenschutzerklärung &amp; Impressum</button>
+          <button type="button" id="toggleCookieDetailsBtn" class="cookie-footer-link" style="background:none; border:none; padding:0;">Einstellungen anpassen ▾</button>
+        </div>
+      </div>
+      <div class="cookie-actions">
+        <button type="button" id="btnRejectCookies" class="cookie-btn cookie-btn-reject">Nur notwendige akzeptieren</button>
+        <button type="button" id="btnAcceptCookies" class="cookie-btn cookie-btn-accept">Alle akzeptieren</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legal Info Modal -->
+  <div id="legalModal" class="cookie-backdrop" style="display:none;">
+    <div class="cookie-card" style="max-width: 600px;">
+      <div class="cookie-header">
+        <span style="font-size: 20px;">⚖️</span>
+        <div style="font-weight: 700; color: #fff; font-size: 13px;">Datenschutz &amp; Impressum</div>
+        <button type="button" id="closeLegalModalBtn" style="margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px;">✕</button>
+      </div>
+      <div class="cookie-body" style="font-size: 11px; line-height: 1.6;">
+        <h4 style="color:#fff; margin-bottom:4px;">1. Lokale Speicherung nach § 25 TDDDG</h4>
+        <p style="margin-bottom:8px;">Diese Anwendung speichert Benutzereinstellungen (Wettermodelle, Tabs) lokal im LocalStorage Ihres Browsers. Keine Weitergabe an Dritte zu Werbezwecken.</p>
+        <h4 style="color:#fff; margin-bottom:4px;">2. Wetterdaten-Abfrage</h4>
+        <p style="margin-bottom:8px;">Wetterdaten werden direkt von der Open-Meteo API abgerufen. Es werden keine Nutzerprofile angelegt.</p>
+        <h4 style="color:#fff; margin-bottom:4px;">3. Widerrufsrecht (Art. 7 Abs. 3 DSGVO)</h4>
+        <p style="margin-bottom:8px;">Sie können die Cookie- und Speichereinstellungen jederzeit über die Fußzeile aufrufen und anpassen.</p>
+        <h4 style="color:#fff; margin-bottom:4px;">Impressum</h4>
+        <p>Altenburger Wettermodell-Vergleich · Private meteorologische Auswertung für Altenburg (Thüringen).</p>
+      </div>
+      <div class="cookie-actions">
+        <button type="button" id="btnOkLegalModal" class="cookie-btn cookie-btn-accept">Verstanden</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LOCATION = {
+      name: 'Altenburg, Thüringen, Deutschland',
+      latitude: 50.98763,
+      longitude: 12.43684
+    };
+
+    const MODELS = [
+      // 6 hochauflösende Regionalmodelle für Deutschland / Mitteleuropa
+      { id: 'icon_d2', label: 'DWD ICON-D2 (2.2km)', color: '#059669', isRegional: true },
+      { id: 'icon_eu', label: 'DWD ICON-EU (7km)', color: '#0d9488', isRegional: true },
+      { id: 'meteofrance_arome_france_hd', label: 'AROME HD (1.5km)', color: '#db2777', isRegional: true },
+      { id: 'meteofrance_arpege_europe', label: 'ARPEGE (11km)', color: '#f43f5e', isRegional: true },
+      { id: 'knmi_harmonie_arome_europe', label: 'KNMI HARMONIE (2.5km)', color: '#ea580c', isRegional: true },
+      { id: 'dmi_harmonie_arome_europe', label: 'DMI HARMONIE (2.5km)', color: '#7c3aed', isRegional: true },
+      // 11 weltweite Großraummodelle
+      { id: 'ecmwf_ifs025', label: 'ECMWF IFS', color: '#3b82f6', isRegional: false },
+      { id: 'ecmwf_aifs025_single', label: 'ECMWF AIFS (KI)', color: '#8b5cf6', isRegional: false },
+      { id: 'gfs_seamless', label: 'NOAA GFS', color: '#06b6d4', isRegional: false },
+      { id: 'icon_seamless', label: 'DWD ICON (Global)', color: '#10b981', isRegional: false },
+      { id: 'gem_seamless', label: 'Kanada GEM', color: '#f59e0b', isRegional: false },
+      { id: 'meteofrance_seamless', label: 'Météo-France', color: '#ec4899', isRegional: false },
+      { id: 'ukmo_global_deterministic_10km', label: 'UK Met Office', color: '#6366f1', isRegional: false },
+      { id: 'jma_seamless', label: 'Japan JMA', color: '#14b8a6', isRegional: false },
+      { id: 'kma_seamless', label: 'Korea KMA', color: '#f97316', isRegional: false },
+      { id: 'cma_grapes_global', label: 'China CMA', color: '#ef4444', isRegional: false },
+      { id: 'bom_access_global', label: 'Australien BOM', color: '#84cc16', isRegional: false }
+    ];
+
+    let forecast = null;
+    let loading = false;
+    let currentView = 'table';
+    let chartDays = 5;
+    let highlightedModelId = null;
+    let activeDayFilter = 'all';
+
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    $('#modelList').innerHTML = MODELS.map((m) => `
+      <label>
+        <input class="model-check" type="checkbox" value="${m.id}" checked>
+        <span class="dot" style="background:${m.color}"></span>
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.label}</span>
+        ${m.isRegional ? '<span style="font-size:9px; background:#064e3b; color:#6ee7b7; padding:1px 4px; border-radius:4px; margin-left:auto;">REG</span>' : ''}
+      </label>
+    `).join('');
+
+    // Quick selection buttons
+    $('#qAll').addEventListener('click', () => {
+      $$('.model-check').forEach(i => i.checked = true);
+      onModelsChanged();
+    });
+    $('#qNone').addEventListener('click', () => {
+      $$('.model-check').forEach(i => i.checked = false);
+      onModelsChanged();
+    });
+    $('#qRegional').addEventListener('click', () => {
+      const set = new Set(['icon_d2', 'icon_eu', 'meteofrance_arome_france_hd', 'meteofrance_arpege_europe', 'knmi_harmonie_arome_europe', 'dmi_harmonie_arome_europe']);
+      $$('.model-check').forEach(i => i.checked = set.has(i.value));
+      onModelsChanged();
+    });
+    $('#qDwd').addEventListener('click', () => {
+      const set = new Set(['icon_d2', 'icon_eu', 'icon_seamless']);
+      $$('.model-check').forEach(i => i.checked = set.has(i.value));
+      onModelsChanged();
+    });
+    $('#qGlobal').addEventListener('click', () => {
+      const set = new Set(['ecmwf_ifs025', 'ecmwf_aifs025_single', 'gfs_seamless', 'icon_seamless', 'gem_seamless', 'meteofrance_seamless', 'ukmo_global_deterministic_10km', 'jma_seamless', 'kma_seamless', 'cma_grapes_global', 'bom_access_global']);
+      $$('.model-check').forEach(i => i.checked = set.has(i.value));
+      onModelsChanged();
+    });
+    $('#qMajor').addEventListener('click', () => {
+      const set = new Set(['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'ukmo_global_deterministic_10km']);
+      $$('.model-check').forEach(i => i.checked = set.has(i.value));
+      onModelsChanged();
+    });
+
+    function onModelsChanged() {
+      if (forecast) {
+        renderTable();
+        if (currentView === 'chart') renderCharts();
+      }
+    }
+
+    function setStatus(msg) { $('#status').textContent = msg; }
+
+    // Tab Switching
+    $('#viewTableBtn').addEventListener('click', () => switchView('table'));
+    $('#viewChartBtn').addEventListener('click', () => switchView('chart'));
+
+    function switchView(view) {
+      currentView = view;
+      if (view === 'table') {
+        $('#tableSection').style.display = 'block';
+        $('#chartContainer').style.display = 'none';
+        $('#viewTableBtn').classList.add('active');
+        $('#viewChartBtn').classList.remove('active');
+      } else {
+        $('#tableSection').style.display = 'none';
+        $('#chartContainer').style.display = 'block';
+        $('#viewTableBtn').classList.remove('active');
+        $('#viewChartBtn').classList.add('active');
+        renderCharts();
+      }
+    }
+
+    // Chart Time Window Buttons
+    $$('.chart-pill').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        $$('.chart-pill').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        chartDays = parseInt(btn.dataset.days, 10);
+        renderCharts();
+      });
+    });
+
+    function getTimestampParts(val) {
+      if (!val || !val.includes('T')) return null;
+      const [date, time] = val.split('T');
+      const [year, month, day] = date.split('-').map(Number);
+      const weekday = new Intl.DateTimeFormat('de-DE', { weekday: 'long', timeZone: 'UTC' })
+        .format(new Date(Date.UTC(year, month - 1, day)));
+      return {
+        weekday,
+        date: `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`,
+        shortDate: `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.`,
+        time: time.slice(0, 5),
+        dayKey: date
+      };
+    }
+
+    function formatTemperature(val) {
+      if (!Number.isFinite(val)) return '—';
+      return (Math.round(val * 10) / 10).toFixed(1) + ' °C';
+    }
+
+    function formatRange(values, suffix, decimals) {
+      const valid = values.filter(Number.isFinite);
+      if (!valid.length) return '—';
+      const min = Math.min(...valid);
+      const max = Math.max(...valid);
+      const f = (v) => String(Number(v.toFixed(decimals)));
+      if (min === max) return `${f(min)} ${suffix}`;
+      return `${f(min)}–${f(max)} ${suffix}`;
+    }
+
+    function formatWindDirection(models, index) {
+      let east = 0, north = 0, weightTotal = 0;
+      for (const model of models) {
+        const dir = model.windDirection[index];
+        const spd = model.windSpeed[index];
+        if (!Number.isFinite(dir)) continue;
+        const weight = Number.isFinite(spd) ? Math.max(spd, 0.1) : 1;
+        const rad = dir * Math.PI / 180;
+        east += Math.sin(rad) * weight;
+        north += Math.cos(rad) * weight;
+        weightTotal += weight;
+      }
+      if (!weightTotal || Math.hypot(east, north) / weightTotal < 0.1) return '—';
+      const degrees = (Math.atan2(east, north) * 180 / Math.PI + 360) % 360;
+      const directions = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
+      const compass = directions[Math.round(degrees / 45) % 8];
+      return `${compass} (${Math.round(degrees)}°)`;
+    }
+
+    function getSelectedModels() {
+      const checked = [...$$('.model-check:checked')].map((i) => i.value);
+      const selectedIds = new Set(checked);
+      $('#modelCountLabel').textContent = selectedIds.size;
+
+      if (!forecast?.hourly) return [];
+
+      return MODELS
+        .filter((m) => selectedIds.has(m.id))
+        .map((model) => {
+          const temperature = forecast.hourly[`temperature_2m_${model.id}`] || [];
+          const probability = forecast.hourly[`precipitation_probability_${model.id}`] || [];
+          const precipitation = forecast.hourly[`precipitation_${model.id}`] || [];
+          const sunshine = forecast.hourly[`sunshine_duration_${model.id}`] || [];
+          const windSpeed = forecast.hourly[`wind_speed_10m_${model.id}`] || [];
+          const windDirection = forecast.hourly[`wind_direction_10m_${model.id}`] || [];
+
+          let lastIndex = -1;
+          const all = [temperature, probability, precipitation, sunshine, windSpeed, windDirection];
+          for (const arr of all) {
+            for (let i = 0; i < arr.length; i++) {
+              if (Number.isFinite(arr[i])) lastIndex = Math.max(lastIndex, i);
+            }
+          }
+          return { ...model, temperature, probability, precipitation, sunshine, windSpeed, windDirection, lastIndex };
+        })
+        .filter((m) => m.lastIndex >= 0);
+    }
+
+    function renderDayChips(times, lastHour) {
+      const days = [];
+      const seen = new Set();
+      for (let i = 0; i <= lastHour; i++) {
+        const tp = getTimestampParts(times[i]);
+        if (tp && !seen.has(tp.dayKey)) {
+          seen.add(tp.dayKey);
+          days.push(tp);
+        }
+      }
+
+      $('#dayScrollBar').innerHTML = `
+        <button type="button" class="day-chip ${activeDayFilter === 'all' ? 'active' : ''}" data-day="all">Alle Tage</button>
+        ${days.map(d => `
+          <button type="button" class="day-chip ${activeDayFilter === d.dayKey ? 'active' : ''}" data-day="${d.dayKey}">
+            ${d.weekday.slice(0, 2)} ${d.shortDate}
+          </button>
+        `).join('')}
+      `;
+
+      $$('.day-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeDayFilter = btn.dataset.day;
+          renderTable();
+        });
+      });
+    }
+
+    function renderTable() {
+      if (!forecast?.hourly) return;
+      const availableModels = getSelectedModels();
+
+      if (!availableModels.length) {
+        $('#tableHead').innerHTML = '';
+        $('#tableBody').innerHTML = '<tr><td colspan="8">Bitte wähle mindestens ein Wettermodell aus.</td></tr>';
+        $('#summary').textContent = '';
+        return;
+      }
+
+      const times = forecast.hourly.time || [];
+      const lastHour = Math.max(...availableModels.map((m) => m.lastIndex));
+
+      renderDayChips(times, lastHour);
+
+      $('#tableHead').innerHTML = `
+        <tr>
+          <th>Datum / Uhrzeit</th>
+          <th>Tiefste<br>Temperatur</th>
+          <th>Höchste<br>Temperatur</th>
+          <th>Regenchance<br>Modellspanne</th>
+          <th>Niederschlag<br>mm / Stunde</th>
+          <th>Sonnenschein<br>Minuten / Stunde</th>
+          <th>Windstärke<br>km/h Spanne</th>
+          <th>Windrichtung<br>Modelldurchschnitt</th>
+        </tr>
+      `;
+
+      const rows = [];
+      for (let i = 0; i <= lastHour; i++) {
+        const tp = getTimestampParts(times[i]);
+        if (activeDayFilter !== 'all' && tp && tp.dayKey !== activeDayFilter) {
+          continue;
+        }
+
+        const temps = availableModels
+          .map((m) => ({ temp: m.temperature[i], label: m.label }))
+          .filter((t) => Number.isFinite(t.temp));
+        const rainProbs = availableModels.map((m) => m.probability[i]).filter(Number.isFinite);
+        const precipAmounts = availableModels.map((m) => m.precipitation[i]).filter(Number.isFinite);
+        const sunMins = availableModels.map((m) => m.sunshine[i]).filter(Number.isFinite).map((s) => s / 60);
+        const windSpeeds = availableModels.map((m) => m.windSpeed[i]).filter(Number.isFinite);
+
+        let lowestCell = '<td>—</td>';
+        let highestCell = '<td>—</td>';
+
+        if (temps.length) {
+          const lowest = temps.reduce((a, b) => b.temp < a.temp ? b : a);
+          const highest = temps.reduce((a, b) => b.temp > a.temp ? b : a);
+          const lowClass = lowest.temp < 0 ? 'negative' : '';
+          const highClass = highest.temp < 0 ? 'negative' : '';
+          lowestCell = `<td class="${lowClass}">${formatTemperature(lowest.temp)}<br><small>${lowest.label}</small></td>`;
+          highestCell = `<td class="${highClass}">${formatTemperature(highest.temp)}<br><small>${highest.label}</small></td>`;
+        }
+
+        const dateDisplay = tp
+          ? `<strong>${tp.weekday.slice(0, 2)} ${tp.shortDate}</strong><br><span style="color:#60a5fa; font-weight:600;">${tp.time}</span>`
+          : times[i];
+
+        rows.push(`
+          <tr>
+            <td>${dateDisplay}</td>
+            ${lowestCell}
+            ${highestCell}
+            <td>${formatRange(rainProbs, '%', 0)}</td>
+            <td>${formatRange(precipAmounts, 'mm', 1)}</td>
+            <td>${formatRange(sunMins, 'min', 0)}</td>
+            <td>${formatRange(windSpeeds, 'km/h', 1)}</td>
+            <td>${formatWindDirection(availableModels, i)}</td>
+          </tr>
+        `);
+      }
+
+      $('#tableBody').innerHTML = rows.join('');
+      const lastTp = getTimestampParts(times[lastHour]);
+      const lastStr = lastTp ? `${lastTp.weekday}, ${lastTp.date} ${lastTp.time}` : times[lastHour];
+      $('#summary').textContent = `${availableModels.length} Modelle · ${lastHour + 1} Std. · bis ${lastStr} · ${forecast.timezone}`;
+      setStatus('Vorhersage geladen.');
+
+      renderTrendAnalysis(availableModels, times, lastHour);
+
+      if (currentView === 'chart') {
+        renderCharts();
+      }
+    }
+
+    function renderTrendAnalysis(availableModels, times, lastHour) {
+      const trendEl = $('#trendSection');
+      if (!trendEl) return;
+      if (!availableModels.length || !times.length) {
+        trendEl.style.display = 'none';
+        return;
+      }
+
+      // Group indices by dayKey
+      const days = [];
+      const dayMap = new Map();
+      for (let i = 0; i <= lastHour; i++) {
+        const tp = getTimestampParts(times[i]);
+        if (!tp) continue;
+        if (!dayMap.has(tp.dayKey)) {
+          dayMap.set(tp.dayKey, { key: tp.dayKey, weekday: tp.weekday, shortDate: tp.shortDate, indices: [] });
+          days.push(dayMap.get(tp.dayKey));
+        }
+        dayMap.get(tp.dayKey).indices.push(i);
+      }
+
+      if (!days.length) {
+        trendEl.style.display = 'none';
+        return;
+      }
+
+      function analyzeDay(dayObj, isToday, isTomorrow, refDay) {
+        let minTemp = 999, maxTemp = -999, peakHour = '14:00';
+        let afternoonTemp = null, eveningTemp = null;
+        let maxRain = 0, firstRainHour = null;
+        let precipMaxTotal = 0, sunMinutesTotal = 0, maxWind = 0;
+
+        for (const idx of dayObj.indices) {
+          const tp = getTimestampParts(times[idx]);
+          const hourNum = tp ? parseInt(tp.time.split(':')[0], 10) : 12;
+
+          const temps = availableModels.map(m => m.temperature[idx]).filter(Number.isFinite);
+          const rains = availableModels.map(m => m.probability[idx]).filter(Number.isFinite);
+          const precips = availableModels.map(m => m.precipitation[idx]).filter(Number.isFinite);
+          const suns = availableModels.map(m => m.sunshine[idx]).filter(Number.isFinite).map(s => s / 60);
+          const winds = availableModels.map(m => m.windSpeed[idx]).filter(Number.isFinite);
+
+          if (temps.length) {
+            const hMin = Math.min(...temps);
+            const hMax = Math.max(...temps);
+            if (hMin < minTemp) minTemp = hMin;
+            if (hMax > maxTemp) {
+              maxTemp = hMax;
+              peakHour = tp ? tp.time : '14:00';
+            }
+            if (hourNum === 14 || hourNum === 15) afternoonTemp = hMax;
+            if (hourNum === 20 || hourNum === 21) eveningTemp = hMin;
+          }
+
+          if (rains.length) {
+            const rMax = Math.max(...rains);
+            if (rMax > maxRain) maxRain = rMax;
+            if (rMax >= 35 && !firstRainHour && tp) {
+              firstRainHour = tp.time;
+            }
+          }
+
+          if (precips.length) precipMaxTotal += Math.max(...precips);
+          if (suns.length) sunMinutesTotal += (suns.reduce((a,b)=>a+b,0) / suns.length);
+          if (winds.length) {
+            const wMax = Math.max(...winds);
+            if (wMax > maxWind) maxWind = wMax;
+          }
+        }
+
+        if (minTemp === 999) minTemp = 0;
+        if (maxTemp === -999) maxTemp = 0;
+
+        let eveningDrop = 'Gleichmäßiger Temperaturverlauf am Abend';
+        if (afternoonTemp !== null && eveningTemp !== null) {
+          const drop = afternoonTemp - eveningTemp;
+          if (drop >= 6) eveningDrop = `Spürbare Abkühlung zum Abend auf ca. ${Math.round(eveningTemp)} °C`;
+          else if (drop >= 3) eveningDrop = `Leichte Abkühlung zum Abend auf ca. ${Math.round(eveningTemp)} °C`;
+          else if (drop > 0) eveningDrop = `Mäßiger Temperaturrückgang am Abend (ca. ${Math.round(eveningTemp)} °C)`;
+        }
+
+        let compText = '';
+        if (refDay) {
+          const diff = Math.round(maxTemp - refDay.maxTemp);
+          if (diff >= 3) compText = `Spürbar wärmer als heute (+${diff} °C)`;
+          else if (diff <= -3) compText = `Spürbar kühler als heute (${diff} °C)`;
+          else if (diff > 0) compText = `Etwas milder als heute (+${diff} °C)`;
+          else if (diff < 0) compText = `Etwas kühler als heute (${diff} °C)`;
+          else compText = `Ähnlich wie heute`;
+        }
+
+        let rainTiming = 'Ganztägig trocken und beständig';
+        if (maxRain >= 25 || precipMaxTotal >= 0.2) {
+          if (firstRainHour) {
+            const hNum = parseInt(firstRainHour.split(':')[0], 10);
+            if (hNum < 11) rainTiming = `Regenrisiko bereits ab ${firstRainHour} Uhr (bis zu ${maxRain} %)`;
+            else if (hNum < 17) rainTiming = `Regenwahrscheinlichkeit steigt ab ${firstRainHour} Uhr auf bis zu ${maxRain} %`;
+            else rainTiming = `Regenwahrscheinlichkeit steigt ab ${firstRainHour} Uhr zum Abend hin auf bis zu ${maxRain} %`;
+          } else {
+            rainTiming = `Gelegentlich leichtes Regenrisiko (bis ${maxRain} %), meist trocken`;
+          }
+        }
+
+        const sunHours = (Math.round((sunMinutesTotal / 60) * 10) / 10).toFixed(1);
+        let sunText = `Freundlich mit ca. ${sunHours} Std. Sonne`;
+        if (sunHours >= 7) sunText = `Reichlich Sonnenschein (ca. ${sunHours} Std. Sonne)`;
+        else if (sunHours < 1.5) sunText = `Überwiegend bedeckt (nur ca. ${sunHours} Std. Sonne)`;
+
+        let tempDesc = `Maximal ${Math.round(maxTemp)} °C`;
+        if (maxTemp >= 25) tempDesc = `Sommerlich warm bis ${Math.round(maxTemp)} °C`;
+        else if (maxTemp >= 18) tempDesc = `Angenehm mild bis ${Math.round(maxTemp)} °C`;
+        else if (maxTemp >= 12) tempDesc = `Mäßig mild bei bis zu ${Math.round(maxTemp)} °C`;
+        else if (maxTemp >= 5) tempDesc = `Kühl bei maximal ${Math.round(maxTemp)} °C`;
+
+        let headline = `Trend: ${tempDesc}. ${rainTiming}. ${eveningDrop}.`;
+
+        return {
+          weekday: dayObj.weekday,
+          shortDate: dayObj.shortDate,
+          minTemp,
+          maxTemp,
+          peakHour,
+          eveningDrop,
+          compText,
+          maxRain,
+          precipMaxTotal: precipMaxTotal.toFixed(1),
+          rainTiming,
+          sunHours,
+          sunText,
+          maxWind: Math.round(maxWind),
+          headline,
+          isToday,
+          isTomorrow
+        };
+      }
+
+      const todayAnalysis = analyzeDay(days[0], true, false, null);
+      const tomorrowAnalysis = days.length > 1 ? analyzeDay(days[1], false, true, todayAnalysis) : null;
+
+      function renderCardHtml(d, badgeClass, badgeLabel) {
+        return `
+          <div class="trend-card">
+            <div>
+              <div class="trend-card-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="trend-badge ${badgeClass}">${badgeLabel}</span>
+                  <span style="font-weight:700; color:#f8fafc; font-size:13px;">${d.weekday}, ${d.shortDate}</span>
+                </div>
+                ${d.compText ? `<span style="font-size:10px; color:#fde047; background:rgba(234,179,8,0.15); border:1px solid rgba(234,179,8,0.3); padding:2px 6px; border-radius:4px;">${d.compText}</span>` : ''}
+              </div>
+
+              <div class="trend-headline-box">
+                <div style="font-size:10px; text-transform:uppercase; color:#60a5fa; font-weight:700; margin-bottom:3px; letter-spacing:0.5px;">
+                  ✦ Kernaussage & Trend
+                </div>
+                ${d.headline}
+              </div>
+
+              <div class="trend-stat-row">
+                <div class="trend-stat-chip">
+                  <span>Temperatur</span>
+                  <span>${Math.round(d.minTemp)}° bis ${Math.round(d.maxTemp)}°</span>
+                </div>
+                <div class="trend-stat-chip">
+                  <span>Regenrisiko</span>
+                  <span>max. ${d.maxRain}%</span>
+                </div>
+                <div class="trend-stat-chip">
+                  <span>Sonnenschein</span>
+                  <span>~${d.sunHours} Std.</span>
+                </div>
+                <div class="trend-stat-chip">
+                  <span>Spitzenwind</span>
+                  <span>${d.maxWind} km/h</span>
+                </div>
+              </div>
+
+              <div class="trend-bullet-list">
+                <div class="trend-bullet-item">
+                  <span>🌡️</span>
+                  <div><strong>Temperatur:</strong> ${Math.round(d.minTemp)} °C bis ${Math.round(d.maxTemp)} °C (Peak um ${d.peakHour} Uhr) · ${d.eveningDrop}</div>
+                </div>
+                <div class="trend-bullet-item">
+                  <span>🌧️</span>
+                  <div><strong>Niederschlag:</strong> ${d.rainTiming} (Menge ca. ${d.precipMaxTotal} mm)</div>
+                </div>
+                <div class="trend-bullet-item">
+                  <span>☀️</span>
+                  <div><strong>Sonne:</strong> ${d.sunText}</div>
+                </div>
+                <div class="trend-bullet-item">
+                  <span>💨</span>
+                  <div><strong>Wind:</strong> Bis zu ${d.maxWind} km/h</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="trend-footer-consensus">
+              <span style="color:#34d399;">✔</span>
+              <span><strong>Modellkonsens:</strong> Hohe Übereinstimmung der ausgewählten Wettermodelle für Altenburg</span>
+            </div>
+          </div>
+        `;
+      }
+
+      trendEl.innerHTML = `
+        <div class="trend-header">
+          <div class="trend-header-title">
+            <span style="display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; background:#1e3a8a; border-radius:4px; font-size:11px;">📈</span>
+            <span>Trend-Analyse (Altenburg)</span>
+            <span style="font-size:10px; font-family:monospace; background:rgba(37,99,235,0.2); border:1px solid rgba(59,130,246,0.3); padding:1px 6px; border-radius:10px; color:#93c5fd;">HEUTE & MORGEN</span>
+          </div>
+          <span style="font-size:11px; color:var(--text-muted);">Automatische Modell-Synthese</span>
+        </div>
+        <div class="trend-grid">
+          ${todayAnalysis ? renderCardHtml(todayAnalysis, '', 'HEUTE') : ''}
+          ${tomorrowAnalysis ? renderCardHtml(tomorrowAnalysis, 'indigo', 'MORGEN') : ''}
+        </div>
+      `;
+      trendEl.style.display = 'block';
+    }
+
+    function renderCharts() {
+      if (!forecast?.hourly) return;
+      const availableModels = getSelectedModels();
+      if (!availableModels.length) return;
+
+      const times = forecast.hourly.time || [];
+      const totalHours = Math.min(times.length, chartDays * 24);
+
+      // Model filter pills
+      $('#modelPillRow').innerHTML = `
+        <span style="font-size:11px; color:var(--text-muted); align-self:center; margin-right:4px;">Einzelkurve:</span>
+        <button type="button" class="model-tag-btn ${!highlightedModelId ? 'active' : ''}" data-model="">Alle (Bereich)</button>
+        ${availableModels.map((m) => `
+          <button type="button" class="model-tag-btn ${highlightedModelId === m.id ? 'active' : ''}" data-model="${m.id}">
+            <span class="dot" style="background:${m.color}"></span>
+            ${m.label}
+          </button>
+        `).join('')}
+      `;
+
+      $$('.model-tag-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          highlightedModelId = btn.dataset.model || null;
+          renderCharts();
+        });
+      });
+
+      let minTempAll = 999;
+      let maxTempAll = -999;
+      const hourlyStats = [];
+
+      for (let i = 0; i < totalHours; i++) {
+        const temps = availableModels.map((m) => m.temperature[i]).filter(Number.isFinite);
+        const rainProbs = availableModels.map((m) => m.probability[i]).filter(Number.isFinite);
+        const precipAmounts = availableModels.map((m) => m.precipitation[i]).filter(Number.isFinite);
+        const sunMins = availableModels.map((m) => m.sunshine[i]).filter(Number.isFinite).map((s) => s / 60);
+        const windSpeeds = availableModels.map((m) => m.windSpeed[i]).filter(Number.isFinite);
+
+        const minT = temps.length ? Math.min(...temps) : null;
+        const maxT = temps.length ? Math.max(...temps) : null;
+        if (minT !== null && minT < minTempAll) minTempAll = minT;
+        if (maxT !== null && maxT > maxTempAll) maxTempAll = maxT;
+
+        const minRain = rainProbs.length ? Math.min(...rainProbs) : 0;
+        const maxRain = rainProbs.length ? Math.max(...rainProbs) : 0;
+
+        const minSun = sunMins.length ? Math.min(...sunMins) : 0;
+        const maxSun = sunMins.length ? Math.max(...sunMins) : 0;
+
+        hourlyStats.push({
+          index: i,
+          time: times[i],
+          minT,
+          maxT,
+          minRain,
+          maxRain,
+          precipRange: formatRange(precipAmounts, 'mm', 1),
+          minSun,
+          maxSun,
+          windAvg: formatWindDirection(availableModels, i),
+          windSpeedRange: formatRange(windSpeeds, 'km/h', 1)
+        });
+      }
+
+      function renderHudContent(h) {
+        if (!h) return '';
+        const tp = getTimestampParts(h.time);
+        const dateStr = tp ? `${tp.weekday}, ${tp.date}` : h.time;
+        const timeStr = tp ? `${tp.time} Uhr` : '';
+
+        return `
+          <div class="hud-left">
+            <span class="hud-title">${dateStr}</span>
+            <span class="hud-pill">${timeStr}</span>
+          </div>
+          <div class="hud-stats">
+            <div><span>Temperatur:</span> <strong style="color:#06b6d4;">${formatTemperature(h.minT)}</strong> <span style="color:#64748b;">bis</span> <strong style="color:#f59e0b;">${formatTemperature(h.maxT)}</strong></div>
+            <div><span>Regenchance:</span> <strong style="color:#38bdf8;">${h.minRain}%–${h.maxRain}%</strong> <span style="color:#64748b;">(${h.precipRange})</span></div>
+            <div><span>Sonne:</span> <strong style="color:#fbbf24;">${Math.round(h.minSun)}–${Math.round(h.maxSun)} min</strong></div>
+            <div><span>Wind:</span> <strong style="color:#2dd4bf;">${h.windSpeedRange} ${h.windAvg}</strong></div>
+          </div>
+        `;
+      }
+
+      // Initialize all chart-hud elements above each ensemble chart
+      const nowIsoPrefix = new Date().toISOString().slice(0, 13);
+      const defaultIdx = hourlyStats.findIndex((item) => item.time && item.time.startsWith(nowIsoPrefix));
+      const initialIdx = defaultIdx >= 0 ? defaultIdx : 0;
+      const initialHudHtml = renderHudContent(hourlyStats[initialIdx] || hourlyStats[0]);
+      $$('.chart-hud').forEach((el) => {
+        el.innerHTML = initialHudHtml;
+      });
+
+      if (minTempAll === 999) minTempAll = 0;
+      if (maxTempAll === -999) maxTempAll = 20;
+
+      const tempYMin = Math.floor(minTempAll) - 2;
+      const tempYMax = Math.ceil(maxTempAll) + 2;
+      const tempYRange = tempYMax - tempYMin || 1;
+
+      const svgW = 960;
+      const svgH = 210;
+      const padL = 38;
+      const padR = 16;
+      const padT = 16;
+      const padB = 26;
+      const plotW = svgW - padL - padR;
+      const plotH = svgH - padT - padB;
+
+      const getX = (i) => padL + (i / Math.max(1, totalHours - 1)) * plotW;
+      const getTempY = (val) => padT + (1 - (val - tempYMin) / tempYRange) * plotH;
+      const getRainY = (val) => padT + (1 - Math.max(0, Math.min(100, val)) / 100) * plotH;
+      const getSunY = (val) => padT + (1 - Math.max(0, Math.min(60, val)) / 60) * plotH;
+
+      let dateLabelsSvg = '';
+      for (let i = 0; i < totalHours; i++) {
+        const tp = getTimestampParts(hourlyStats[i].time);
+        if (tp && tp.time === '00:00') {
+          const x = getX(i);
+          dateLabelsSvg += `
+            <line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + plotH}" stroke="#293b4e" stroke-width="1"/>
+            <text x="${x + 4}" y="${padT + plotH + 16}" fill="#94a3b8" font-size="10" font-weight="600">${tp.weekday.slice(0, 2)} ${tp.shortDate}</text>
+          `;
+        }
+      }
+
+      // --- 1. TEMPERATURE SVG ---
+      const tempUpper = [];
+      const tempLower = [];
+      for (let i = 0; i < totalHours; i++) {
+        const x = getX(i);
+        tempUpper.push(`${x},${getTempY(hourlyStats[i].maxT !== null ? hourlyStats[i].maxT : 0)}`);
+        tempLower.push(`${x},${getTempY(hourlyStats[i].minT !== null ? hourlyStats[i].minT : 0)}`);
+      }
+      const tempEnvelopeD = `M ${tempUpper.join(' L ')} L ${tempLower.reverse().join(' L ')} Z`;
+      const tempMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getTempY(h.maxT)}`).join(' ');
+      const tempMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getTempY(h.minT)}`).join(' ');
+
+      let tempGridSvg = '';
+      for (let t = -15; t <= 35; t += 5) {
+        if (t < tempYMin || t > tempYMax) continue;
+        const y = getTempY(t);
+        tempGridSvg += `
+          <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#1e2c3d" stroke-dasharray="2 3"/>
+          <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">${t}°</text>
+        `;
+      }
+
+      const zeroY = getTempY(0);
+      let zeroLineSvg = '';
+      if (zeroY >= padT && zeroY <= padT + plotH) {
+        zeroLineSvg = `<line x1="${padL}" y1="${zeroY}" x2="${svgW - padR}" y2="${zeroY}" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>`;
+      }
+
+      let tempModelLine = '';
+      let rainModelLine = '';
+      let sunModelLine = '';
+      if (highlightedModelId) {
+        const m = availableModels.find((x) => x.id === highlightedModelId);
+        if (m) {
+          const tPts = [];
+          const rPts = [];
+          const sPts = [];
+          for (let i = 0; i < totalHours; i++) {
+            const tVal = m.temperature[i];
+            const rVal = m.probability[i];
+            const sVal = m.sunshine[i];
+            if (Number.isFinite(tVal)) tPts.push(`${tPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getTempY(tVal)}`);
+            if (Number.isFinite(rVal)) rPts.push(`${rPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(rVal)}`);
+            if (Number.isFinite(sVal)) sPts.push(`${sPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(sVal / 60)}`);
+          }
+          if (tPts.length) tempModelLine = `<path d="${tPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (rPts.length) rainModelLine = `<path d="${rPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (sPts.length) sunModelLine = `<path d="${sPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+        }
+      }
+
+      $('#tempSvg').innerHTML = `
+        ${tempGridSvg}
+        ${zeroLineSvg}
+        ${dateLabelsSvg}
+        <path d="${tempEnvelopeD}" fill="#2563eb" fill-opacity="0.22" stroke="#3b82f6" stroke-opacity="0.5" stroke-width="1"/>
+        <path d="${tempMaxD}" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+        <path d="${tempMinD}" fill="none" stroke="#06b6d4" stroke-width="1.5"/>
+        ${tempModelLine}
+        <g id="tempHover" style="display:none;">
+          <line id="tempHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle id="tempCircleMax" cx="0" cy="0" r="4" fill="#f59e0b" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="tempCircleMin" cx="0" cy="0" r="4" fill="#06b6d4" stroke="#0d131a" stroke-width="1.5"/>
+        </g>
+      `;
+
+      // --- 2. REGENWAHRSCHEINLICHKEIT SVG ---
+      const rainUpper = [];
+      const rainLower = [];
+      for (let i = 0; i < totalHours; i++) {
+        const x = getX(i);
+        rainUpper.push(`${x},${getRainY(hourlyStats[i].maxRain)}`);
+        rainLower.push(`${x},${getRainY(hourlyStats[i].minRain)}`);
+      }
+      const rainEnvelopeD = `M ${rainUpper.join(' L ')} L ${rainLower.reverse().join(' L ')} Z`;
+      const rainMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(h.maxRain)}`).join(' ');
+      const rainMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(h.minRain)}`).join(' ');
+
+      let rainGridSvg = '';
+      [0, 25, 50, 75, 100].forEach((p) => {
+        const y = getRainY(p);
+        rainGridSvg += `
+          <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#1e2c3d" stroke-dasharray="2 3"/>
+          <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">${p}%</text>
+        `;
+      });
+
+      $('#rainSvg').innerHTML = `
+        ${rainGridSvg}
+        ${dateLabelsSvg}
+        <path d="${rainEnvelopeD}" fill="#2563eb" fill-opacity="0.25" stroke="#3b82f6" stroke-opacity="0.6" stroke-width="1"/>
+        <path d="${rainMaxD}" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+        <path d="${rainMinD}" fill="none" stroke="#64748b" stroke-width="1.5"/>
+        ${rainModelLine}
+        <g id="rainHover" style="display:none;">
+          <line id="rainHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle id="rainCircleMax" cx="0" cy="0" r="4" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="rainCircleMin" cx="0" cy="0" r="4" fill="#64748b" stroke="#0d131a" stroke-width="1.5"/>
+        </g>
+      `;
+
+      // --- 3. SONNENSCHEINDAUER SVG ---
+      const sunUpper = [];
+      const sunLower = [];
+      for (let i = 0; i < totalHours; i++) {
+        const x = getX(i);
+        sunUpper.push(`${x},${getSunY(hourlyStats[i].maxSun)}`);
+        sunLower.push(`${x},${getSunY(hourlyStats[i].minSun)}`);
+      }
+      const sunEnvelopeD = `M ${sunUpper.join(' L ')} L ${sunLower.reverse().join(' L ')} Z`;
+      const sunMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(h.maxSun)}`).join(' ');
+      const sunMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(h.minSun)}`).join(' ');
+
+      let sunGridSvg = '';
+      [0, 15, 30, 45, 60].forEach((m) => {
+        const y = getSunY(m);
+        sunGridSvg += `
+          <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#1e2c3d" stroke-dasharray="2 3"/>
+          <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">${m}m</text>
+        `;
+      });
+
+      $('#sunSvg').innerHTML = `
+        ${sunGridSvg}
+        ${dateLabelsSvg}
+        <path d="${sunEnvelopeD}" fill="#d97706" fill-opacity="0.22" stroke="#f59e0b" stroke-opacity="0.6" stroke-width="1"/>
+        <path d="${sunMaxD}" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+        <path d="${sunMinD}" fill="none" stroke="#78716c" stroke-width="1.5"/>
+        ${sunModelLine}
+        <g id="sunHover" style="display:none;">
+          <line id="sunHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle id="sunCircleMax" cx="0" cy="0" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="sunCircleMin" cx="0" cy="0" r="4" fill="#78716c" stroke="#0d131a" stroke-width="1.5"/>
+        </g>
+      `;
+
+      // Touch & Mouse Handler for scrubbing on mobile and desktop
+      const updateHoverAt = (idx) => {
+        const h = hourlyStats[idx];
+        if (!h) return;
+        const x = getX(idx);
+
+        $('#tempHover').style.display = 'block';
+        $('#tempHoverLine').setAttribute('x1', x);
+        $('#tempHoverLine').setAttribute('x2', x);
+        $('#tempCircleMax').setAttribute('cx', x);
+        $('#tempCircleMax').setAttribute('cy', getTempY(h.maxT !== null ? h.maxT : 0));
+        $('#tempCircleMin').setAttribute('cx', x);
+        $('#tempCircleMin').setAttribute('cy', getTempY(h.minT !== null ? h.minT : 0));
+
+        $('#rainHover').style.display = 'block';
+        $('#rainHoverLine').setAttribute('x1', x);
+        $('#rainHoverLine').setAttribute('x2', x);
+        $('#rainCircleMax').setAttribute('cx', x);
+        $('#rainCircleMax').setAttribute('cy', getRainY(h.maxRain));
+        $('#rainCircleMin').setAttribute('cx', x);
+        $('#rainCircleMin').setAttribute('cy', getRainY(h.minRain));
+
+        $('#sunHover').style.display = 'block';
+        $('#sunHoverLine').setAttribute('x1', x);
+        $('#sunHoverLine').setAttribute('x2', x);
+        $('#sunCircleMax').setAttribute('cx', x);
+        $('#sunCircleMax').setAttribute('cy', getSunY(h.maxSun));
+        $('#sunCircleMin').setAttribute('cx', x);
+        $('#sunCircleMin').setAttribute('cy', getSunY(h.minSun));
+
+        const hudHtml = renderHudContent(h);
+        $$('.chart-hud').forEach((el) => {
+          el.innerHTML = hudHtml;
+        });
+      };
+
+      const clearHover = () => {
+        $('#tempHover').style.display = 'none';
+        $('#rainHover').style.display = 'none';
+        $('#sunHover').style.display = 'none';
+      };
+
+      const handlePointer = (svgEl, clientX) => {
+        const rect = svgEl.getBoundingClientRect();
+        const mouseX = clientX - rect.left;
+        const relX = (mouseX / rect.width) * svgW;
+        if (relX < padL || relX > svgW - padR) return;
+        const ratio = (relX - padL) / plotW;
+        const idx = Math.min(totalHours - 1, Math.max(0, Math.round(ratio * (totalHours - 1))));
+        updateHoverAt(idx);
+      };
+
+      ['#tempSvg', '#rainSvg', '#sunSvg'].forEach((sel) => {
+        const svgEl = $(sel);
+
+        // Desktop mouse events
+        svgEl.onmousemove = (e) => handlePointer(svgEl, e.clientX);
+        svgEl.onmouseleave = clearHover;
+
+        // Mobile touch events with finger tracking
+        svgEl.ontouchstart = (e) => {
+          if (e.touches && e.touches[0]) {
+            handlePointer(svgEl, e.touches[0].clientX);
+          }
+        };
+        svgEl.ontouchmove = (e) => {
+          if (e.touches && e.touches[0]) {
+            handlePointer(svgEl, e.touches[0].clientX);
+          }
+        };
+      });
+    }
+
+    async function loadForecast() {
+      if (loading) return;
+      loading = true;
+      $('#refreshBtn').disabled = true;
+      setStatus('Lade bis zu 384 Vorhersagestunden für Altenburg …');
+
+      try {
+        const url = new URL('https://api.open-meteo.com/v1/forecast');
+        url.searchParams.set('latitude', LOCATION.latitude);
+        url.searchParams.set('longitude', LOCATION.longitude);
+        url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,precipitation,sunshine_duration,wind_speed_10m,wind_direction_10m');
+        url.searchParams.set('forecast_hours', '384');
+        url.searchParams.set('timezone', 'auto');
+        url.searchParams.set('temperature_unit', 'celsius');
+        url.searchParams.set('wind_speed_unit', 'kmh');
+        url.searchParams.set('precipitation_unit', 'mm');
+        url.searchParams.set('models', MODELS.map((m) => m.id).join(','));
+
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error('API-Fehler HTTP ' + res.status);
+        forecast = await res.json();
+        renderTable();
+      } catch (err) {
+        setStatus('Fehler beim Laden: ' + err.message);
+        $('#tableBody').innerHTML = `<tr><td colspan="8" style="color: #ff6b6b;">Verbindung zur Wetter-API fehlgeschlagen: ${err.message}</td></tr>`;
+      } finally {
+        loading = false;
+        $('#refreshBtn').disabled = false;
+      }
+    }
+
+    // --- Cookie & Storage Management (§ 25 TDDDG / DSGVO) ---
+    const COOKIE_STORAGE_KEY = 'altenburg_cookie_consent_v1';
+
+    function initCookieConsent() {
+      const stored = localStorage.getItem(COOKIE_STORAGE_KEY);
+      if (!stored) {
+        showCookieModal();
+      }
+    }
+
+    function showCookieModal() {
+      $('#cookieModal').style.display = 'flex';
+    }
+
+    function hideCookieModal() {
+      $('#cookieModal').style.display = 'none';
+    }
+
+    function saveCookieConsent(preferences) {
+      const consent = {
+        necessary: true,
+        preferences: !!preferences,
+        timestamp: new Date().toISOString(),
+        version: '1.0'
+      };
+      try {
+        localStorage.setItem(COOKIE_STORAGE_KEY, JSON.stringify(consent));
+      } catch (e) {}
+      hideCookieModal();
+    }
+
+    $('#btnAcceptCookies').addEventListener('click', () => saveCookieConsent(true));
+    $('#btnRejectCookies').addEventListener('click', () => saveCookieConsent(false));
+    $('#openCookieSettingsBtn').addEventListener('click', () => {
+      $('#cookieDetailsSection').style.display = 'block';
+      showCookieModal();
+    });
+
+    $('#toggleCookieDetailsBtn').addEventListener('click', () => {
+      const sec = $('#cookieDetailsSection');
+      sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+    });
+
+    $('#openPrivacyBtn').addEventListener('click', () => {
+      $('#legalModal').style.display = 'flex';
+    });
+    $('#cookiePrivacyLink').addEventListener('click', () => {
+      $('#legalModal').style.display = 'flex';
+    });
+    $('#closeLegalModalBtn').addEventListener('click', () => {
+      $('#legalModal').style.display = 'none';
+    });
+    $('#btnOkLegalModal').addEventListener('click', () => {
+      $('#legalModal').style.display = 'none';
+    });
+
+    initCookieConsent();
+
+    // Initial load
+    loadForecast();
+  </script>
 </body>
 </html>
