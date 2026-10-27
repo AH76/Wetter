@@ -1286,6 +1286,9 @@
         return;
       }
 
+      const regModels = availableModels.filter(m => m.isRegional);
+      const targetModels = regModels.length ? regModels : availableModels;
+
       function analyzeDay(dayObj, isToday, isTomorrow, refDay) {
         let minTemp = 999, maxTemp = -999, peakHour = '14:00';
         let afternoonTemp = null, eveningTemp = null;
@@ -1296,11 +1299,11 @@
           const tp = getTimestampParts(times[idx]);
           const hourNum = tp ? parseInt(tp.time.split(':')[0], 10) : 12;
 
-          const temps = availableModels.map(m => m.temperature[idx]).filter(Number.isFinite);
-          const rains = availableModels.map(m => m.probability[idx]).filter(Number.isFinite);
-          const precips = availableModels.map(m => m.precipitation[idx]).filter(Number.isFinite);
-          const suns = availableModels.map(m => m.sunshine[idx]).filter(Number.isFinite).map(s => s / 60);
-          const winds = availableModels.map(m => m.windSpeed[idx]).filter(Number.isFinite);
+          const temps = targetModels.map(m => m.temperature[idx]).filter(Number.isFinite);
+          const rains = targetModels.map(m => m.probability[idx]).filter(Number.isFinite);
+          const precips = targetModels.map(m => m.precipitation[idx]).filter(Number.isFinite);
+          const suns = targetModels.map(m => m.sunshine[idx]).filter(Number.isFinite).map(s => s / 60);
+          const winds = targetModels.map(m => m.windSpeed[idx]).filter(Number.isFinite);
 
           if (temps.length) {
             const hMin = Math.min(...temps);
@@ -1459,7 +1462,7 @@
 
             <div class="trend-footer-consensus">
               <span style="color:#34d399;">✔</span>
-              <span><strong>Modellkonsens:</strong> Hohe Übereinstimmung der ausgewählten Wettermodelle für Altenburg</span>
+              <span><strong>Regionalmodell-Konsens:</strong> Hohe Übereinstimmung der hochauflösenden Regionalmodelle für Altenburg</span>
             </div>
           </div>
         `;
@@ -1468,11 +1471,11 @@
       trendEl.innerHTML = `
         <div class="trend-header">
           <div class="trend-header-title">
-            <span style="display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; background:#1e3a8a; border-radius:4px; font-size:11px;">📈</span>
+            <span style="display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; background:#064e3b; border-radius:4px; font-size:11px;">📈</span>
             <span>Trend-Analyse (Altenburg)</span>
-            <span style="font-size:10px; font-family:monospace; background:rgba(37,99,235,0.2); border:1px solid rgba(59,130,246,0.3); padding:1px 6px; border-radius:10px; color:#93c5fd;">HEUTE & MORGEN</span>
+            <span style="font-size:10px; font-family:monospace; background:rgba(5,150,105,0.2); border:1px solid rgba(16,185,129,0.4); padding:1px 6px; border-radius:10px; color:#6ee7b7;">REGIONAL-SYNTHESE (HEUTE & MORGEN)</span>
           </div>
-          <span style="font-size:11px; color:var(--text-muted);">Automatische Modell-Synthese</span>
+          <span style="font-size:11px; color:var(--text-muted);">Automatische Synthese basierend auf den hochauflösenden Regionalmodellen</span>
         </div>
         <div class="trend-grid">
           ${todayAnalysis ? renderCardHtml(todayAnalysis, '', 'HEUTE') : ''}
