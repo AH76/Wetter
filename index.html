@@ -498,6 +498,41 @@
       border-color: var(--accent);
     }
 
+    .metric-pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .metric-pill {
+      background: #16212e;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .metric-pill:hover {
+      background: #1e2c3d;
+      color: #fff;
+    }
+    .metric-pill.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+    }
+
     .model-pills {
       display: flex;
       gap: 6px;
@@ -807,14 +842,27 @@
         </div>
       </div>
 
+      <!-- METRIC SELECTION (Wind, Regen, Schnee, Sonnenstunden, Niederschlag, etc.) -->
+      <div class="metric-pill-group" id="metricPillGroup">
+        <button type="button" class="metric-pill active" data-metric="all">📊 Alle Diagramme</button>
+        <button type="button" class="metric-pill" data-metric="temp">🌡️ Temperatur</button>
+        <button type="button" class="metric-pill" data-metric="wind">💨 Wind</button>
+        <button type="button" class="metric-pill" data-metric="rain_prob">🌧️ Regen</button>
+        <button type="button" class="metric-pill" data-metric="precip">💧 Niederschlag</button>
+        <button type="button" class="metric-pill" data-metric="snow">❄️ Schnee</button>
+        <button type="button" class="metric-pill" data-metric="sun">☀️ Sonnenstunden</button>
+        <button type="button" class="metric-pill" data-metric="cloud">☁️ Bedeckung</button>
+      </div>
+
       <div class="model-pills" id="modelPillRow"></div>
 
+      <div class="chart-hud" id="chartHud"></div>
+
       <!-- 1. TEMPERATUR ENSEMBLEBAND -->
-      <div class="chart-hud" id="chartHud1"></div>
-      <div class="chart-card">
+      <div class="chart-card" id="tempCard">
         <div class="chart-card-header">
           <div class="chart-card-title">
-            <span>Temperatur-Ensembleband (°C)</span>
+            <span>🌡️ Temperatur-Ensembleband (°C)</span>
             <span class="chart-card-subtitle">(Min / Max Spanne)</span>
           </div>
           <div style="font-size: 10px; font-family: monospace;">
@@ -828,16 +876,34 @@
         </div>
       </div>
 
-      <!-- 2. REGENWAHRSCHEINLICHKEIT ENSEMBLEBAND -->
-      <div class="chart-hud" id="chartHud2"></div>
-      <div class="chart-card">
+      <!-- 2. WIND ENSEMBLEBAND -->
+      <div class="chart-card" id="windCard">
         <div class="chart-card-header">
           <div class="chart-card-title">
-            <span>Regenwahrscheinlichkeit-Ensembleband (%)</span>
+            <span>💨 Windstärke- &amp; Böen-Ensembleband (km/h)</span>
+            <span class="chart-card-subtitle">(Min / Max Spanne)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #2dd4bf; margin-right: 8px;">— Max</span>
+            <span style="color: #99f6e4; margin-right: 8px;">-- Ø Mittel</span>
+            <span style="color: #64748b;">— Min</span>
+          </div>
+        </div>
+        <div class="svg-wrapper">
+          <svg id="windSvg" viewBox="0 0 960 210"></svg>
+        </div>
+      </div>
+
+      <!-- 3. REGENWAHRSCHEINLICHKEIT ENSEMBLEBAND -->
+      <div class="chart-card" id="rainCard">
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>🌧️ Regenwahrscheinlichkeit-Ensembleband (%)</span>
             <span class="chart-card-subtitle">(0 – 100%)</span>
           </div>
           <div style="font-size: 10px; font-family: monospace;">
             <span style="color: #38bdf8; margin-right: 8px;">— Max</span>
+            <span style="color: #93c5fd; margin-right: 8px;">-- Ø Mittel</span>
             <span style="color: #64748b;">— Min</span>
           </div>
         </div>
@@ -846,16 +912,52 @@
         </div>
       </div>
 
-      <!-- 3. SONNENSCHEINDAUER ENSEMBLEBAND -->
-      <div class="chart-hud" id="chartHud3"></div>
-      <div class="chart-card">
+      <!-- 4. NIEDERSCHLAGSMENGE ENSEMBLEBAND -->
+      <div class="chart-card" id="precipCard">
         <div class="chart-card-header">
           <div class="chart-card-title">
-            <span>Sonnenscheindauer-Ensembleband (Min / h)</span>
+            <span>💧 Niederschlagsmenge-Ensembleband (mm / Stunde)</span>
+            <span class="chart-card-subtitle">(Min / Max Spanne)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #06b6d4; margin-right: 8px;">— Max</span>
+            <span style="color: #67e8f9; margin-right: 8px;">-- Ø Mittel</span>
+            <span style="color: #475569;">— Min</span>
+          </div>
+        </div>
+        <div class="svg-wrapper">
+          <svg id="precipSvg" viewBox="0 0 960 210"></svg>
+        </div>
+      </div>
+
+      <!-- 5. SCHNEE ENSEMBLEBAND -->
+      <div class="chart-card" id="snowCard">
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>❄️ Schnee-Ensembleband (cm / Stunde)</span>
+            <span class="chart-card-subtitle">(Schneefallhöhe)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #38bdf8; margin-right: 8px;">— Max</span>
+            <span style="color: #bae6fd; margin-right: 8px;">-- Ø Mittel</span>
+            <span style="color: #64748b;">— Min</span>
+          </div>
+        </div>
+        <div class="svg-wrapper">
+          <svg id="snowSvg" viewBox="0 0 960 210"></svg>
+        </div>
+      </div>
+
+      <!-- 6. SONNENSCHEINDAUER ENSEMBLEBAND -->
+      <div class="chart-card" id="sunCard">
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>☀️ Sonnenscheindauer-Ensembleband (Min / h)</span>
             <span class="chart-card-subtitle">(0 – 60 min)</span>
           </div>
           <div style="font-size: 10px; font-family: monospace;">
             <span style="color: #fbbf24; margin-right: 8px;">— Max</span>
+            <span style="color: #fef08a; margin-right: 8px;">-- Ø Mittel</span>
             <span style="color: #78716c;">— Min</span>
           </div>
         </div>
@@ -864,19 +966,18 @@
         </div>
       </div>
 
-      <!-- 4. BEDECKUNGSGRAD & WOLKEN-ENSEMBLEBAND -->
-      <div class="chart-hud" id="chartHud4"></div>
-      <div class="chart-card">
+      <!-- 7. WOLKENSTOCKWERKE ENSEMBLEBAND (TIEFE · MITTLERE · HOHE WOLKEN & NEBEL) -->
+      <div class="chart-card" id="cloudCard">
         <div class="chart-card-header">
           <div class="chart-card-title">
-            <span>Bedeckungsgrad &amp; Wolken-Ensembleband (%)</span>
-            <span class="chart-card-subtitle">(0 – 100% · Gesamtbedeckung &amp; Wolkenstockwerke)</span>
+            <span>☁️ Wolkenstockwerke-Ensembleband (Tiefe · Mittlere · Hohe Wolken)</span>
+            <span class="chart-card-subtitle">(Aufgeschlüsselt in Tiefe, Mittlere und Hohe Wolken · inkl. Nebelrisiko)</span>
           </div>
           <div style="font-size: 10px; font-family: monospace;">
-            <span style="color: #38bdf8; margin-right: 8px;">— Ø Gesamt</span>
-            <span style="color: #a78bfa; margin-right: 8px;">-- Tiefe (T)</span>
-            <span style="color: #f472b6; margin-right: 8px;">·· Mittelhohe (M)</span>
-            <span style="color: #fbbf24;">— Hohe (H)</span>
+            <span style="color: #a78bfa; margin-right: 8px;">— 🟣 Tiefe</span>
+            <span style="color: #f472b6; margin-right: 8px;">— 🌸 Mittlere</span>
+            <span style="color: #fbbf24; margin-right: 8px;">— 🟡 Hohe</span>
+            <span style="color: #fde047; background:#581c87; padding:1px 5px; border-radius:4px;">🌫️ Nebel</span>
           </div>
         </div>
         <div class="svg-wrapper">
@@ -885,7 +986,7 @@
       </div>
 
       <div class="mobile-tip">
-        <span>👆 Finger auflegen & wischen: zeigt sofort die Werte aller Dimensionen zeitgleich an.</span>
+        <span>👆 Finger auflegen &amp; wischen: zeigt sofort die Werte aller Dimensionen zeitgleich an.</span>
       </div>
     </div>
 
@@ -1137,6 +1238,8 @@
       return `${compass} (${Math.round(degrees)}°)`;
     }
 
+    let activeMetric = 'all';
+
     function getSelectedModels() {
       const checked = [...$$('.model-check:checked')].map((i) => i.value);
       const selectedIds = new Set(checked);
@@ -1150,22 +1253,41 @@
           const temperature = forecast.hourly[`temperature_2m_${model.id}`] || [];
           const probability = forecast.hourly[`precipitation_probability_${model.id}`] || [];
           const precipitation = forecast.hourly[`precipitation_${model.id}`] || [];
+          const snowfall = forecast.hourly[`snowfall_${model.id}`] || [];
           const sunshine = forecast.hourly[`sunshine_duration_${model.id}`] || [];
           const windSpeed = forecast.hourly[`wind_speed_10m_${model.id}`] || [];
           const windDirection = forecast.hourly[`wind_direction_10m_${model.id}`] || [];
           const cloudCover = forecast.hourly[`cloud_cover_${model.id}`] || [];
-          const cloudLow = forecast.hourly[`cloud_cover_low_${model.id}`] || [];
-          const cloudMid = forecast.hourly[`cloud_cover_mid_${model.id}`] || [];
-          const cloudHigh = forecast.hourly[`cloud_cover_high_${model.id}`] || [];
+          const cloudCoverLow = forecast.hourly[`cloud_cover_low_${model.id}`] || [];
+          const cloudCoverMid = forecast.hourly[`cloud_cover_mid_${model.id}`] || [];
+          const cloudCoverHigh = forecast.hourly[`cloud_cover_high_${model.id}`] || [];
+          const visibility = forecast.hourly[`visibility_${model.id}`] || [];
+          const weatherCode = forecast.hourly[`weather_code_${model.id}`] || [];
 
           let lastIndex = -1;
-          const all = [temperature, probability, precipitation, sunshine, windSpeed, windDirection, cloudCover];
+          const all = [temperature, probability, precipitation, snowfall, sunshine, windSpeed, windDirection, cloudCover];
           for (const arr of all) {
             for (let i = 0; i < arr.length; i++) {
               if (Number.isFinite(arr[i])) lastIndex = Math.max(lastIndex, i);
             }
           }
-          return { ...model, temperature, probability, precipitation, sunshine, windSpeed, windDirection, cloudCover, cloudLow, cloudMid, cloudHigh, lastIndex };
+          return {
+            ...model,
+            temperature,
+            probability,
+            precipitation,
+            snowfall,
+            sunshine,
+            windSpeed,
+            windDirection,
+            cloudCover,
+            cloudCoverLow,
+            cloudCoverMid,
+            cloudCoverHigh,
+            visibility,
+            weatherCode,
+            lastIndex
+          };
         })
         .filter((m) => m.lastIndex >= 0);
     }
@@ -1204,7 +1326,7 @@
 
       if (!availableModels.length) {
         $('#tableHead').innerHTML = '';
-        $('#tableBody').innerHTML = '<tr><td colspan="9">Bitte wähle mindestens ein Wettermodell aus.</td></tr>';
+        $('#tableBody').innerHTML = '<tr><td colspan="10">Bitte wähle mindestens ein Wettermodell aus.</td></tr>';
         $('#summary').textContent = '';
         return;
       }
@@ -1220,7 +1342,7 @@
           <th>Tiefste<br>Temperatur</th>
           <th style="background:#1a2838; color:#fde68a;">Mitteltemperatur<br>Ø Modell-Mittel</th>
           <th>Höchste<br>Temperatur</th>
-          <th>Bedeckung<br>Gesamt (T · M · H)</th>
+          <th>Bedeckung (%)<br>Modellspanne</th>
           <th>Regenchance<br>Modellspanne</th>
           <th>Niederschlag<br>mm / Stunde</th>
           <th>Sonnenschein<br>Minuten / Stunde</th>
@@ -1239,14 +1361,19 @@
         const temps = availableModels
           .map((m) => ({ temp: m.temperature[i], label: m.label }))
           .filter((t) => Number.isFinite(t.temp));
-        const clouds = availableModels.map((m) => m.cloudCover[i]).filter(Number.isFinite);
-        const lows = availableModels.map((m) => m.cloudLow[i]).filter(Number.isFinite);
-        const mids = availableModels.map((m) => m.cloudMid[i]).filter(Number.isFinite);
-        const highs = availableModels.map((m) => m.cloudHigh[i]).filter(Number.isFinite);
+        const clouds = availableModels.map((m) => m.cloudCover ? m.cloudCover[i] : null).filter(Number.isFinite);
+        const lowClouds = availableModels.map((m) => m.cloudCoverLow ? m.cloudCoverLow[i] : null).filter(Number.isFinite);
+        const visibilities = availableModels.map((m) => m.visibility ? m.visibility[i] : null).filter(Number.isFinite);
+        const weatherCodes = availableModels.map((m) => m.weatherCode ? m.weatherCode[i] : null).filter(Number.isFinite);
         const rainProbs = availableModels.map((m) => m.probability[i]).filter(Number.isFinite);
         const precipAmounts = availableModels.map((m) => m.precipitation[i]).filter(Number.isFinite);
         const sunMins = availableModels.map((m) => m.sunshine[i]).filter(Number.isFinite).map((s) => s / 60);
         const windSpeeds = availableModels.map((m) => m.windSpeed[i]).filter(Number.isFinite);
+
+        const minVis = visibilities.length ? Math.min(...visibilities) : null;
+        const avgLow = lowClouds.length ? Math.round(lowClouds.reduce((a, b) => a + b, 0) / lowClouds.length) : 0;
+        const tpHour = tp ? parseInt(tp.time.split(':')[0], 10) : 12;
+        const isFoggyHour = (minVis !== null && minVis < 2500) || weatherCodes.includes(45) || weatherCodes.includes(48) || (avgLow >= 80 && (tpHour <= 9 || tpHour >= 21));
 
         let lowestCell = '<td>—</td>';
         let avgCell = '<td>—</td>';
@@ -1269,10 +1396,9 @@
 
         let cloudCell = '<td>—</td>';
         if (clouds.length) {
+          const minCloud = Math.min(...clouds);
+          const maxCloud = Math.max(...clouds);
           const avgCloud = Math.round(clouds.reduce((a, b) => a + b, 0) / clouds.length);
-          const avgLow = lows.length ? Math.round(lows.reduce((a, b) => a + b, 0) / lows.length) : 0;
-          const avgMid = mids.length ? Math.round(mids.reduce((a, b) => a + b, 0) / mids.length) : 0;
-          const avgHigh = highs.length ? Math.round(highs.reduce((a, b) => a + b, 0) / highs.length) : 0;
 
           let icon = '☀️';
           if (avgCloud >= 76) icon = '☁️';
@@ -1280,7 +1406,9 @@
           else if (avgCloud >= 26) icon = '⛅';
           else if (avgCloud >= 13) icon = '🌤️';
 
-          cloudCell = `<td><span style="font-size:13px; margin-right:3px;">${icon}</span><strong>${avgCloud}%</strong><br><small style="color:#94a3b8; font-size:10px;">${avgLow} · ${avgMid} · ${avgHigh}%</small></td>`;
+          const rangeText = minCloud === maxCloud ? `${avgCloud}%` : `${minCloud}–${maxCloud}%`;
+          const fogBadge = isFoggyHour ? `<span style="color:#fde047; background:#581c87; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; margin-left:4px;" title="Nebelrisiko">🌫️ Nebel</span>` : '';
+          cloudCell = `<td><span style="font-size:13px; margin-right:3px;">${icon}</span><strong>${rangeText}</strong>${fogBadge}<br><small style="color:#94a3b8; font-size:10px;">Ø ${avgCloud}%</small></td>`;
         }
 
         const dateDisplay = tp
@@ -1352,9 +1480,11 @@
         let precipMaxTotal = 0, sunMinutesTotal = 0, maxWind = 0;
         const allDayTemps = [];
         const allDayClouds = [];
-        const allDayLows = [];
-        const allDayMids = [];
-        const allDayHighs = [];
+        const allDayLowClouds = [];
+        const allDayMidClouds = [];
+        const allDayHighClouds = [];
+        const fogHours = [];
+        let dayMinVis = null;
 
         for (const idx of dayObj.indices) {
           const tp = getTimestampParts(times[idx]);
@@ -1362,9 +1492,11 @@
 
           const temps = targetModels.map(m => m.temperature[idx]).filter(Number.isFinite);
           const clouds = targetModels.map(m => m.cloudCover ? m.cloudCover[idx] : null).filter(Number.isFinite);
-          const lows = targetModels.map(m => m.cloudLow ? m.cloudLow[idx] : null).filter(Number.isFinite);
-          const mids = targetModels.map(m => m.cloudMid ? m.cloudMid[idx] : null).filter(Number.isFinite);
-          const highs = targetModels.map(m => m.cloudHigh ? m.cloudHigh[idx] : null).filter(Number.isFinite);
+          const lows = targetModels.map(m => m.cloudCoverLow ? m.cloudCoverLow[idx] : null).filter(Number.isFinite);
+          const mids = targetModels.map(m => m.cloudCoverMid ? m.cloudCoverMid[idx] : null).filter(Number.isFinite);
+          const highs = targetModels.map(m => m.cloudCoverHigh ? m.cloudCoverHigh[idx] : null).filter(Number.isFinite);
+          const viss = targetModels.map(m => m.visibility ? m.visibility[idx] : null).filter(Number.isFinite);
+          const wCodes = targetModels.map(m => m.weatherCode ? m.weatherCode[idx] : null).filter(Number.isFinite);
           const rains = targetModels.map(m => m.probability[idx]).filter(Number.isFinite);
           const precips = targetModels.map(m => m.precipitation[idx]).filter(Number.isFinite);
           const suns = targetModels.map(m => m.sunshine[idx]).filter(Number.isFinite).map(s => s / 60);
@@ -1384,9 +1516,18 @@
           }
 
           if (clouds.length) allDayClouds.push(...clouds);
-          if (lows.length) allDayLows.push(...lows);
-          if (mids.length) allDayMids.push(...mids);
-          if (highs.length) allDayHighs.push(...highs);
+          if (lows.length) allDayLowClouds.push(...lows);
+          if (mids.length) allDayMidClouds.push(...mids);
+          if (highs.length) allDayHighClouds.push(...highs);
+
+          const hMinVis = viss.length ? Math.min(...viss) : null;
+          if (hMinVis !== null && (dayMinVis === null || hMinVis < dayMinVis)) dayMinVis = hMinVis;
+
+          const hAvgLow = lows.length ? Math.round(lows.reduce((a, b) => a + b, 0) / lows.length) : 0;
+          const isFoggy = (hMinVis !== null && hMinVis < 2500) || wCodes.includes(45) || wCodes.includes(48) || (hAvgLow >= 80 && (hourNum <= 9 || hourNum >= 21));
+          if (isFoggy && tp) {
+            fogHours.push(tp.time);
+          }
 
           if (rains.length) {
             const rMax = Math.max(...rains);
@@ -1414,14 +1555,14 @@
         const avgCover = allDayClouds.length
           ? Math.round(allDayClouds.reduce((a, b) => a + b, 0) / allDayClouds.length)
           : 0;
-        const lowAvg = allDayLows.length
-          ? Math.round(allDayLows.reduce((a, b) => a + b, 0) / allDayLows.length)
+        const lowAvg = allDayLowClouds.length
+          ? Math.round(allDayLowClouds.reduce((a, b) => a + b, 0) / allDayLowClouds.length)
           : 0;
-        const midAvg = allDayMids.length
-          ? Math.round(allDayMids.reduce((a, b) => a + b, 0) / allDayMids.length)
+        const midAvg = allDayMidClouds.length
+          ? Math.round(allDayMidClouds.reduce((a, b) => a + b, 0) / allDayMidClouds.length)
           : 0;
-        const highAvg = allDayHighs.length
-          ? Math.round(allDayHighs.reduce((a, b) => a + b, 0) / allDayHighs.length)
+        const highAvg = allDayHighClouds.length
+          ? Math.round(allDayHighClouds.reduce((a, b) => a + b, 0) / allDayHighClouds.length)
           : 0;
 
         let coverageLevel = 'Wolkenlos';
@@ -1431,6 +1572,14 @@
         else if (avgCover >= 25) coverageLevel = 'Heiter bis wolkig (3–4/8)';
         else if (avgCover >= 12) coverageLevel = 'Leicht bewölkt (2/8)';
         else coverageLevel = 'Wolkenlos (0–1/8)';
+
+        const hasFog = fogHours.length > 0;
+        let fogText = 'Gute Sichtverhältnisse, kein Nebel oder Dunst erwartet';
+        if (hasFog) {
+          const fList = fogHours.slice(0, 4).join(', ') + (fogHours.length > 4 ? ' ...' : '');
+          const visStr = dayMinVis !== null ? ` mit Sichtweiten teils unter ${(dayMinVis/1000).toFixed(1)} km` : '';
+          fogText = `Nebel- oder Dunstrisiko möglich um ${fList}${visStr}. Vorsicht im Verkehr!`;
+        }
 
         let eveningDrop = 'Gleichmäßiger Temperaturverlauf am Abend';
         if (afternoonTemp !== null && eveningTemp !== null) {
@@ -1473,7 +1622,8 @@
         else if (maxTemp >= 12) tempDesc = `Mäßig mild bei bis zu ${Math.round(maxTemp)} °C`;
         else if (maxTemp >= 5) tempDesc = `Kühl bei maximal ${Math.round(maxTemp)} °C`;
 
-        let headline = `Trend: ${tempDesc}. ${rainTiming}. ${coverageLevel}. ${eveningDrop}.`;
+        const fogAddon = hasFog ? ' 🌫️ Früh/Nachts Nebel möglich.' : '';
+        let headline = `Trend: ${tempDesc}. ${rainTiming}. ${coverageLevel}.${fogAddon} ${eveningDrop}.`;
 
         return {
           weekday: dayObj.weekday,
@@ -1494,6 +1644,8 @@
           lowAvg,
           midAvg,
           highAvg,
+          hasFog,
+          fogText,
           coverageLevel,
           headline,
           isToday,
@@ -1529,8 +1681,12 @@
                   <span>${Math.round(d.minTemp)}° · <span style="color:#fde68a;">Ø ${d.avgTemp.toFixed(1)}°</span> · ${Math.round(d.maxTemp)}°</span>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>Bedeckung (Ø / T·M·H)</span>
-                  <span>${d.avgCover}% · <span style="color:#94a3b8; font-size:10px;">${d.lowAvg}/${d.midAvg}/${d.highAvg}%</span></span>
+                  <span>Wolken (Ø / T·M·H)</span>
+                  <span title="Tiefe: ${d.lowAvg}% · Mittlere: ${d.midAvg}% · Hohe: ${d.highAvg}%">Ø ${d.avgCover}% <span style="color:#94a3b8; font-size:10px;">(${d.lowAvg}/${d.midAvg}/${d.highAvg}%)</span></span>
+                </div>
+                <div class="trend-stat-chip" style="${d.hasFog ? 'background:rgba(88,28,135,0.4); border-color:rgba(168,85,247,0.4);' : ''}">
+                  <span>Nebel-Prognose</span>
+                  <span style="${d.hasFog ? 'color:#fde047; font-weight:700;' : ''}">${d.hasFog ? '🌫️ Nebel möglich' : 'Kein Nebel'}</span>
                 </div>
                 <div class="trend-stat-chip">
                   <span>Regenrisiko</span>
@@ -1553,7 +1709,11 @@
                 </div>
                 <div class="trend-bullet-item">
                   <span>☁️</span>
-                  <div><strong>Bedeckungsgrad & Wolkenstockwerke:</strong> Ø ${d.avgCover} % (${d.coverageLevel}) · Tiefe: Ø ${d.lowAvg} %, Mittelhohe: Ø ${d.midAvg} %, Hohe: Ø ${d.highAvg} %</div>
+                  <div><strong>Bedeckungsgrad & Wolkenstockwerke:</strong> Ø ${d.avgCover} % (${d.coverageLevel}) · Tiefe: Ø ${d.lowAvg} %, Mittlere: Ø ${d.midAvg} %, Hohe: Ø ${d.highAvg} %</div>
+                </div>
+                <div class="trend-bullet-item">
+                  <span>🌫️</span>
+                  <div><strong>Sicht & Nebelgefahr:</strong> ${d.fogText}</div>
                 </div>
                 <div class="trend-bullet-item">
                   <span>🌧️</span>
@@ -1595,6 +1755,24 @@
       trendEl.style.display = 'block';
     }
 
+    function filterCards(metric) {
+      const cardMap = {
+        all: ['tempCard', 'windCard', 'rainCard', 'precipCard', 'snowCard', 'sunCard', 'cloudCard'],
+        temp: ['tempCard'],
+        wind: ['windCard'],
+        rain_prob: ['rainCard'],
+        precip: ['precipCard'],
+        snow: ['snowCard'],
+        sun: ['sunCard'],
+        cloud: ['cloudCard']
+      };
+      const visibleSet = new Set(cardMap[metric] || cardMap.all);
+      ['tempCard', 'windCard', 'rainCard', 'precipCard', 'snowCard', 'sunCard', 'cloudCard'].forEach((id) => {
+        const el = $('#' + id);
+        if (el) el.style.display = visibleSet.has(id) ? 'block' : 'none';
+      });
+    }
+
     function renderCharts() {
       if (!forecast?.hourly) return;
       const availableModels = getSelectedModels();
@@ -1602,6 +1780,17 @@
 
       const times = forecast.hourly.time || [];
       const totalHours = Math.min(times.length, chartDays * 24);
+
+      // Metric filter pills setup
+      $$('.metric-pill').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.metric === activeMetric);
+        btn.onclick = () => {
+          activeMetric = btn.dataset.metric;
+          $$('.metric-pill').forEach(b => b.classList.toggle('active', b.dataset.metric === activeMetric));
+          filterCards(activeMetric);
+        };
+      });
+      filterCards(activeMetric);
 
       // Model filter pills
       $('#modelPillRow').innerHTML = `
@@ -1624,16 +1813,22 @@
 
       let minTempAll = 999;
       let maxTempAll = -999;
+      let maxWindAll = 0;
+      let maxPrecipAll = 0;
+      let maxSnowAll = 0;
       const hourlyStats = [];
 
       for (let i = 0; i < totalHours; i++) {
         const temps = availableModels.map((m) => m.temperature[i]).filter(Number.isFinite);
         const clouds = availableModels.map((m) => m.cloudCover ? m.cloudCover[i] : null).filter(Number.isFinite);
-        const cloudLows = availableModels.map((m) => m.cloudLow ? m.cloudLow[i] : null).filter(Number.isFinite);
-        const cloudMids = availableModels.map((m) => m.cloudMid ? m.cloudMid[i] : null).filter(Number.isFinite);
-        const cloudHighs = availableModels.map((m) => m.cloudHigh ? m.cloudHigh[i] : null).filter(Number.isFinite);
+        const lowClouds = availableModels.map((m) => m.cloudCoverLow ? m.cloudCoverLow[i] : null).filter(Number.isFinite);
+        const midClouds = availableModels.map((m) => m.cloudCoverMid ? m.cloudCoverMid[i] : null).filter(Number.isFinite);
+        const highClouds = availableModels.map((m) => m.cloudCoverHigh ? m.cloudCoverHigh[i] : null).filter(Number.isFinite);
+        const visibilities = availableModels.map((m) => m.visibility ? m.visibility[i] : null).filter(Number.isFinite);
+        const weatherCodes = availableModels.map((m) => m.weatherCode ? m.weatherCode[i] : null).filter(Number.isFinite);
         const rainProbs = availableModels.map((m) => m.probability[i]).filter(Number.isFinite);
         const precipAmounts = availableModels.map((m) => m.precipitation[i]).filter(Number.isFinite);
+        const snowAmounts = availableModels.map((m) => m.snowfall ? m.snowfall[i] : 0).filter(Number.isFinite);
         const sunMins = availableModels.map((m) => m.sunshine[i]).filter(Number.isFinite).map((s) => s / 60);
         const windSpeeds = availableModels.map((m) => m.windSpeed[i]).filter(Number.isFinite);
 
@@ -1643,18 +1838,49 @@
         if (minT !== null && minT < minTempAll) minTempAll = minT;
         if (maxT !== null && maxT > maxTempAll) maxTempAll = maxT;
 
+        const minWind = windSpeeds.length ? Math.min(...windSpeeds) : 0;
+        const maxWind = windSpeeds.length ? Math.max(...windSpeeds) : 0;
+        const avgWind = windSpeeds.length ? Math.round((windSpeeds.reduce((a, b) => a + b, 0) / windSpeeds.length) * 10) / 10 : 0;
+        if (maxWind > maxWindAll) maxWindAll = maxWind;
+
+        const minPrecip = precipAmounts.length ? Math.min(...precipAmounts) : 0;
+        const maxPrecip = precipAmounts.length ? Math.max(...precipAmounts) : 0;
+        const avgPrecip = precipAmounts.length ? Math.round((precipAmounts.reduce((a, b) => a + b, 0) / precipAmounts.length) * 10) / 10 : 0;
+        if (maxPrecip > maxPrecipAll) maxPrecipAll = maxPrecip;
+
+        const minSnow = snowAmounts.length ? Math.min(...snowAmounts) : 0;
+        const maxSnow = snowAmounts.length ? Math.max(...snowAmounts) : 0;
+        const avgSnow = snowAmounts.length ? Math.round((snowAmounts.reduce((a, b) => a + b, 0) / snowAmounts.length) * 100) / 100 : 0;
+        if (maxSnow > maxSnowAll) maxSnowAll = maxSnow;
+
         const minCloud = clouds.length ? Math.min(...clouds) : 0;
         const maxCloud = clouds.length ? Math.max(...clouds) : 0;
         const avgCloud = clouds.length ? Math.round(clouds.reduce((a, b) => a + b, 0) / clouds.length) : 0;
-        const avgLow = cloudLows.length ? Math.round(cloudLows.reduce((a, b) => a + b, 0) / cloudLows.length) : 0;
-        const avgMid = cloudMids.length ? Math.round(cloudMids.reduce((a, b) => a + b, 0) / cloudMids.length) : 0;
-        const avgHigh = cloudHighs.length ? Math.round(cloudHighs.reduce((a, b) => a + b, 0) / cloudHighs.length) : 0;
+
+        const minLowCloud = lowClouds.length ? Math.min(...lowClouds) : 0;
+        const maxLowCloud = lowClouds.length ? Math.max(...lowClouds) : 0;
+        const avgLowCloud = lowClouds.length ? Math.round(lowClouds.reduce((a, b) => a + b, 0) / lowClouds.length) : 0;
+
+        const minMidCloud = midClouds.length ? Math.min(...midClouds) : 0;
+        const maxMidCloud = midClouds.length ? Math.max(...midClouds) : 0;
+        const avgMidCloud = midClouds.length ? Math.round(midClouds.reduce((a, b) => a + b, 0) / midClouds.length) : 0;
+
+        const minHighCloud = highClouds.length ? Math.min(...highClouds) : 0;
+        const maxHighCloud = highClouds.length ? Math.max(...highClouds) : 0;
+        const avgHighCloud = highClouds.length ? Math.round(highClouds.reduce((a, b) => a + b, 0) / highClouds.length) : 0;
+
+        const minVis = visibilities.length ? Math.min(...visibilities) : null;
+        const tp = getTimestampParts(times[i]);
+        const tpHour = tp ? parseInt(tp.time.split(':')[0], 10) : 12;
+        const isFoggyHour = (minVis !== null && minVis < 2500) || weatherCodes.includes(45) || weatherCodes.includes(48) || (avgLowCloud >= 80 && (tpHour <= 9 || tpHour >= 21));
 
         const minRain = rainProbs.length ? Math.min(...rainProbs) : 0;
         const maxRain = rainProbs.length ? Math.max(...rainProbs) : 0;
+        const avgRain = rainProbs.length ? Math.round(rainProbs.reduce((a, b) => a + b, 0) / rainProbs.length) : 0;
 
         const minSun = sunMins.length ? Math.min(...sunMins) : 0;
         const maxSun = sunMins.length ? Math.max(...sunMins) : 0;
+        const avgSun = sunMins.length ? Math.round(sunMins.reduce((a, b) => a + b, 0) / sunMins.length) : 0;
 
         hourlyStats.push({
           index: i,
@@ -1662,19 +1888,39 @@
           minT,
           maxT,
           avgT,
+          minWind,
+          maxWind,
+          avgWind,
+          windSpeedRange: formatRange(windSpeeds, 'km/h', 1),
+          windAvg: formatWindDirection(availableModels, i),
+          minRain,
+          maxRain,
+          avgRain,
+          minPrecip,
+          maxPrecip,
+          avgPrecip,
+          precipRange: formatRange(precipAmounts, 'mm', 1),
+          minSnow,
+          maxSnow,
+          avgSnow,
+          snowRange: formatRange(snowAmounts, 'cm', 1),
+          minSun,
+          maxSun,
+          avgSun,
           minCloud,
           maxCloud,
           avgCloud,
-          avgLow,
-          avgMid,
-          avgHigh,
-          minRain,
-          maxRain,
-          precipRange: formatRange(precipAmounts, 'mm', 1),
-          minSun,
-          maxSun,
-          windAvg: formatWindDirection(availableModels, i),
-          windSpeedRange: formatRange(windSpeeds, 'km/h', 1)
+          minLowCloud,
+          maxLowCloud,
+          avgLowCloud,
+          minMidCloud,
+          maxMidCloud,
+          avgMidCloud,
+          minHighCloud,
+          maxHighCloud,
+          avgHighCloud,
+          isFoggyHour,
+          minVis
         });
       }
 
@@ -1691,15 +1937,17 @@
           </div>
           <div class="hud-stats">
             <div><span>Temperatur:</span> <strong style="color:#06b6d4;">${formatTemperature(h.minT)}</strong> · <strong style="color:#fde68a; background:rgba(30,41,59,0.8); padding:1px 5px; border-radius:4px; border:1px solid #334155;">Ø ${formatTemperature(h.avgT)}</strong> · <strong style="color:#f59e0b;">${formatTemperature(h.maxT)}</strong></div>
-            <div><span>Bedeckung:</span> <strong style="color:#38bdf8;">Ø ${h.avgCloud}%</strong> <span style="color:#94a3b8;">(T: ${h.avgLow}% · M: ${h.avgMid}% · H: ${h.avgHigh}%)</span></div>
-            <div><span>Regenchance:</span> <strong style="color:#38bdf8;">${h.minRain}%–${h.maxRain}%</strong> <span style="color:#64748b;">(${h.precipRange})</span></div>
-            <div><span>Sonne:</span> <strong style="color:#fbbf24;">${Math.round(h.minSun)}–${Math.round(h.maxSun)} min</strong></div>
-            <div><span>Wind:</span> <strong style="color:#2dd4bf;">${h.windSpeedRange} ${h.windAvg}</strong></div>
+            <div><span>Wind:</span> <strong style="color:#2dd4bf;">${h.windSpeedRange} (Ø ${h.avgWind} km/h) ${h.windAvg}</strong></div>
+            <div><span>Regenchance:</span> <strong style="color:#38bdf8;">${h.minRain}%–${h.maxRain}% (Ø ${h.avgRain}%)</strong></div>
+            <div><span>Niederschlag:</span> <strong style="color:#67e8f9;">${h.precipRange} (Ø ${h.avgPrecip} mm)</strong></div>
+            <div><span>Schnee:</span> <strong style="color:#bae6fd;">${h.snowRange}</strong></div>
+            <div><span>Sonne:</span> <strong style="color:#fbbf24;">${Math.round(h.minSun)}–${Math.round(h.maxSun)} min (Ø ${h.avgSun} min)</strong></div>
+            <div><span>Wolkenstockwerke:</span> <strong style="color:#a78bfa;">🟣 Tiefe: ${h.avgLowCloud}%</strong> · <strong style="color:#f472b6;">🌸 Mittlere: ${h.avgMidCloud}%</strong> · <strong style="color:#fbbf24;">🟡 Hohe: ${h.avgHighCloud}%</strong> ${h.isFoggyHour ? '<span style="color:#fde047; background:#581c87; font-weight:700; padding:1px 5px; border-radius:4px; margin-left:4px;">🌫️ Nebel möglich</span>' : ''}</div>
           </div>
         `;
       }
 
-      // Initialize all chart-hud elements above each ensemble chart
+      // Initialize all chart-hud elements
       const nowIsoPrefix = new Date().toISOString().slice(0, 13);
       const defaultIdx = hourlyStats.findIndex((item) => item.time && item.time.startsWith(nowIsoPrefix));
       const initialIdx = defaultIdx >= 0 ? defaultIdx : 0;
@@ -1715,6 +1963,10 @@
       const tempYMax = Math.ceil(maxTempAll) + 2;
       const tempYRange = tempYMax - tempYMin || 1;
 
+      const windYMax = Math.max(20, Math.ceil((maxWindAll + 5) / 10) * 10);
+      const precipYMax = Math.max(3, Math.ceil((maxPrecipAll + 0.5) * 2) / 2);
+      const snowYMax = Math.max(1, Math.ceil(maxSnowAll + 0.5));
+
       const svgW = 960;
       const svgH = 210;
       const padL = 38;
@@ -1726,9 +1978,12 @@
 
       const getX = (i) => padL + (i / Math.max(1, totalHours - 1)) * plotW;
       const getTempY = (val) => padT + (1 - (val - tempYMin) / tempYRange) * plotH;
-      const getCloudY = (val) => padT + (1 - Math.max(0, Math.min(100, val)) / 100) * plotH;
+      const getWindY = (val) => padT + (1 - Math.max(0, Math.min(windYMax, val)) / windYMax) * plotH;
       const getRainY = (val) => padT + (1 - Math.max(0, Math.min(100, val)) / 100) * plotH;
+      const getPrecipY = (val) => padT + (1 - Math.max(0, Math.min(precipYMax, val)) / precipYMax) * plotH;
+      const getSnowY = (val) => padT + (1 - Math.max(0, Math.min(snowYMax, val)) / snowYMax) * plotH;
       const getSunY = (val) => padT + (1 - Math.max(0, Math.min(60, val)) / 60) * plotH;
+      const getCloudY = (val) => padT + (1 - Math.max(0, Math.min(100, val)) / 100) * plotH;
 
       let dateLabelsSvg = '';
       for (let i = 0; i < totalHours; i++) {
@@ -1742,9 +1997,41 @@
         }
       }
 
+      // Highlighted model paths
+      let tempModelLine = '', windModelLine = '', rainModelLine = '', precipModelLine = '', snowModelLine = '', sunModelLine = '', cloudModelLine = '';
+      if (highlightedModelId) {
+        const m = availableModels.find((x) => x.id === highlightedModelId);
+        if (m) {
+          const tPts = [], wPts = [], rPts = [], pPts = [], snPts = [], sPts = [], cPts = [];
+          for (let i = 0; i < totalHours; i++) {
+            const tVal = m.temperature[i];
+            const wVal = m.windSpeed[i];
+            const rVal = m.probability[i];
+            const pVal = m.precipitation[i];
+            const snVal = m.snowfall ? m.snowfall[i] : null;
+            const sVal = m.sunshine[i];
+            const cVal = m.cloudCover ? m.cloudCover[i] : null;
+
+            if (Number.isFinite(tVal)) tPts.push(`${tPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getTempY(tVal)}`);
+            if (Number.isFinite(wVal)) wPts.push(`${wPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getWindY(wVal)}`);
+            if (Number.isFinite(rVal)) rPts.push(`${rPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(rVal)}`);
+            if (Number.isFinite(pVal)) pPts.push(`${pPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getPrecipY(pVal)}`);
+            if (Number.isFinite(snVal)) snPts.push(`${snPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getSnowY(snVal)}`);
+            if (Number.isFinite(sVal)) sPts.push(`${sPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(sVal / 60)}`);
+            if (Number.isFinite(cVal)) cPts.push(`${cPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(cVal)}`);
+          }
+          if (tPts.length) tempModelLine = `<path d="${tPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (wPts.length) windModelLine = `<path d="${wPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (rPts.length) rainModelLine = `<path d="${rPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (pPts.length) precipModelLine = `<path d="${pPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (snPts.length) snowModelLine = `<path d="${snPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (sPts.length) sunModelLine = `<path d="${sPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+          if (cPts.length) cloudModelLine = `<path d="${cPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+        }
+      }
+
       // --- 1. TEMPERATURE SVG ---
-      const tempUpper = [];
-      const tempLower = [];
+      const tempUpper = [], tempLower = [];
       for (let i = 0; i < totalHours; i++) {
         const x = getX(i);
         tempUpper.push(`${x},${getTempY(hourlyStats[i].maxT !== null ? hourlyStats[i].maxT : 0)}`);
@@ -1764,39 +2051,10 @@
           <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">${t}°</text>
         `;
       }
-
       const zeroY = getTempY(0);
       let zeroLineSvg = '';
       if (zeroY >= padT && zeroY <= padT + plotH) {
         zeroLineSvg = `<line x1="${padL}" y1="${zeroY}" x2="${svgW - padR}" y2="${zeroY}" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>`;
-      }
-
-      let tempModelLine = '';
-      let rainModelLine = '';
-      let sunModelLine = '';
-      let cloudModelLine = '';
-      if (highlightedModelId) {
-        const m = availableModels.find((x) => x.id === highlightedModelId);
-        if (m) {
-          const tPts = [];
-          const rPts = [];
-          const sPts = [];
-          const cPts = [];
-          for (let i = 0; i < totalHours; i++) {
-            const tVal = m.temperature[i];
-            const rVal = m.probability[i];
-            const sVal = m.sunshine[i];
-            const cVal = m.cloudCover ? m.cloudCover[i] : null;
-            if (Number.isFinite(tVal)) tPts.push(`${tPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getTempY(tVal)}`);
-            if (Number.isFinite(rVal)) rPts.push(`${rPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(rVal)}`);
-            if (Number.isFinite(sVal)) sPts.push(`${sPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(sVal / 60)}`);
-            if (Number.isFinite(cVal)) cPts.push(`${cPts.length === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(cVal)}`);
-          }
-          if (tPts.length) tempModelLine = `<path d="${tPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
-          if (rPts.length) rainModelLine = `<path d="${rPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
-          if (sPts.length) sunModelLine = `<path d="${sPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
-          if (cPts.length) cloudModelLine = `<path d="${cPts.join(' ')}" fill="none" stroke="${m.color}" stroke-width="2.5" stroke-linecap="round"/>`;
-        }
       }
 
       $('#tempSvg').innerHTML = `
@@ -1816,9 +2074,46 @@
         </g>
       `;
 
-      // --- 2. REGENWAHRSCHEINLICHKEIT SVG ---
-      const rainUpper = [];
-      const rainLower = [];
+      // --- 2. WIND SVG ---
+      const windUpper = [], windLower = [];
+      for (let i = 0; i < totalHours; i++) {
+        const x = getX(i);
+        windUpper.push(`${x},${getWindY(hourlyStats[i].maxWind)}`);
+        windLower.push(`${x},${getWindY(hourlyStats[i].minWind)}`);
+      }
+      const windEnvelopeD = `M ${windUpper.join(' L ')} L ${windLower.reverse().join(' L ')} Z`;
+      const windMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getWindY(h.maxWind)}`).join(' ');
+      const windAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getWindY(h.avgWind)}`).join(' ');
+      const windMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getWindY(h.minWind)}`).join(' ');
+
+      let windGridSvg = '';
+      const windSteps = [0, Math.round(windYMax * 0.25), Math.round(windYMax * 0.5), Math.round(windYMax * 0.75), windYMax];
+      windSteps.forEach((w) => {
+        const y = getWindY(w);
+        windGridSvg += `
+          <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#1e2c3d" stroke-dasharray="2 3"/>
+          <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">${w}</text>
+        `;
+      });
+
+      $('#windSvg').innerHTML = `
+        ${windGridSvg}
+        ${dateLabelsSvg}
+        <path d="${windEnvelopeD}" fill="#14b8a6" fill-opacity="0.22" stroke="#2dd4bf" stroke-opacity="0.5" stroke-width="1"/>
+        <path d="${windMaxD}" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+        <path d="${windAvgD}" fill="none" stroke="#99f6e4" stroke-width="1.8" stroke-dasharray="4 2"/>
+        <path d="${windMinD}" fill="none" stroke="#64748b" stroke-width="1.5"/>
+        ${windModelLine}
+        <g id="windHover" style="display:none;">
+          <line id="windHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle id="windCircleMax" cx="0" cy="0" r="4" fill="#2dd4bf" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="windCircleAvg" cx="0" cy="0" r="3.5" fill="#99f6e4" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="windCircleMin" cx="0" cy="0" r="4" fill="#64748b" stroke="#0d131a" stroke-width="1.5"/>
+        </g>
+      `;
+
+      // --- 3. REGENWAHRSCHEINLICHKEIT SVG ---
+      const rainUpper = [], rainLower = [];
       for (let i = 0; i < totalHours; i++) {
         const x = getX(i);
         rainUpper.push(`${x},${getRainY(hourlyStats[i].maxRain)}`);
@@ -1826,6 +2121,7 @@
       }
       const rainEnvelopeD = `M ${rainUpper.join(' L ')} L ${rainLower.reverse().join(' L ')} Z`;
       const rainMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(h.maxRain)}`).join(' ');
+      const rainAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(h.avgRain)}`).join(' ');
       const rainMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getRainY(h.minRain)}`).join(' ');
 
       let rainGridSvg = '';
@@ -1842,18 +2138,95 @@
         ${dateLabelsSvg}
         <path d="${rainEnvelopeD}" fill="#2563eb" fill-opacity="0.25" stroke="#3b82f6" stroke-opacity="0.6" stroke-width="1"/>
         <path d="${rainMaxD}" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+        <path d="${rainAvgD}" fill="none" stroke="#93c5fd" stroke-width="1.8" stroke-dasharray="4 2"/>
         <path d="${rainMinD}" fill="none" stroke="#64748b" stroke-width="1.5"/>
         ${rainModelLine}
         <g id="rainHover" style="display:none;">
           <line id="rainHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
           <circle id="rainCircleMax" cx="0" cy="0" r="4" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="rainCircleAvg" cx="0" cy="0" r="3.5" fill="#93c5fd" stroke="#0d131a" stroke-width="1.5"/>
           <circle id="rainCircleMin" cx="0" cy="0" r="4" fill="#64748b" stroke="#0d131a" stroke-width="1.5"/>
         </g>
       `;
 
-      // --- 3. SONNENSCHEINDAUER SVG ---
-      const sunUpper = [];
-      const sunLower = [];
+      // --- 4. NIEDERSCHLAGSMENGE SVG ---
+      const precipUpper = [], precipLower = [];
+      for (let i = 0; i < totalHours; i++) {
+        const x = getX(i);
+        precipUpper.push(`${x},${getPrecipY(hourlyStats[i].maxPrecip)}`);
+        precipLower.push(`${x},${getPrecipY(hourlyStats[i].minPrecip)}`);
+      }
+      const precipEnvelopeD = `M ${precipUpper.join(' L ')} L ${precipLower.reverse().join(' L ')} Z`;
+      const precipMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getPrecipY(h.maxPrecip)}`).join(' ');
+      const precipAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getPrecipY(h.avgPrecip)}`).join(' ');
+      const precipMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getPrecipY(h.minPrecip)}`).join(' ');
+
+      let precipGridSvg = '';
+      const precipSteps = [0, Math.round(precipYMax * 0.33 * 10) / 10, Math.round(precipYMax * 0.66 * 10) / 10, precipYMax];
+      precipSteps.forEach((pr) => {
+        const y = getPrecipY(pr);
+        precipGridSvg += `
+          <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#1e2c3d" stroke-dasharray="2 3"/>
+          <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">${pr}mm</text>
+        `;
+      });
+
+      $('#precipSvg').innerHTML = `
+        ${precipGridSvg}
+        ${dateLabelsSvg}
+        <path d="${precipEnvelopeD}" fill="#0891b2" fill-opacity="0.25" stroke="#06b6d4" stroke-opacity="0.6" stroke-width="1"/>
+        <path d="${precipMaxD}" fill="none" stroke="#06b6d4" stroke-width="1.5"/>
+        <path d="${precipAvgD}" fill="none" stroke="#67e8f9" stroke-width="1.8" stroke-dasharray="4 2"/>
+        <path d="${precipMinD}" fill="none" stroke="#475569" stroke-width="1.5"/>
+        ${precipModelLine}
+        <g id="precipHover" style="display:none;">
+          <line id="precipHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle id="precipCircleMax" cx="0" cy="0" r="4" fill="#06b6d4" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="precipCircleAvg" cx="0" cy="0" r="3.5" fill="#67e8f9" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="precipCircleMin" cx="0" cy="0" r="4" fill="#475569" stroke="#0d131a" stroke-width="1.5"/>
+        </g>
+      `;
+
+      // --- 5. SCHNEE SVG ---
+      const snowUpper = [], snowLower = [];
+      for (let i = 0; i < totalHours; i++) {
+        const x = getX(i);
+        snowUpper.push(`${x},${getSnowY(hourlyStats[i].maxSnow)}`);
+        snowLower.push(`${x},${getSnowY(hourlyStats[i].minSnow)}`);
+      }
+      const snowEnvelopeD = `M ${snowUpper.join(' L ')} L ${snowLower.reverse().join(' L ')} Z`;
+      const snowMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSnowY(h.maxSnow)}`).join(' ');
+      const snowAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSnowY(h.avgSnow)}`).join(' ');
+      const snowMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSnowY(h.minSnow)}`).join(' ');
+
+      let snowGridSvg = '';
+      const snowSteps = [0, Math.round(snowYMax * 0.5 * 10) / 10, snowYMax];
+      snowSteps.forEach((sn) => {
+        const y = getSnowY(sn);
+        snowGridSvg += `
+          <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#1e2c3d" stroke-dasharray="2 3"/>
+          <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">${sn}cm</text>
+        `;
+      });
+
+      $('#snowSvg').innerHTML = `
+        ${snowGridSvg}
+        ${dateLabelsSvg}
+        <path d="${snowEnvelopeD}" fill="#0284c7" fill-opacity="0.22" stroke="#38bdf8" stroke-opacity="0.6" stroke-width="1"/>
+        <path d="${snowMaxD}" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+        <path d="${snowAvgD}" fill="none" stroke="#bae6fd" stroke-width="1.8" stroke-dasharray="4 2"/>
+        <path d="${snowMinD}" fill="none" stroke="#64748b" stroke-width="1.5"/>
+        ${snowModelLine}
+        <g id="snowHover" style="display:none;">
+          <line id="snowHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle id="snowCircleMax" cx="0" cy="0" r="4" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="snowCircleAvg" cx="0" cy="0" r="3.5" fill="#bae6fd" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="snowCircleMin" cx="0" cy="0" r="4" fill="#64748b" stroke="#0d131a" stroke-width="1.5"/>
+        </g>
+      `;
+
+      // --- 6. SONNENSCHEINDAUER SVG ---
+      const sunUpper = [], sunLower = [];
       for (let i = 0; i < totalHours; i++) {
         const x = getX(i);
         sunUpper.push(`${x},${getSunY(hourlyStats[i].maxSun)}`);
@@ -1861,6 +2234,7 @@
       }
       const sunEnvelopeD = `M ${sunUpper.join(' L ')} L ${sunLower.reverse().join(' L ')} Z`;
       const sunMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(h.maxSun)}`).join(' ');
+      const sunAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(h.avgSun)}`).join(' ');
       const sunMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getSunY(h.minSun)}`).join(' ');
 
       let sunGridSvg = '';
@@ -1877,28 +2251,49 @@
         ${dateLabelsSvg}
         <path d="${sunEnvelopeD}" fill="#d97706" fill-opacity="0.22" stroke="#f59e0b" stroke-opacity="0.6" stroke-width="1"/>
         <path d="${sunMaxD}" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+        <path d="${sunAvgD}" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-dasharray="4 2"/>
         <path d="${sunMinD}" fill="none" stroke="#78716c" stroke-width="1.5"/>
         ${sunModelLine}
         <g id="sunHover" style="display:none;">
           <line id="sunHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
           <circle id="sunCircleMax" cx="0" cy="0" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="sunCircleAvg" cx="0" cy="0" r="3.5" fill="#fef08a" stroke="#0d131a" stroke-width="1.5"/>
           <circle id="sunCircleMin" cx="0" cy="0" r="4" fill="#78716c" stroke="#0d131a" stroke-width="1.5"/>
         </g>
       `;
 
-      // --- 4. BEDECKUNGSGRAD & WOLKEN SVG ---
-      const cloudUpper = [];
-      const cloudLower = [];
+      // --- 7. WOLKENSTOCKWERKE SVG (TIEFE, MITTLERE, HOHE WOLKEN & NEBEL) ---
+      const cloudLowUpper = [], cloudLowLower = [];
+      const cloudMidUpper = [], cloudMidLower = [];
+      const cloudHighUpper = [], cloudHighLower = [];
       for (let i = 0; i < totalHours; i++) {
         const x = getX(i);
-        cloudUpper.push(`${x},${getCloudY(hourlyStats[i].maxCloud)}`);
-        cloudLower.push(`${x},${getCloudY(hourlyStats[i].minCloud)}`);
+        cloudLowUpper.push(`${x},${getCloudY(hourlyStats[i].maxLowCloud)}`);
+        cloudLowLower.push(`${x},${getCloudY(hourlyStats[i].minLowCloud)}`);
+        cloudMidUpper.push(`${x},${getCloudY(hourlyStats[i].maxMidCloud)}`);
+        cloudMidLower.push(`${x},${getCloudY(hourlyStats[i].minMidCloud)}`);
+        cloudHighUpper.push(`${x},${getCloudY(hourlyStats[i].maxHighCloud)}`);
+        cloudHighLower.push(`${x},${getCloudY(hourlyStats[i].minHighCloud)}`);
       }
-      const cloudEnvelopeD = `M ${cloudUpper.join(' L ')} L ${cloudLower.reverse().join(' L ')} Z`;
-      const cloudAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgCloud)}`).join(' ');
-      const cloudLowD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgLow)}`).join(' ');
-      const cloudMidD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgMid)}`).join(' ');
-      const cloudHighD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgHigh)}`).join(' ');
+      const cloudLowEnvelopeD = `M ${cloudLowUpper.join(' L ')} L ${cloudLowLower.reverse().join(' L ')} Z`;
+      const cloudMidEnvelopeD = `M ${cloudMidUpper.join(' L ')} L ${cloudMidLower.reverse().join(' L ')} Z`;
+      const cloudHighEnvelopeD = `M ${cloudHighUpper.join(' L ')} L ${cloudHighLower.reverse().join(' L ')} Z`;
+
+      const cloudLowAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgLowCloud)}`).join(' ');
+      const cloudMidAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgMidCloud)}`).join(' ');
+      const cloudHighAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgHighCloud)}`).join(' ');
+
+      let fogZonesSvg = '';
+      for (let i = 0; i < totalHours; i++) {
+        if (hourlyStats[i].isFoggyHour) {
+          const x = getX(i);
+          const barW = plotW / totalHours;
+          fogZonesSvg += `
+            <rect x="${x - barW / 2}" y="${padT}" width="${barW}" height="${plotH}" fill="#581c87" fill-opacity="0.18"/>
+            <text x="${x}" y="${padT + 12}" text-anchor="middle" font-size="10" fill="#f0abfc">🌫️</text>
+          `;
+        }
+      }
 
       let cloudGridSvg = '';
       [0, 25, 50, 75, 100].forEach((p) => {
@@ -1911,19 +2306,20 @@
 
       $('#cloudSvg').innerHTML = `
         ${cloudGridSvg}
+        ${fogZonesSvg}
         ${dateLabelsSvg}
-        <path d="${cloudEnvelopeD}" fill="#0284c7" fill-opacity="0.2" stroke="#38bdf8" stroke-opacity="0.4" stroke-width="1"/>
-        <path d="${cloudAvgD}" fill="none" stroke="#38bdf8" stroke-width="2"/>
-        <path d="${cloudLowD}" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 2"/>
-        <path d="${cloudMidD}" fill="none" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="2 2"/>
-        <path d="${cloudHighD}" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+        <path d="${cloudLowEnvelopeD}" fill="#8b5cf6" fill-opacity="0.18" stroke="#8b5cf6" stroke-opacity="0.35" stroke-width="1"/>
+        <path d="${cloudLowAvgD}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="${cloudMidEnvelopeD}" fill="#ec4899" fill-opacity="0.15" stroke="#ec4899" stroke-opacity="0.35" stroke-width="1"/>
+        <path d="${cloudMidAvgD}" fill="none" stroke="#f472b6" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="${cloudHighEnvelopeD}" fill="#f59e0b" fill-opacity="0.14" stroke="#f59e0b" stroke-opacity="0.35" stroke-width="1"/>
+        <path d="${cloudHighAvgD}" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round"/>
         ${cloudModelLine}
         <g id="cloudHover" style="display:none;">
           <line id="cloudHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <circle id="cloudCircleAvg" cx="0" cy="0" r="4" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>
-          <circle id="cloudCircleLow" cx="0" cy="0" r="3.5" fill="#a78bfa" stroke="#0d131a" stroke-width="1.5"/>
-          <circle id="cloudCircleMid" cx="0" cy="0" r="3.5" fill="#f472b6" stroke="#0d131a" stroke-width="1.5"/>
-          <circle id="cloudCircleHigh" cx="0" cy="0" r="3.5" fill="#fbbf24" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="cloudCircleLow" cx="0" cy="0" r="4" fill="#a78bfa" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="cloudCircleMid" cx="0" cy="0" r="4" fill="#f472b6" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="cloudCircleHigh" cx="0" cy="0" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="1.5"/>
         </g>
       `;
 
@@ -1933,6 +2329,7 @@
         if (!h) return;
         const x = getX(idx);
 
+        // Temp hover
         $('#tempHover').style.display = 'block';
         $('#tempHoverLine').setAttribute('x1', x);
         $('#tempHoverLine').setAttribute('x2', x);
@@ -1943,33 +2340,71 @@
         $('#tempCircleMin').setAttribute('cx', x);
         $('#tempCircleMin').setAttribute('cy', getTempY(h.minT !== null ? h.minT : 0));
 
+        // Wind hover
+        $('#windHover').style.display = 'block';
+        $('#windHoverLine').setAttribute('x1', x);
+        $('#windHoverLine').setAttribute('x2', x);
+        $('#windCircleMax').setAttribute('cx', x);
+        $('#windCircleMax').setAttribute('cy', getWindY(h.maxWind));
+        $('#windCircleAvg').setAttribute('cx', x);
+        $('#windCircleAvg').setAttribute('cy', getWindY(h.avgWind));
+        $('#windCircleMin').setAttribute('cx', x);
+        $('#windCircleMin').setAttribute('cy', getWindY(h.minWind));
+
+        // Rain hover
         $('#rainHover').style.display = 'block';
         $('#rainHoverLine').setAttribute('x1', x);
         $('#rainHoverLine').setAttribute('x2', x);
         $('#rainCircleMax').setAttribute('cx', x);
         $('#rainCircleMax').setAttribute('cy', getRainY(h.maxRain));
+        $('#rainCircleAvg').setAttribute('cx', x);
+        $('#rainCircleAvg').setAttribute('cy', getRainY(h.avgRain));
         $('#rainCircleMin').setAttribute('cx', x);
         $('#rainCircleMin').setAttribute('cy', getRainY(h.minRain));
 
+        // Precip hover
+        $('#precipHover').style.display = 'block';
+        $('#precipHoverLine').setAttribute('x1', x);
+        $('#precipHoverLine').setAttribute('x2', x);
+        $('#precipCircleMax').setAttribute('cx', x);
+        $('#precipCircleMax').setAttribute('cy', getPrecipY(h.maxPrecip));
+        $('#precipCircleAvg').setAttribute('cx', x);
+        $('#precipCircleAvg').setAttribute('cy', getPrecipY(h.avgPrecip));
+        $('#precipCircleMin').setAttribute('cx', x);
+        $('#precipCircleMin').setAttribute('cy', getPrecipY(h.minPrecip));
+
+        // Snow hover
+        $('#snowHover').style.display = 'block';
+        $('#snowHoverLine').setAttribute('x1', x);
+        $('#snowHoverLine').setAttribute('x2', x);
+        $('#snowCircleMax').setAttribute('cx', x);
+        $('#snowCircleMax').setAttribute('cy', getSnowY(h.maxSnow));
+        $('#snowCircleAvg').setAttribute('cx', x);
+        $('#snowCircleAvg').setAttribute('cy', getSnowY(h.avgSnow));
+        $('#snowCircleMin').setAttribute('cx', x);
+        $('#snowCircleMin').setAttribute('cy', getSnowY(h.minSnow));
+
+        // Sun hover
         $('#sunHover').style.display = 'block';
         $('#sunHoverLine').setAttribute('x1', x);
         $('#sunHoverLine').setAttribute('x2', x);
         $('#sunCircleMax').setAttribute('cx', x);
         $('#sunCircleMax').setAttribute('cy', getSunY(h.maxSun));
+        $('#sunCircleAvg').setAttribute('cx', x);
+        $('#sunCircleAvg').setAttribute('cy', getSunY(h.avgSun));
         $('#sunCircleMin').setAttribute('cx', x);
         $('#sunCircleMin').setAttribute('cy', getSunY(h.minSun));
 
+        // Cloud hover
         $('#cloudHover').style.display = 'block';
         $('#cloudHoverLine').setAttribute('x1', x);
         $('#cloudHoverLine').setAttribute('x2', x);
-        $('#cloudCircleAvg').setAttribute('cx', x);
-        $('#cloudCircleAvg').setAttribute('cy', getCloudY(h.avgCloud));
         $('#cloudCircleLow').setAttribute('cx', x);
-        $('#cloudCircleLow').setAttribute('cy', getCloudY(h.avgLow));
+        $('#cloudCircleLow').setAttribute('cy', getCloudY(h.avgLowCloud));
         $('#cloudCircleMid').setAttribute('cx', x);
-        $('#cloudCircleMid').setAttribute('cy', getCloudY(h.avgMid));
+        $('#cloudCircleMid').setAttribute('cy', getCloudY(h.avgMidCloud));
         $('#cloudCircleHigh').setAttribute('cx', x);
-        $('#cloudCircleHigh').setAttribute('cy', getCloudY(h.avgHigh));
+        $('#cloudCircleHigh').setAttribute('cy', getCloudY(h.avgHighCloud));
 
         const hudHtml = renderHudContent(h);
         $$('.chart-hud').forEach((el) => {
@@ -1978,10 +2413,10 @@
       };
 
       const clearHover = () => {
-        $('#tempHover').style.display = 'none';
-        $('#rainHover').style.display = 'none';
-        $('#sunHover').style.display = 'none';
-        $('#cloudHover').style.display = 'none';
+        ['#tempHover', '#windHover', '#rainHover', '#precipHover', '#snowHover', '#sunHover', '#cloudHover'].forEach((sel) => {
+          const el = $(sel);
+          if (el) el.style.display = 'none';
+        });
       };
 
       const handlePointer = (svgEl, clientX) => {
@@ -1994,8 +2429,9 @@
         updateHoverAt(idx);
       };
 
-      ['#tempSvg', '#rainSvg', '#sunSvg', '#cloudSvg'].forEach((sel) => {
+      ['#tempSvg', '#windSvg', '#rainSvg', '#precipSvg', '#snowSvg', '#sunSvg', '#cloudSvg'].forEach((sel) => {
         const svgEl = $(sel);
+        if (!svgEl) return;
 
         // Desktop mouse events
         svgEl.onmousemove = (e) => handlePointer(svgEl, e.clientX);
@@ -2025,7 +2461,7 @@
         const url = new URL('https://api.open-meteo.com/v1/forecast');
         url.searchParams.set('latitude', LOCATION.latitude);
         url.searchParams.set('longitude', LOCATION.longitude);
-        url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,precipitation,sunshine_duration,wind_speed_10m,wind_direction_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high');
+        url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,precipitation,snowfall,sunshine_duration,wind_speed_10m,wind_direction_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code');
         url.searchParams.set('forecast_hours', '384');
         url.searchParams.set('timezone', 'auto');
         url.searchParams.set('temperature_unit', 'celsius');
@@ -2039,7 +2475,7 @@
         renderTable();
       } catch (err) {
         setStatus('Fehler beim Laden: ' + err.message);
-        $('#tableBody').innerHTML = `<tr><td colspan="8" style="color: #ff6b6b;">Verbindung zur Wetter-API fehlgeschlagen: ${err.message}</td></tr>`;
+        $('#tableBody').innerHTML = `<tr><td colspan="10" style="color: #ff6b6b;">Verbindung zur Wetter-API fehlgeschlagen: ${err.message}</td></tr>`;
       } finally {
         loading = false;
         $('#refreshBtn').disabled = false;
