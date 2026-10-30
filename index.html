@@ -533,6 +533,75 @@
       box-shadow: 0 2px 8px rgba(37,99,235,0.4);
     }
 
+    .cloud-layer-pills {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      background: #0b1016;
+      padding: 2px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .cloud-layer-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cloud-layer-pill:hover {
+      background: #1a2533;
+      color: #f1f5f9;
+    }
+    .cloud-layer-pill.active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 10px rgba(37,99,235,0.45);
+    }
+    .cloud-layer-pill[data-layer="low"].active {
+      background: #7c3aed;
+      border-color: #a78bfa;
+      box-shadow: 0 0 10px rgba(139,92,246,0.5);
+    }
+    .cloud-layer-pill[data-layer="mid"].active {
+      background: #db2777;
+      border-color: #f472b6;
+      box-shadow: 0 0 10px rgba(236,72,153,0.5);
+    }
+    .cloud-layer-pill[data-layer="high"].active {
+      background: #d97706;
+      border-color: #fbbf24;
+      box-shadow: 0 0 10px rgba(245,158,11,0.5);
+    }
+
+    .cloud-layer-group {
+      transition: opacity 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                  filter 350ms cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .cloud-band {
+      transition: fill-opacity 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                  stroke-opacity 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                  stroke-width 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cloud-curve {
+      transition: stroke-width 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                  stroke-opacity 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cloud-dot {
+      transition: r 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     .model-pills {
       display: flex;
       gap: 6px;
@@ -774,7 +843,7 @@
     <div class="header">
       <div>
         <h1>Altenburg – Stündliche Wettermodelle</h1>
-        <div class="sub">17 Wettermodelle im Multimodell-Vergleich (inkl. 6 hochauflösende Regionalmodelle)</div>
+        <div class="sub">27 Wettermodelle im Multimodell-Vergleich (inkl. 12 hochauflösende Regionalmodelle &amp; 3 KI-Modelle)</div>
         <div class="location">📍 Altenburg, Thüringen (50.988° N, 12.437° O)</div>
       </div>
       <div class="actions">
@@ -788,14 +857,15 @@
 
     <details>
       <summary>
-        <span>Wettermodelle (<span id="modelCountLabel">17</span>/17 aktiv)</span>
+        <span>Wettermodelle (<span id="modelCountLabel">27</span>/27 aktiv)</span>
         <span style="font-size: 11px; color: var(--accent);">Tippen zum Anpassen ▾</span>
       </summary>
       <div class="model-quick-bar">
-        <button type="button" class="quick-btn" id="qAll">Alle 17</button>
-        <button type="button" class="quick-btn" id="qRegional" style="color: #6ee7b7; border-color: #059669;">Regional (6)</button>
-        <button type="button" class="quick-btn" id="qDwd" style="color: #5eead4; border-color: #0d9488;">DWD Fokus (3)</button>
-        <button type="button" class="quick-btn" id="qGlobal">Global (11)</button>
+        <button type="button" class="quick-btn" id="qAll">Alle 27</button>
+        <button type="button" class="quick-btn" id="qRegional" style="color: #6ee7b7; border-color: #059669;">Regional (12)</button>
+        <button type="button" class="quick-btn" id="qDwd" style="color: #5eead4; border-color: #0d9488;">DWD Fokus (4)</button>
+        <button type="button" class="quick-btn" id="qAi" style="color: #c084fc; border-color: #9333ea;">KI-Modelle (3)</button>
+        <button type="button" class="quick-btn" id="qGlobal">Global (12)</button>
         <button type="button" class="quick-btn" id="qMajor">Kern (4)</button>
         <button type="button" class="quick-btn" id="qNone">Keine</button>
       </div>
@@ -966,22 +1036,52 @@
         </div>
       </div>
 
-      <!-- 7. WOLKENSTOCKWERKE ENSEMBLEBAND (TIEFE · MITTLERE · HOHE WOLKEN & NEBEL) -->
+      <!-- 7. WOLKENSTOCKWERKE ENSEMBLE (TIEFE · MITTLERE · HOHE WOLKEN & NEBEL) -->
       <div class="chart-card" id="cloudCard">
         <div class="chart-card-header">
           <div class="chart-card-title">
-            <span>☁️ Wolkenstockwerke-Ensembleband (Tiefe · Mittlere · Hohe Wolken)</span>
-            <span class="chart-card-subtitle">(Aufgeschlüsselt in Tiefe, Mittlere und Hohe Wolken · inkl. Nebelrisiko)</span>
+            <span>☁️ Wolkenstockwerke-Ensemble (Tiefe · Mittlere · Hohe Wolken)</span>
+            <span class="chart-card-subtitle">(Aufgeschlüsselt in Stockwerke · Reine Linienführung &amp; Nebelwahrscheinlichkeit)</span>
           </div>
-          <div style="font-size: 10px; font-family: monospace;">
-            <span style="color: #a78bfa; margin-right: 8px;">— 🟣 Tiefe</span>
-            <span style="color: #f472b6; margin-right: 8px;">— 🌸 Mittlere</span>
-            <span style="color: #fbbf24; margin-right: 8px;">— 🟡 Hohe</span>
-            <span style="color: #fde047; background:#581c87; padding:1px 5px; border-radius:4px;">🌫️ Nebel</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+            <div class="view-switch" style="margin-right: 4px;">
+              <button type="button" class="tab-btn active" id="btnCloudViewChart" style="padding: 3px 8px; font-size: 11px;">📈 Grafik</button>
+              <button type="button" class="tab-btn" id="btnCloudViewTable" style="padding: 3px 8px; font-size: 11px;">📋 Tabelle</button>
+              <button type="button" class="tab-btn" id="btnCloudViewBoth" style="padding: 3px 8px; font-size: 11px;">📊 Beides</button>
+            </div>
+            <div class="cloud-layer-pills" id="cloudLayerPillGroup">
+              <button type="button" class="cloud-layer-pill active" data-layer="all">☁️ Alle</button>
+              <button type="button" class="cloud-layer-pill" data-layer="low">🟣 Tiefe (&lt; 2 km)</button>
+              <button type="button" class="cloud-layer-pill" data-layer="mid">🌸 Mittlere (2–7 km)</button>
+              <button type="button" class="cloud-layer-pill" data-layer="high">🟡 Hohe (&gt; 7 km)</button>
+            </div>
+            <span style="color: #fde047; background:#581c87; padding:2px 6px; border-radius:4px; font-size:10px; font-family:monospace;">🌫️ Nebel</span>
           </div>
         </div>
-        <div class="svg-wrapper">
+        <div class="svg-wrapper" id="cloudSvgWrapper">
           <svg id="cloudSvg" viewBox="0 0 960 210"></svg>
+        </div>
+
+        <div id="cloudTableSection" style="display: none; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <div style="font-size: 11px; font-weight: 700; color: #fff;">Tabellarische Gegenüberstellung der Wolkenstockwerke</div>
+            <div class="day-scroll-bar" id="cloudDayScrollBar" style="margin-bottom:0;"></div>
+          </div>
+          <div class="table-container" style="max-height: 380px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Datum / Uhrzeit</th>
+                  <th style="color: #c084fc;">🟣 Tiefe Wolken (&lt; 2 km)</th>
+                  <th style="color: #f472b6;">🌸 Mittlere Wolken (2–7 km)</th>
+                  <th style="color: #fbbf24;">🟡 Hohe Wolken (&gt; 7 km)</th>
+                  <th style="color: #38bdf8;">☁️ Gesamtbedeckung</th>
+                  <th style="color: #c084fc;">🌫️ Nebel &amp; Sicht</th>
+                </tr>
+              </thead>
+              <tbody id="cloudTableBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -994,7 +1094,7 @@
       <strong>Hinweise:</strong> Datenquelle: Open-Meteo.com API für Altenburg (Thüringen).
       Alle Berechnungen (Spannen, Vektor-Windrichtung) basieren auf den aktiven Modellen.
     <footer style="margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;">
-      <div>Altenburger Wettermodell-Vergleich · 17 Wettermodelle · Die Seite wurde mit KI generiert</div>
+      <div>Altenburg Wettermodelle · Basierend auf Open-Meteo Multi-Model API · 27 globale &amp; regionale Rechenmodelle · Die Seite wurde mit KI generiert</div>
       <div style="display: flex; gap: 12px; align-items: center;">
         <button type="button" id="openCookieSettingsBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">🍪 Cookie-Einstellungen</button>
         <span>·</span>
@@ -1080,25 +1180,36 @@
     };
 
     const MODELS = [
-      // 6 hochauflösende Regionalmodelle für Deutschland / Mitteleuropa
+      // 12 hochauflösende Regionalmodelle für Deutschland / Mitteleuropa
       { id: 'icon_d2', label: 'DWD ICON-D2 (2.2km)', color: '#059669', isRegional: true },
+      { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2km)', color: '#10b981', isRegional: true },
       { id: 'icon_eu', label: 'DWD ICON-EU (7km)', color: '#0d9488', isRegional: true },
+      { id: 'chmi_aladin_seamless', label: 'CHMI ALADIN (Tschechien)', color: '#0284c7', isRegional: true },
+      { id: 'chmi_aladin_central_europe_2km', label: 'CHMI ALADIN 2km', color: '#38bdf8', isRegional: true },
+      { id: 'geosphere_seamless', label: 'GeoSphere Austria', color: '#b45309', isRegional: true },
+      { id: 'geosphere_arome_austria', label: 'GeoSphere AROME (2.5km)', color: '#d97706', isRegional: true },
       { id: 'meteofrance_arome_france_hd', label: 'AROME HD (1.5km)', color: '#db2777', isRegional: true },
       { id: 'meteofrance_arpege_europe', label: 'ARPEGE (11km)', color: '#f43f5e', isRegional: true },
       { id: 'knmi_harmonie_arome_europe', label: 'KNMI HARMONIE (2.5km)', color: '#ea580c', isRegional: true },
       { id: 'dmi_harmonie_arome_europe', label: 'DMI HARMONIE (2.5km)', color: '#7c3aed', isRegional: true },
-      // 11 weltweite Großraummodelle
-      { id: 'ecmwf_ifs025', label: 'ECMWF IFS', color: '#3b82f6', isRegional: false },
-      { id: 'ecmwf_aifs025_single', label: 'ECMWF AIFS (KI)', color: '#8b5cf6', isRegional: false },
+      { id: 'metno_seamless', label: 'MET Norway (Yr.no)', color: '#047857', isRegional: true },
+      // 12 weltweite Großraummodelle
+      { id: 'ecmwf_ifs025', label: 'ECMWF IFS (0.25°)', color: '#2563eb', isRegional: false },
       { id: 'gfs_seamless', label: 'NOAA GFS', color: '#06b6d4', isRegional: false },
-      { id: 'icon_seamless', label: 'DWD ICON (Global)', color: '#10b981', isRegional: false },
-      { id: 'gem_seamless', label: 'Kanada GEM', color: '#f59e0b', isRegional: false },
-      { id: 'meteofrance_seamless', label: 'Météo-France', color: '#ec4899', isRegional: false },
-      { id: 'ukmo_global_deterministic_10km', label: 'UK Met Office', color: '#6366f1', isRegional: false },
-      { id: 'jma_seamless', label: 'Japan JMA', color: '#14b8a6', isRegional: false },
-      { id: 'kma_seamless', label: 'Korea KMA', color: '#f97316', isRegional: false },
-      { id: 'cma_grapes_global', label: 'China CMA', color: '#ef4444', isRegional: false },
-      { id: 'bom_access_global', label: 'Australien BOM', color: '#84cc16', isRegional: false }
+      { id: 'icon_seamless', label: 'DWD ICON (Global)', color: '#16a34a', isRegional: false },
+      { id: 'ukmo_seamless', label: 'UK Met Office Seamless', color: '#6366f1', isRegional: false },
+      { id: 'ukmo_global_deterministic_10km', label: 'UK Met Office (10km)', color: '#818cf8', isRegional: false },
+      { id: 'gem_seamless', label: 'Kanada GEM Seamless', color: '#f59e0b', isRegional: false },
+      { id: 'gem_regional', label: 'Kanada GEM Regional', color: '#fbbf24', isRegional: true },
+      { id: 'meteofrance_seamless', label: 'Météo-France Global', color: '#e11d48', isRegional: false },
+      { id: 'jma_seamless', label: 'Japan JMA GSM', color: '#14b8a6', isRegional: false },
+      { id: 'cma_grapes_global', label: 'China CMA GRAPES', color: '#ef4444', isRegional: false },
+      { id: 'kma_seamless', label: 'Korea KMA GDPS', color: '#f97316', isRegional: false },
+      { id: 'bom_access_global', label: 'Australien BOM ACCESS', color: '#84cc16', isRegional: false },
+      // 3 KI-Modelle
+      { id: 'ecmwf_aifs025_single', label: 'ECMWF AIFS (KI)', color: '#8b5cf6', isRegional: false, isAi: true },
+      { id: 'ncep_aigfs025', label: 'NOAA AI-GFS (KI)', color: '#a855f7', isRegional: false, isAi: true },
+      { id: 'dwd_aicon_global_native', label: 'DWD A-ICON (KI)', color: '#c084fc', isRegional: false, isAi: true }
     ];
 
     let forecast = null;
@@ -1116,7 +1227,7 @@
         <input class="model-check" type="checkbox" value="${m.id}" checked>
         <span class="dot" style="background:${m.color}"></span>
         <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.label}</span>
-        ${m.isRegional ? '<span style="font-size:9px; background:#064e3b; color:#6ee7b7; padding:1px 4px; border-radius:4px; margin-left:auto;">REG</span>' : ''}
+        ${m.isRegional ? '<span style="font-size:9px; background:#064e3b; color:#6ee7b7; padding:1px 4px; border-radius:4px; margin-left:auto;">REG</span>' : m.isAi ? '<span style="font-size:9px; background:#4c1d95; color:#d8b4fe; padding:1px 4px; border-radius:4px; margin-left:auto;">KI</span>' : ''}
       </label>
     `).join('');
 
@@ -1130,17 +1241,22 @@
       onModelsChanged();
     });
     $('#qRegional').addEventListener('click', () => {
-      const set = new Set(['icon_d2', 'icon_eu', 'meteofrance_arome_france_hd', 'meteofrance_arpege_europe', 'knmi_harmonie_arome_europe', 'dmi_harmonie_arome_europe']);
+      const set = new Set(['icon_d2', 'dwd_icon_d2_ruc_native', 'icon_eu', 'chmi_aladin_seamless', 'chmi_aladin_central_europe_2km', 'geosphere_seamless', 'geosphere_arome_austria', 'meteofrance_arome_france_hd', 'meteofrance_arpege_europe', 'knmi_harmonie_arome_europe', 'dmi_harmonie_arome_europe', 'metno_seamless']);
       $$('.model-check').forEach(i => i.checked = set.has(i.value));
       onModelsChanged();
     });
     $('#qDwd').addEventListener('click', () => {
-      const set = new Set(['icon_d2', 'icon_eu', 'icon_seamless']);
+      const set = new Set(['icon_d2', 'dwd_icon_d2_ruc_native', 'icon_eu', 'icon_seamless']);
+      $$('.model-check').forEach(i => i.checked = set.has(i.value));
+      onModelsChanged();
+    });
+    $('#qAi').addEventListener('click', () => {
+      const set = new Set(['ecmwf_aifs025_single', 'ncep_aigfs025', 'dwd_aicon_global_native']);
       $$('.model-check').forEach(i => i.checked = set.has(i.value));
       onModelsChanged();
     });
     $('#qGlobal').addEventListener('click', () => {
-      const set = new Set(['ecmwf_ifs025', 'ecmwf_aifs025_single', 'gfs_seamless', 'icon_seamless', 'gem_seamless', 'meteofrance_seamless', 'ukmo_global_deterministic_10km', 'jma_seamless', 'kma_seamless', 'cma_grapes_global', 'bom_access_global']);
+      const set = new Set(['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'ukmo_seamless', 'ukmo_global_deterministic_10km', 'gem_seamless', 'gem_regional', 'meteofrance_seamless', 'jma_seamless', 'cma_grapes_global', 'kma_seamless', 'bom_access_global']);
       $$('.model-check').forEach(i => i.checked = set.has(i.value));
       onModelsChanged();
     });
@@ -1168,11 +1284,13 @@
       if (view === 'table') {
         $('#tableSection').style.display = 'block';
         $('#chartContainer').style.display = 'none';
+        $('#trendSection').style.display = 'block';
         $('#viewTableBtn').classList.add('active');
         $('#viewChartBtn').classList.remove('active');
       } else {
         $('#tableSection').style.display = 'none';
         $('#chartContainer').style.display = 'block';
+        $('#trendSection').style.display = 'none';
         $('#viewTableBtn').classList.remove('active');
         $('#viewChartBtn').classList.add('active');
         renderCharts();
@@ -1239,6 +1357,10 @@
     }
 
     let activeMetric = 'all';
+    let activeCloudLayer = 'all';
+    let hoveredCloudLayer = null;
+    let cloudCardViewMode = 'chart';
+    let cloudTableDayFilter = 'all';
 
     function getSelectedModels() {
       const checked = [...$$('.model-check:checked')].map((i) => i.value);
@@ -1752,7 +1874,7 @@
           ${tomorrowAnalysis ? renderCardHtml(tomorrowAnalysis, 'indigo', 'MORGEN') : ''}
         </div>
       `;
-      trendEl.style.display = 'block';
+      trendEl.style.display = currentView === 'chart' ? 'none' : 'block';
     }
 
     function filterCards(metric) {
@@ -1920,7 +2042,8 @@
           maxHighCloud,
           avgHighCloud,
           isFoggyHour,
-          minVis
+          minVis,
+          tp
         });
       }
 
@@ -2262,26 +2385,18 @@
         </g>
       `;
 
-      // --- 7. WOLKENSTOCKWERKE SVG (TIEFE, MITTLERE, HOHE WOLKEN & NEBEL) ---
-      const cloudLowUpper = [], cloudLowLower = [];
-      const cloudMidUpper = [], cloudMidLower = [];
-      const cloudHighUpper = [], cloudHighLower = [];
-      for (let i = 0; i < totalHours; i++) {
-        const x = getX(i);
-        cloudLowUpper.push(`${x},${getCloudY(hourlyStats[i].maxLowCloud)}`);
-        cloudLowLower.push(`${x},${getCloudY(hourlyStats[i].minLowCloud)}`);
-        cloudMidUpper.push(`${x},${getCloudY(hourlyStats[i].maxMidCloud)}`);
-        cloudMidLower.push(`${x},${getCloudY(hourlyStats[i].minMidCloud)}`);
-        cloudHighUpper.push(`${x},${getCloudY(hourlyStats[i].maxHighCloud)}`);
-        cloudHighLower.push(`${x},${getCloudY(hourlyStats[i].minHighCloud)}`);
-      }
-      const cloudLowEnvelopeD = `M ${cloudLowUpper.join(' L ')} L ${cloudLowLower.reverse().join(' L ')} Z`;
-      const cloudMidEnvelopeD = `M ${cloudMidUpper.join(' L ')} L ${cloudMidLower.reverse().join(' L ')} Z`;
-      const cloudHighEnvelopeD = `M ${cloudHighUpper.join(' L ')} L ${cloudHighLower.reverse().join(' L ')} Z`;
-
+      // --- 7. WOLKENSTOCKWERKE SVG (REINE LINIENFÜHRUNG: TIEFE, MITTLERE, HOHE WOLKEN & NEBEL) ---
       const cloudLowAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgLowCloud)}`).join(' ');
+      const cloudLowMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.maxLowCloud)}`).join(' ');
+      const cloudLowMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.minLowCloud)}`).join(' ');
+
       const cloudMidAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgMidCloud)}`).join(' ');
+      const cloudMidMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.maxMidCloud)}`).join(' ');
+      const cloudMidMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.minMidCloud)}`).join(' ');
+
       const cloudHighAvgD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.avgHighCloud)}`).join(' ');
+      const cloudHighMaxD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.maxHighCloud)}`).join(' ');
+      const cloudHighMinD = hourlyStats.map((h, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getCloudY(h.minHighCloud)}`).join(' ');
 
       let fogZonesSvg = '';
       for (let i = 0; i < totalHours; i++) {
@@ -2305,21 +2420,41 @@
       });
 
       $('#cloudSvg').innerHTML = `
+        <defs>
+          <filter id="cLowGlow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3.5" flood-color="#a855f7" flood-opacity="0.8"/>
+          </filter>
+          <filter id="cMidGlow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3.5" flood-color="#ec4899" flood-opacity="0.8"/>
+          </filter>
+          <filter id="cHighGlow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3.5" flood-color="#f59e0b" flood-opacity="0.8"/>
+          </filter>
+        </defs>
         ${cloudGridSvg}
         ${fogZonesSvg}
         ${dateLabelsSvg}
-        <path d="${cloudLowEnvelopeD}" fill="#8b5cf6" fill-opacity="0.18" stroke="#8b5cf6" stroke-opacity="0.35" stroke-width="1"/>
-        <path d="${cloudLowAvgD}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="${cloudMidEnvelopeD}" fill="#ec4899" fill-opacity="0.15" stroke="#ec4899" stroke-opacity="0.35" stroke-width="1"/>
-        <path d="${cloudMidAvgD}" fill="none" stroke="#f472b6" stroke-width="2.2" stroke-linecap="round"/>
-        <path d="${cloudHighEnvelopeD}" fill="#f59e0b" fill-opacity="0.14" stroke="#f59e0b" stroke-opacity="0.35" stroke-width="1"/>
-        <path d="${cloudHighAvgD}" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round"/>
+        <g id="groupCloudLow" class="cloud-layer-group" data-layer="low">
+          <path class="cloud-bound-max" d="${cloudLowMaxD}" fill="none" stroke="#c084fc" stroke-width="1.2" stroke-dasharray="3 3" stroke-opacity="0.75" style="display:none;"/>
+          <path class="cloud-bound-min" d="${cloudLowMinD}" fill="none" stroke="#7c3aed" stroke-width="1.2" stroke-dasharray="3 3" stroke-opacity="0.6" style="display:none;"/>
+          <path class="cloud-curve" d="${cloudLowAvgD}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <g id="groupCloudMid" class="cloud-layer-group" data-layer="mid">
+          <path class="cloud-bound-max" d="${cloudMidMaxD}" fill="none" stroke="#f472b6" stroke-width="1.2" stroke-dasharray="3 3" stroke-opacity="0.75" style="display:none;"/>
+          <path class="cloud-bound-min" d="${cloudMidMinD}" fill="none" stroke="#be185d" stroke-width="1.2" stroke-dasharray="3 3" stroke-opacity="0.6" style="display:none;"/>
+          <path class="cloud-curve" d="${cloudMidAvgD}" fill="none" stroke="#f472b6" stroke-width="2.2" stroke-linecap="round"/>
+        </g>
+        <g id="groupCloudHigh" class="cloud-layer-group" data-layer="high">
+          <path class="cloud-bound-max" d="${cloudHighMaxD}" fill="none" stroke="#fde047" stroke-width="1.2" stroke-dasharray="3 3" stroke-opacity="0.75" style="display:none;"/>
+          <path class="cloud-bound-min" d="${cloudHighMinD}" fill="none" stroke="#b45309" stroke-width="1.2" stroke-dasharray="3 3" stroke-opacity="0.6" style="display:none;"/>
+          <path class="cloud-curve" d="${cloudHighAvgD}" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round"/>
+        </g>
         ${cloudModelLine}
         <g id="cloudHover" style="display:none;">
           <line id="cloudHoverLine" x1="0" y1="${padT}" x2="0" y2="${padT + plotH}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <circle id="cloudCircleLow" cx="0" cy="0" r="4" fill="#a78bfa" stroke="#0d131a" stroke-width="1.5"/>
-          <circle id="cloudCircleMid" cx="0" cy="0" r="4" fill="#f472b6" stroke="#0d131a" stroke-width="1.5"/>
-          <circle id="cloudCircleHigh" cx="0" cy="0" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="cloudCircleLow" class="cloud-dot" cx="0" cy="0" r="4" fill="#a78bfa" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="cloudCircleMid" class="cloud-dot" cx="0" cy="0" r="4" fill="#f472b6" stroke="#0d131a" stroke-width="1.5"/>
+          <circle id="cloudCircleHigh" class="cloud-dot" cx="0" cy="0" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="1.5"/>
         </g>
       `;
 
@@ -2449,6 +2584,218 @@
           }
         };
       });
+
+      // --- Cloud Layer Interactivity & Fluid Animations ---
+      const updateCloudLayersVisual = () => {
+        const eff = hoveredCloudLayer || activeCloudLayer;
+        $$('.cloud-layer-pill').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.layer === eff);
+        });
+
+        const isLow = eff === 'all' || eff === 'low';
+        const isMid = eff === 'all' || eff === 'mid';
+        const isHigh = eff === 'all' || eff === 'high';
+
+        const lowG = $('#groupCloudLow');
+        const midG = $('#groupCloudMid');
+        const highG = $('#groupCloudHigh');
+
+        if (lowG) {
+          lowG.style.opacity = isLow ? '1' : '0.12';
+          lowG.style.filter = eff === 'low' ? 'url(#cLowGlow)' : 'none';
+          const curve = lowG.querySelector('.cloud-curve');
+          if (curve) curve.setAttribute('stroke-width', eff === 'low' ? '3.5' : '2.5');
+          lowG.querySelectorAll('.cloud-bound-max, .cloud-bound-min').forEach((el) => {
+            el.style.display = eff === 'low' ? 'block' : 'none';
+          });
+        }
+
+        if (midG) {
+          midG.style.opacity = isMid ? '1' : '0.12';
+          midG.style.filter = eff === 'mid' ? 'url(#cMidGlow)' : 'none';
+          const curve = midG.querySelector('.cloud-curve');
+          if (curve) curve.setAttribute('stroke-width', eff === 'mid' ? '3.5' : '2.2');
+          midG.querySelectorAll('.cloud-bound-max, .cloud-bound-min').forEach((el) => {
+            el.style.display = eff === 'mid' ? 'block' : 'none';
+          });
+        }
+
+        if (highG) {
+          highG.style.opacity = isHigh ? '1' : '0.12';
+          highG.style.filter = eff === 'high' ? 'url(#cHighGlow)' : 'none';
+          const curve = highG.querySelector('.cloud-curve');
+          if (curve) curve.setAttribute('stroke-width', eff === 'high' ? '3.5' : '2.2');
+          highG.querySelectorAll('.cloud-bound-max, .cloud-bound-min').forEach((el) => {
+            el.style.display = eff === 'high' ? 'block' : 'none';
+          });
+        }
+
+        const dLow = $('#cloudCircleLow');
+        const dMid = $('#cloudCircleMid');
+        const dHigh = $('#cloudCircleHigh');
+        if (dLow) {
+          dLow.setAttribute('r', eff === 'low' ? '6' : '4');
+          dLow.style.opacity = isLow ? '1' : '0.15';
+        }
+        if (dMid) {
+          dMid.setAttribute('r', eff === 'mid' ? '6' : '4');
+          dMid.style.opacity = isMid ? '1' : '0.15';
+        }
+        if (dHigh) {
+          dHigh.setAttribute('r', eff === 'high' ? '6' : '4');
+          dHigh.style.opacity = isHigh ? '1' : '0.15';
+        }
+      };
+
+      $$('.cloud-layer-pill').forEach((btn) => {
+        btn.onclick = () => {
+          const target = btn.dataset.layer;
+          activeCloudLayer = (activeCloudLayer === target && target !== 'all') ? 'all' : target;
+          updateCloudLayersVisual();
+        };
+        btn.onmouseenter = () => {
+          hoveredCloudLayer = btn.dataset.layer;
+          updateCloudLayersVisual();
+        };
+        btn.onmouseleave = () => {
+          hoveredCloudLayer = null;
+          updateCloudLayersVisual();
+        };
+      });
+
+      ['groupCloudLow', 'groupCloudMid', 'groupCloudHigh'].forEach((gid) => {
+        const el = $('#' + gid);
+        if (!el) return;
+        const layer = el.dataset.layer;
+        el.onclick = () => {
+          activeCloudLayer = activeCloudLayer === layer ? 'all' : layer;
+          updateCloudLayersVisual();
+        };
+        el.onmouseenter = () => {
+          hoveredCloudLayer = layer;
+          updateCloudLayersVisual();
+        };
+        el.onmouseleave = () => {
+          hoveredCloudLayer = null;
+          updateCloudLayersVisual();
+        };
+      });
+
+      updateCloudLayersVisual();
+
+      // Cloud table view mode toggling (Diagramm / Tabelle / Beides)
+      const updateCloudViewModeUI = () => {
+        const btnC = $('#btnCloudViewChart');
+        const btnT = $('#btnCloudViewTable');
+        const btnB = $('#btnCloudViewBoth');
+        if (btnC) btnC.classList.toggle('active', cloudCardViewMode === 'chart');
+        if (btnT) btnT.classList.toggle('active', cloudCardViewMode === 'table');
+        if (btnB) btnB.classList.toggle('active', cloudCardViewMode === 'both');
+
+        const svgWrap = $('#cloudSvgWrapper');
+        const tblSec = $('#cloudTableSection');
+        if (svgWrap) svgWrap.style.display = (cloudCardViewMode === 'chart' || cloudCardViewMode === 'both') ? 'block' : 'none';
+        if (tblSec) tblSec.style.display = (cloudCardViewMode === 'table' || cloudCardViewMode === 'both') ? 'block' : 'none';
+        if (cloudCardViewMode === 'table' || cloudCardViewMode === 'both') {
+          renderCloudTable();
+        }
+      };
+
+      const btnC = $('#btnCloudViewChart');
+      const btnT = $('#btnCloudViewTable');
+      const btnB = $('#btnCloudViewBoth');
+      if (btnC) btnC.onclick = () => { cloudCardViewMode = 'chart'; updateCloudViewModeUI(); };
+      if (btnT) btnT.onclick = () => { cloudCardViewMode = 'table'; updateCloudViewModeUI(); };
+      if (btnB) btnB.onclick = () => { cloudCardViewMode = 'both'; updateCloudViewModeUI(); };
+
+      function renderCloudTable() {
+        const tbody = $('#cloudTableBody');
+        const dayBar = $('#cloudDayScrollBar');
+        if (!tbody) return;
+
+        // Day chips for cloud table
+        const days = [];
+        const seen = new Set();
+        for (let i = 0; i < totalHours; i++) {
+          const tp = hourlyStats[i].tp;
+          if (tp && !seen.has(tp.dayKey)) {
+            seen.add(tp.dayKey);
+            days.push(tp);
+          }
+        }
+        if (dayBar) {
+          dayBar.innerHTML = `
+            <button type="button" class="day-chip ${cloudTableDayFilter === 'all' ? 'active' : ''}" data-cday="all">Alle</button>
+            ${days.map(d => `
+              <button type="button" class="day-chip ${cloudTableDayFilter === d.dayKey ? 'active' : ''}" data-cday="${d.dayKey}">
+                ${d.weekday.slice(0, 2)} ${d.shortDate}
+              </button>
+            `).join('')}
+          `;
+          $$('#cloudDayScrollBar .day-chip').forEach(btn => {
+            btn.onclick = () => {
+              cloudTableDayFilter = btn.dataset.cday;
+              renderCloudTable();
+            };
+          });
+        }
+
+        const rows = [];
+        for (let i = 0; i < totalHours; i++) {
+          const h = hourlyStats[i];
+          const tp = h.tp;
+          if (cloudTableDayFilter !== 'all' && tp && tp.dayKey !== cloudTableDayFilter) continue;
+
+          const fogBadge = h.isFoggyHour
+            ? '<span style="background:rgba(88,28,135,0.8); border:1px solid #c084fc; color:#fde047; padding:2px 6px; border-radius:4px; font-weight:700;">🌫️ Nebel möglich</span>'
+            : '<span style="color:#64748b;">Kein Nebel</span>';
+
+          const visText = h.minVis !== null ? `<small style="color:#94a3b8; margin-left:4px;">(${(h.minVis/1000).toFixed(1)} km)</small>` : '';
+
+          let cloudIcon = '☀️';
+          if (h.avgCloud >= 75) cloudIcon = '☁️';
+          else if (h.avgCloud >= 50) cloudIcon = '🌥️';
+          else if (h.avgCloud >= 25) cloudIcon = '⛅';
+
+          rows.push(`
+            <tr>
+              <td><strong>${tp ? tp.time : ''}</strong> <small style="color:#94a3b8;">${tp ? tp.weekday.slice(0, 2) + ' ' + tp.shortDate : ''}</small></td>
+              <td style="${activeCloudLayer === 'low' ? 'background:rgba(88,28,135,0.25);' : ''}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong style="color:#c084fc;">${h.avgLowCloud} %</strong>
+                  <small style="color:#94a3b8;">(${h.minLowCloud}–${h.maxLowCloud}%)</small>
+                </div>
+                <div style="width:100%; height:4px; background:#1b2533; border-radius:2px; margin-top:3px; overflow:hidden;">
+                  <div style="width:${h.avgLowCloud}%; height:100%; background:#a855f7;"></div>
+                </div>
+              </td>
+              <td style="${activeCloudLayer === 'mid' ? 'background:rgba(219,39,119,0.25);' : ''}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong style="color:#f472b6;">${h.avgMidCloud} %</strong>
+                  <small style="color:#94a3b8;">(${h.minMidCloud}–${h.maxMidCloud}%)</small>
+                </div>
+                <div style="width:100%; height:4px; background:#1b2533; border-radius:2px; margin-top:3px; overflow:hidden;">
+                  <div style="width:${h.avgMidCloud}%; height:100%; background:#ec4899;"></div>
+                </div>
+              </td>
+              <td style="${activeCloudLayer === 'high' ? 'background:rgba(245,158,11,0.25);' : ''}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong style="color:#fbbf24;">${h.avgHighCloud} %</strong>
+                  <small style="color:#94a3b8;">(${h.minHighCloud}–${h.maxHighCloud}%)</small>
+                </div>
+                <div style="width:100%; height:4px; background:#1b2533; border-radius:2px; margin-top:3px; overflow:hidden;">
+                  <div style="width:${h.avgHighCloud}%; height:100%; background:#f59e0b;"></div>
+                </div>
+              </td>
+              <td>${cloudIcon} <strong>${h.avgCloud} %</strong></td>
+              <td>${fogBadge} ${visText}</td>
+            </tr>
+          `);
+        }
+        tbody.innerHTML = rows.join('');
+      }
+
+      updateCloudViewModeUI();
     }
 
     async function loadForecast() {
