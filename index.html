@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ABG Wetter">
+  <meta name="apple-mobile-web-app-title" content="Altenburg Wetter">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="alternate icon" href="favicon.ico">
@@ -61,18 +61,160 @@
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      gap: 14px;
       border-bottom: 1px solid var(--border);
       padding-bottom: 14px;
       margin-bottom: 14px;
+      flex-wrap: wrap;
     }
-    @media (min-width: 768px) {
-      .header {
-        flex-direction: row;
-        align-items: center;
-      }
+    .header-info {
+      flex: 0 1 auto;
+      min-width: 240px;
+    }
+    .header-search-wrap {
+      position: relative;
+      flex: 1 1 300px;
+      max-width: 440px;
+      width: 100%;
+      z-index: 50;
+    }
+    .search-input-box {
+      display: flex;
+      align-items: center;
+      background: #141f2c;
+      border: 1px solid #2f435a;
+      border-radius: 10px;
+      padding: 3px 6px 3px 12px;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .search-input-box:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      background: #182637;
+    }
+    .search-icon {
+      font-size: 14px;
+      opacity: 0.7;
+      user-select: none;
+    }
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 13px;
+      font-family: inherit;
+      min-width: 0;
+      padding: 6px 0;
+    }
+    .search-input::placeholder {
+      color: #7d8ea3;
+    }
+    .search-clear-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 6px;
+      min-height: auto;
+      line-height: 1;
+      border-radius: 4px;
+    }
+    .search-clear-btn:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+    }
+    .search-gps-btn {
+      background: #1e3a5f;
+      color: #60a5fa;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 9px;
+      min-height: 28px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .search-gps-btn:hover {
+      background: #2563eb;
+      color: #fff;
+    }
+    .search-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #121c29;
+      border: 1px solid #334862;
+      border-radius: 10px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.65);
+      overflow: hidden;
+      max-height: 380px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    .dropdown-section-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      font-weight: 700;
+      padding: 8px 12px 4px;
+      background: #0f1722;
+      border-bottom: 1px solid #1e2c3d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #1a2737;
+      transition: background 0.12s;
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover, .dropdown-item.active {
+      background: #1e2f44;
+    }
+    .dropdown-item-main {
+      font-weight: 600;
+      color: #fff;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dropdown-item-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .dropdown-item-meta {
+      font-size: 10px;
+      font-family: monospace;
+      color: #38bdf8;
+      background: #102a45;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+      white-space: nowrap;
+      border: 1px solid #1e3a5f;
+      text-align: right;
+    }
+    .search-loading-item, .search-empty-item {
+      padding: 12px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
     }
     h1 {
       font-size: 18px;
@@ -847,11 +989,23 @@
 <body oncontextmenu="return false;">
   <div class="container">
     <div class="header">
-      <div>
-        <h1>Altenburg – Stündliche Wettermodelle</h1>
-        <div class="sub">35 Wettermodelle im Multimodell-Vergleich (inkl. hochauflösende Regionalmodelle &amp; KI-Modelle)</div>
-        <div class="location">📍 Altenburg, Thüringen (50.988° N, 12.437° O)</div>
+      <div class="header-info">
+        <h1 id="headerTitle">Altenburg – Stündliche Wettermodelle</h1>
+        <div class="sub" id="headerSub"><span id="headerModelCount">35</span> Wettermodelle im Multimodell-Vergleich (inkl. hochauflösende Regionalmodelle &amp; KI-Modelle)</div>
+        <div class="location" id="headerLoc">📍 Altenburg, Thüringen (50.988° N, 12.437° O · 202 m)</div>
       </div>
+
+      <!-- Prominentes Suchfeld für Orte direkt im Header -->
+      <div class="header-search-wrap" id="headerSearchWrap">
+        <div class="search-input-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="locSearchInput" class="search-input" placeholder="Ort suchen (z. B. Altenburg, Leipzig, Wien…)" autocomplete="off" />
+          <button type="button" id="locSearchClear" class="search-clear-btn" title="Eingabe löschen" style="display:none;">✕</button>
+          <button type="button" id="locSearchGps" class="search-gps-btn" title="Mein GPS-Standort">📍 GPS</button>
+        </div>
+        <div id="locSearchDropdown" class="search-dropdown" style="display:none;"></div>
+      </div>
+
       <div class="actions">
         <div class="view-switch">
           <button id="viewTableBtn" class="tab-btn active" type="button">📊 Tabelle</button>
@@ -957,7 +1111,7 @@
       <div class="chart-card" id="windCard">
         <div class="chart-card-header">
           <div class="chart-card-title">
-            <span>💨 Windstärke- &amp; Böen-Ensembleband (km/h)</span>
+            <span>💨 Windgeschwindigkeit- &amp; Böen-Ensembleband (km/h)</span>
             <span class="chart-card-subtitle">(Min / Max Spanne)</span>
           </div>
           <div style="font-size: 10px; font-family: monospace;">
@@ -1203,28 +1357,22 @@
   </div>
 
   <script>
-    const LOCATION = {
-      name: 'Altenburg, Thüringen, Deutschland',
-      latitude: 50.98763,
-      longitude: 12.43684
-    };
-
-    const MODELS = [
-      // 14 hochauflösende Regionalmodelle für Deutschland / Mitteleuropa
-      { id: 'icon_d2', label: 'DWD ICON-D2 (2.2km)', color: '#059669', isRegional: true },
-      { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2km)', color: '#10b981', isRegional: true },
-      { id: 'icon_eu', label: 'DWD ICON-EU (7km)', color: '#0d9488', isRegional: true },
-      { id: 'chmi_aladin_seamless', label: 'CHMI ALADIN (Tschechien)', color: '#0284c7', isRegional: true },
-      { id: 'chmi_aladin_central_europe_2km', label: 'CHMI ALADIN 2km', color: '#38bdf8', isRegional: true },
-      { id: 'geosphere_seamless', label: 'GeoSphere Austria', color: '#b45309', isRegional: true },
-      { id: 'geosphere_arome_austria', label: 'GeoSphere AROME (2.5km)', color: '#d97706', isRegional: true },
-      { id: 'meteofrance_arome_france_hd', label: 'AROME HD (1.5km)', color: '#db2777', isRegional: true },
-      { id: 'meteofrance_arome_france', label: 'AROME France (2.5km)', color: '#e11d48', isRegional: true },
-      { id: 'meteofrance_arpege_europe', label: 'ARPEGE (11km)', color: '#f43f5e', isRegional: true },
-      { id: 'knmi_harmonie_arome_europe', label: 'KNMI HARMONIE (2.5km)', color: '#ea580c', isRegional: true },
-      { id: 'dmi_harmonie_arome_europe', label: 'DMI HARMONIE (2.5km)', color: '#7c3aed', isRegional: true },
-      { id: 'metno_seamless', label: 'MET Norway (Yr.no)', color: '#047857', isRegional: true },
-      { id: 'gem_regional', label: 'Kanada GEM Regional', color: '#fbbf24', isRegional: true },
+    const ALL_WEATHER_MODELS = [
+      // 14 hochauflösende Regionalmodelle
+      { id: 'icon_d2', label: 'DWD ICON-D2 (2.2km)', color: '#059669', isRegional: true, bounds: { minLat: 43.5, maxLat: 58.0, minLon: 1.5, maxLon: 20.0 } },
+      { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2km)', color: '#10b981', isRegional: true, bounds: { minLat: 43.5, maxLat: 58.0, minLon: 1.5, maxLon: 20.0 } },
+      { id: 'icon_eu', label: 'DWD ICON-EU (7km)', color: '#0d9488', isRegional: true, bounds: { minLat: 29.5, maxLat: 70.5, minLon: -23.5, maxLon: 45.0 } },
+      { id: 'chmi_aladin_seamless', label: 'CHMI ALADIN (Tschechien)', color: '#0284c7', isRegional: true, bounds: { minLat: 46.5, maxLat: 52.5, minLon: 10.5, maxLon: 20.5 } },
+      { id: 'chmi_aladin_central_europe_2km', label: 'CHMI ALADIN 2km', color: '#38bdf8', isRegional: true, bounds: { minLat: 46.5, maxLat: 52.5, minLon: 10.5, maxLon: 20.5 } },
+      { id: 'geosphere_seamless', label: 'GeoSphere Austria', color: '#b45309', isRegional: true, bounds: { minLat: 44.5, maxLat: 50.5, minLon: 8.0, maxLon: 18.0 } },
+      { id: 'geosphere_arome_austria', label: 'GeoSphere AROME (2.5km)', color: '#d97706', isRegional: true, bounds: { minLat: 45.0, maxLat: 50.0, minLon: 8.5, maxLon: 17.5 } },
+      { id: 'meteofrance_arome_france_hd', label: 'AROME HD (1.5km)', color: '#db2777', isRegional: true, bounds: { minLat: 41.0, maxLat: 52.0, minLon: -5.5, maxLon: 10.5 } },
+      { id: 'meteofrance_arome_france', label: 'AROME France (2.5km)', color: '#e11d48', isRegional: true, bounds: { minLat: 41.0, maxLat: 52.0, minLon: -5.5, maxLon: 10.5 } },
+      { id: 'meteofrance_arpege_europe', label: 'ARPEGE (11km)', color: '#f43f5e', isRegional: true, bounds: { minLat: 30.0, maxLat: 72.0, minLon: -32.0, maxLon: 42.0 } },
+      { id: 'knmi_harmonie_arome_europe', label: 'KNMI HARMONIE (2.5km)', color: '#ea580c', isRegional: true, bounds: { minLat: 49.0, maxLat: 55.5, minLon: 1.5, maxLon: 9.5 } },
+      { id: 'dmi_harmonie_arome_europe', label: 'DMI HARMONIE (2.5km)', color: '#7c3aed', isRegional: true, bounds: { minLat: 52.0, maxLat: 60.0, minLon: 6.0, maxLon: 16.0 } },
+      { id: 'metno_seamless', label: 'MET Norway (Yr.no)', color: '#047857', isRegional: true, bounds: { minLat: 50.0, maxLat: 72.0, minLon: 2.0, maxLon: 33.0 } },
+      { id: 'gem_regional', label: 'Kanada GEM Regional', color: '#fbbf24', isRegional: true, bounds: { minLat: 25.0, maxLat: 72.0, minLon: -145.0, maxLon: -50.0 } },
       // 17 weltweite Großraummodelle
       { id: 'ecmwf_ifs025', label: 'ECMWF IFS (0.25°)', color: '#2563eb', isRegional: false },
       { id: 'ecmwf_ifs04', label: 'ECMWF IFS (0.4°)', color: '#3b82f6', isRegional: false },
@@ -1250,6 +1398,41 @@
       { id: 'gfs_graphcast025', label: 'Google GraphCast (KI)', color: '#d8b4fe', isRegional: false, isAi: true }
     ];
 
+    const LOCATION_STORAGE_KEY = 'weather_current_location_v1';
+    const RECENT_LOCATIONS_KEY = 'weather_recent_locations_v1';
+
+    let CURRENT_LOCATION = {
+      name: "Altenburg",
+      state: "Thüringen",
+      country: "Deutschland",
+      latitude: 50.98763,
+      longitude: 12.43684,
+      elevation: 202
+    };
+
+    // Restore saved location if present
+    try {
+      const savedLoc = localStorage.getItem(LOCATION_STORAGE_KEY);
+      if (savedLoc) {
+        const parsed = JSON.parse(savedLoc);
+        if (parsed && parsed.latitude && parsed.longitude) {
+          CURRENT_LOCATION = parsed;
+        }
+      }
+    } catch (e) {}
+
+    function isModelAvailable(model, lat, lon) {
+      if (!model.bounds) return true;
+      return lat >= model.bounds.minLat && lat <= model.bounds.maxLat &&
+             lon >= model.bounds.minLon && lon <= model.bounds.maxLon;
+    }
+
+    function getAvailableModels(lat, lon) {
+      return ALL_WEATHER_MODELS.filter(m => isModelAvailable(m, lat, lon));
+    }
+
+    let MODELS = getAvailableModels(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude);
+
     let forecast = null;
     let loading = false;
     let currentView = 'table';
@@ -1260,14 +1443,289 @@
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => document.querySelectorAll(s);
 
-    $('#modelList').innerHTML = MODELS.map((m) => `
-      <label>
-        <input class="model-check" type="checkbox" value="${m.id}" checked>
-        <span class="dot" style="background:${m.color}"></span>
-        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.label}</span>
-        ${m.isRegional ? '<span style="font-size:9px; background:#064e3b; color:#6ee7b7; padding:1px 4px; border-radius:4px; margin-left:auto;">REG</span>' : m.isAi ? '<span style="font-size:9px; background:#4c1d95; color:#d8b4fe; padding:1px 4px; border-radius:4px; margin-left:auto;">KI</span>' : ''}
-      </label>
-    `).join('');
+    function updateHeaderInfo() {
+      const title = `${CURRENT_LOCATION.name} – Stündliche Wettermodelle`;
+      document.title = title;
+      $('#headerTitle').textContent = title;
+      $('#headerModelCount').textContent = MODELS.length;
+      $('#modelCountLabel').textContent = MODELS.length;
+      const subParts = [CURRENT_LOCATION.name, CURRENT_LOCATION.state, CURRENT_LOCATION.country].filter(Boolean).join(', ');
+      const coords = `(${CURRENT_LOCATION.latitude.toFixed(3)}° N, ${CURRENT_LOCATION.longitude.toFixed(3)}° O${CURRENT_LOCATION.elevation ? ' · ' + Math.round(CURRENT_LOCATION.elevation) + ' m' : ''})`;
+      $('#headerLoc').textContent = `📍 ${subParts} ${coords}`;
+    }
+
+    function renderModelList() {
+      $('#modelList').innerHTML = MODELS.map((m) => `
+        <label>
+          <input class="model-check" type="checkbox" value="${m.id}" checked>
+          <span class="dot" style="background:${m.color}"></span>
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.label}</span>
+          ${m.isRegional ? '<span style="font-size:9px; background:#064e3b; color:#6ee7b7; padding:1px 4px; border-radius:4px; margin-left:auto;">REG</span>' : m.isAi ? '<span style="font-size:9px; background:#4c1d95; color:#d8b4fe; padding:1px 4px; border-radius:4px; margin-left:auto;">KI</span>' : ''}
+        </label>
+      `).join('');
+
+      $$('.model-check').forEach(chk => {
+        chk.addEventListener('change', () => {
+          onModelsChanged();
+        });
+      });
+      $('#modelCountLabel').textContent = MODELS.length;
+      $('#headerModelCount').textContent = MODELS.length;
+    }
+
+    function selectLocation(newLoc) {
+      CURRENT_LOCATION = {
+        name: newLoc.name,
+        state: newLoc.state || '',
+        country: newLoc.country || '',
+        latitude: Number(newLoc.latitude),
+        longitude: Number(newLoc.longitude),
+        elevation: newLoc.elevation ? Math.round(newLoc.elevation) : undefined
+      };
+
+      try {
+        localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(CURRENT_LOCATION));
+        // Add to recent locations
+        const recentStr = localStorage.getItem(RECENT_LOCATIONS_KEY);
+        let recent = recentStr ? JSON.parse(recentStr) : [];
+        recent = [CURRENT_LOCATION, ...recent.filter(r => Math.abs(r.latitude - CURRENT_LOCATION.latitude) > 0.05 || Math.abs(r.longitude - CURRENT_LOCATION.longitude) > 0.05)].slice(0, 5);
+        localStorage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify(recent));
+      } catch (e) {}
+
+      MODELS = getAvailableModels(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude);
+      updateHeaderInfo();
+      renderModelList();
+      hideDropdown();
+      $('#locSearchInput').value = '';
+      $('#locSearchClear').style.display = 'none';
+
+      loadForecast();
+    }
+
+    // --- Header Location Search Logic ---
+    let searchDebounceTimer = null;
+    let searchResults = [];
+    let highlightedSearchIdx = -1;
+
+    const locInput = $('#locSearchInput');
+    const locDropdown = $('#locSearchDropdown');
+    const locClearBtn = $('#locSearchClear');
+    const locGpsBtn = $('#locSearchGps');
+
+    function showDropdown() {
+      locDropdown.style.display = 'block';
+    }
+
+    function hideDropdown() {
+      locDropdown.style.display = 'none';
+      highlightedSearchIdx = -1;
+    }
+
+    function renderDropdownContent(results = []) {
+      const q = locInput.value.trim();
+      let html = '';
+
+      if (results.length > 0) {
+        html += `
+          <div class="dropdown-section-title">
+            <span>Gefundene Orte (${results.length})</span>
+            <span style="font-size:9px; color:#60a5fa;">Enter zum Auswählen</span>
+          </div>
+          <div>
+            ${results.map((r, i) => {
+              const mCount = getAvailableModels(r.latitude, r.longitude).length;
+              const sub = [r.admin1, r.admin2, r.country].filter(Boolean).join(', ');
+              return `
+                <div class="dropdown-item ${i === highlightedSearchIdx ? 'active' : ''}" data-idx="${i}">
+                  <div>
+                    <div class="dropdown-item-main">
+                      <span>${r.name}</span>
+                      ${r.country_code ? `<span style="font-size:10px; background:#1e293b; padding:1px 4px; border-radius:3px; color:#cbd5e1;">${r.country_code.toUpperCase()}</span>` : ''}
+                    </div>
+                    <div class="dropdown-item-sub">${sub}</div>
+                  </div>
+                  <div class="dropdown-item-meta">
+                    <div><strong>${mCount} Modelle</strong></div>
+                    <div style="font-size:9px; color:#94a3b8;">${r.latitude.toFixed(2)}°, ${r.longitude.toFixed(2)}°</div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      } else if (q.length >= 2) {
+        html += `<div class="search-empty-item">Kein Ort gefunden für &ldquo;<strong>${q}</strong>&rdquo;.</div>`;
+      }
+
+      if (q.length === 0) {
+        // Recent searches
+        try {
+          const recentStr = localStorage.getItem(RECENT_LOCATIONS_KEY);
+          if (recentStr) {
+            const recent = JSON.parse(recentStr);
+            if (recent.length > 0) {
+              html += `
+                <div class="dropdown-section-title">
+                  <span>🕒 Zuletzt verwendet</span>
+                </div>
+                <div>
+                  ${recent.map((r, i) => {
+                    const mCount = getAvailableModels(r.latitude, r.longitude).length;
+                    return `
+                      <div class="dropdown-item recent-item" data-lat="${r.latitude}" data-lon="${r.longitude}" data-name="${r.name}" data-state="${r.state || ''}" data-country="${r.country || ''}" data-elev="${r.elevation || ''}">
+                        <div>
+                          <div class="dropdown-item-main">📍 ${r.name}</div>
+                          <div class="dropdown-item-sub">${[r.state, r.country].filter(Boolean).join(', ')}</div>
+                        </div>
+                        <div class="dropdown-item-meta">${mCount} Modelle</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `;
+            }
+          }
+        } catch (e) {}
+      }
+
+      locDropdown.innerHTML = html;
+      showDropdown();
+
+      // Attach clicks to dropdown items
+      $$('.dropdown-item[data-idx]').forEach(el => {
+        el.addEventListener('click', () => {
+          const idx = parseInt(el.dataset.idx, 10);
+          if (searchResults[idx]) selectLocation(searchResults[idx]);
+        });
+      });
+
+      $$('.recent-item').forEach(el => {
+        el.addEventListener('click', () => {
+          selectLocation({
+            name: el.dataset.name,
+            state: el.dataset.state,
+            country: el.dataset.country,
+            latitude: parseFloat(el.dataset.lat),
+            longitude: parseFloat(el.dataset.lon),
+            elevation: el.dataset.elev ? parseInt(el.dataset.elev, 10) : undefined
+          });
+        });
+      });
+    }
+
+    locInput.addEventListener('focus', () => {
+      renderDropdownContent(searchResults);
+    });
+
+    locInput.addEventListener('input', () => {
+      const q = locInput.value.trim();
+      locClearBtn.style.display = q ? 'inline-block' : 'none';
+
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+
+      if (q.length < 2) {
+        searchResults = [];
+        renderDropdownContent([]);
+        return;
+      }
+
+      locDropdown.innerHTML = `<div class="search-loading-item">Suche nach &ldquo;${q}&rdquo; …</div>`;
+      showDropdown();
+
+      searchDebounceTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=de&format=json`);
+          if (!res.ok) throw new Error('Geocoding fehlgeschlagen');
+          const data = await res.json();
+          searchResults = data.results || [];
+          highlightedSearchIdx = -1;
+          renderDropdownContent(searchResults);
+        } catch (e) {
+          locDropdown.innerHTML = `<div class="search-empty-item" style="color:#f87171;">Suche nicht erreichbar.</div>`;
+        }
+      }, 260);
+    });
+
+    locInput.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (searchResults.length) {
+          highlightedSearchIdx = (highlightedSearchIdx + 1) % searchResults.length;
+          renderDropdownContent(searchResults);
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (searchResults.length) {
+          highlightedSearchIdx = (highlightedSearchIdx - 1 + searchResults.length) % searchResults.length;
+          renderDropdownContent(searchResults);
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlightedSearchIdx >= 0 && searchResults[highlightedSearchIdx]) {
+          selectLocation(searchResults[highlightedSearchIdx]);
+        } else if (searchResults.length > 0) {
+          selectLocation(searchResults[0]);
+        }
+      } else if (e.key === 'Escape') {
+        hideDropdown();
+      }
+    });
+
+    locClearBtn.addEventListener('click', () => {
+      locInput.value = '';
+      locClearBtn.style.display = 'none';
+      searchResults = [];
+      locInput.focus();
+      renderDropdownContent([]);
+    });
+
+    locGpsBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert('GPS-Standortabfrage wird von diesem Browser nicht unterstützt.');
+        return;
+      }
+      locGpsBtn.textContent = '⏳ Ortung…';
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          locGpsBtn.textContent = '📍 GPS';
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const elev = pos.coords.altitude ? Math.round(pos.coords.altitude) : undefined;
+          let name = `Standort (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
+          let state = '';
+          let country = '';
+
+          try {
+            const revRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=de`, {
+              headers: { 'User-Agent': 'WeatherModelExplorer/2.0' }
+            });
+            if (revRes.ok) {
+              const data = await revRes.json();
+              const addr = data.address || {};
+              name = addr.city || addr.town || addr.village || addr.municipality || 'Aktueller Standort';
+              state = addr.state || addr.county || '';
+              country = addr.country || '';
+            }
+          } catch (e) {}
+
+          selectLocation({ name, state, country, latitude: lat, longitude: lon, elevation: elev });
+        },
+        (err) => {
+          locGpsBtn.textContent = '📍 GPS';
+          alert('Standortzugriff konnte nicht ermittelt werden (Berechtigung abgelehnt oder Timeout).');
+        },
+        { timeout: 8000, enableHighAccuracy: true }
+      );
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#headerSearchWrap')) {
+        hideDropdown();
+      }
+    });
+
+    updateHeaderInfo();
+    renderModelList();
 
     // Quick selection buttons
     $('#qAll').addEventListener('click', () => {
@@ -1508,7 +1966,7 @@
           <th>Regenchance<br>Modellspanne</th>
           <th>Niederschlag<br>mm / Stunde</th>
           <th>Sonnenschein<br>Minuten / Stunde</th>
-          <th>Windstärke<br>km/h Spanne</th>
+          <th>Windgeschwindigkeit<br>km/h Spanne</th>
           <th>Windrichtung<br>Modelldurchschnitt</th>
         </tr>
       `;
@@ -3047,7 +3505,7 @@
       if (loading) return;
       loading = true;
       $('#refreshBtn').disabled = true;
-      setStatus('Lade bis zu 384 Vorhersagestunden für Altenburg …');
+      setStatus(`Lade bis zu 384 Vorhersagestunden für ${CURRENT_LOCATION.name} …`);
 
       try {
         const BATCH_SIZE = 8;
@@ -3061,8 +3519,8 @@
 
         for (const chunk of chunks) {
           const url = new URL('https://api.open-meteo.com/v1/forecast');
-          url.searchParams.set('latitude', LOCATION.latitude);
-          url.searchParams.set('longitude', LOCATION.longitude);
+          url.searchParams.set('latitude', CURRENT_LOCATION.latitude);
+          url.searchParams.set('longitude', CURRENT_LOCATION.longitude);
           url.searchParams.set('hourly', variables);
           url.searchParams.set('forecast_hours', '384');
           url.searchParams.set('timezone', 'auto');
@@ -3088,6 +3546,7 @@
         });
 
         renderTable();
+        setStatus(`Vorhersage für ${CURRENT_LOCATION.name} erfolgreich aktualisiert.`);
       } catch (err) {
         setStatus('Fehler beim Laden: ' + err.message);
         $('#tableBody').innerHTML = '<tr><td colspan="10" style="color: #ff6b6b;">Verbindung zur Wetter-API fehlgeschlagen: ' + err.message + '</td></tr>';
