@@ -863,11 +863,11 @@
 
     <details>
       <summary>
-        <span>Wettermodelle (<span id="modelCountLabel">27</span>/27 aktiv)</span>
+        <span>Wettermodelle (<span id="modelCountLabel">35</span>/35 aktiv)</span>
         <span style="font-size: 11px; color: var(--accent);">Tippen zum Anpassen ▾</span>
       </summary>
       <div class="model-quick-bar">
-        <button type="button" class="quick-btn" id="qAll">Alle 27</button>
+        <button type="button" class="quick-btn" id="qAll">Alle 35</button>
         <button type="button" class="quick-btn" id="qRegional" style="color: #6ee7b7; border-color: #059669;">Regional (12)</button>
         <button type="button" class="quick-btn" id="qDwd" style="color: #5eead4; border-color: #0d9488;">DWD Fokus (4)</button>
         <button type="button" class="quick-btn" id="qAi" style="color: #c084fc; border-color: #9333ea;">KI-Modelle (3)</button>
@@ -2055,23 +2055,39 @@
         const maxSun = sunMins.length ? Math.max(...sunMins) : 0;
         const avgSun = sunMins.length ? Math.round(sunMins.reduce((a, b) => a + b, 0) / sunMins.length) : 0;
 
+        const minT_obj = temps.length ? availableModels.filter(m => m.temperature[i] === minT)[0] : null;
+        const maxT_obj = temps.length ? availableModels.filter(m => m.temperature[i] === maxT)[0] : null;
+
+        const maxWind_obj = windSpeeds.length ? availableModels.filter(m => m.windSpeed[i] === maxWind)[0] : null;
+        const maxRain_obj = rainProbs.length ? availableModels.filter(m => m.probability[i] === maxRain)[0] : null;
+        const maxPrecip_obj = precipAmounts.length ? availableModels.filter(m => m.precipitation[i] === maxPrecip)[0] : null;
+        const maxSnow_obj = snowAmounts.length ? availableModels.filter(m => m.snowfall && m.snowfall[i] === maxSnow)[0] : null;
+        const maxSun_obj = sunMins.length ? availableModels.filter(m => m.sunshine && (m.sunshine[i]/60) === maxSun)[0] : null;
+
         hourlyStats.push({
           index: i,
           time: times[i],
           minT,
           maxT,
           avgT,
+          minT_label: minT_obj ? minT_obj.label : '?',
+          maxT_label: maxT_obj ? maxT_obj.label : '?',
           minWind,
           maxWind,
           avgWind,
+          maxWind_label: maxWind_obj ? maxWind_obj.label : '?',
           windSpeedRange: formatRange(windSpeeds, 'km/h', 1),
           windAvg: formatWindDirection(availableModels, i),
           minRain,
           maxRain,
           avgRain,
+          maxRain_label: maxRain_obj ? maxRain_obj.label : '?',
           minPrecip,
           maxPrecip,
           avgPrecip,
+          maxPrecip_label: maxPrecip_obj ? maxPrecip_obj.label : '?',
+          maxSnow_label: maxSnow_obj ? maxSnow_obj.label : '?',
+          maxSun_label: maxSun_obj ? maxSun_obj.label : '?',
           precipRange: formatRange(precipAmounts, 'mm', 1),
           minSnow,
           maxSnow,
@@ -2083,7 +2099,7 @@
           minPress,
           maxPress,
           avgPress,
-          pressRange: pressures.length ? `${Math.round(minPress)}–${Math.round(maxPress)} hPa` : '—',
+          pressRange: pressures.length ? Math.round(minPress) + '–' + Math.round(maxPress) + ' hPa' : '—',
           isHochdruck,
           minCloud,
           maxCloud,
@@ -2115,11 +2131,28 @@
             <span class="hud-pill">${timeStr}</span>
           </div>
           <div class="hud-stats">
-            <div><span>Temperatur:</span> <strong style="color:#06b6d4;">${formatTemperature(h.minT)}</strong> · <strong style="color:#fde68a; background:rgba(30,41,59,0.8); padding:1px 5px; border-radius:4px; border:1px solid #334155;">Ø ${formatTemperature(h.avgT)}</strong> · <strong style="color:#f59e0b;">${formatTemperature(h.maxT)}</strong></div>
+            <div>
+              <span>Temperatur:</span> 
+              <strong style="color:#06b6d4;">${formatTemperature(h.minT)}</strong> 
+              <span style="font-size:10px; color:#22d3ee; font-weight:500;">(${h.minT_label})</span> · 
+              <strong style="color:#fde68a; background:rgba(30,41,59,0.8); padding:1px 5px; border-radius:4px; border:1px solid #334155;">Ø ${formatTemperature(h.avgT)}</strong> · 
+              <strong style="color:#f59e0b;">${formatTemperature(h.maxT)}</strong>
+              <span style="font-size:10px; color:#fbbf24; font-weight:500;">(${h.maxT_label})</span>
+            </div>
             <div><span>Luftdruck:</span> <strong style="color:#38bdf8;">${h.pressRange} (Ø ${h.avgPress !== null ? h.avgPress.toFixed(1) : '—'} hPa)</strong> ${h.isHochdruck !== null ? (h.isHochdruck ? '<span style="color:#fde047; background:rgba(234,179,8,0.2); border:1px solid rgba(234,179,8,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">☀️ Hochdruck (≥ 1013,2 hPa)</span>' : '<span style="color:#60a5fa; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">🌧️ Tiefdruck (&lt; 1013,2 hPa)</span>') : ''}</div>
-            <div><span>Wind:</span> <strong style="color:#2dd4bf;">${h.windSpeedRange} (Ø ${h.avgWind} km/h) ${h.windAvg}</strong></div>
-            <div><span>Regenchance:</span> <strong style="color:#38bdf8;">${h.minRain}%–${h.maxRain}% (Ø ${h.avgRain}%)</strong></div>
-            <div><span>Niederschlag:</span> <strong style="color:#67e8f9;">${h.precipRange} (Ø ${h.avgPrecip} mm)</strong></div>
+            <div>
+              <span>Wind:</span> 
+              <strong style="color:#2dd4bf;">${h.windSpeedRange}</strong> 
+              <span style="font-size:10px; color:#2dd4bf; font-weight:500;">(${h.maxWind_label})</span>
+              <span style="color:#2dd4bf;">(Ø ${h.avgWind} km/h) ${h.windAvg}</span>
+            </div>
+            <div>
+              <span>Regenchance:</span> 
+              <strong style="color:#38bdf8;">${h.minRain}%–${h.maxRain}%</strong> 
+              <span style="font-size:10px; color:#60a5fa; font-weight:500;">(${h.maxRain_label})</span>
+              <span style="color:#38bdf8;">(Ø ${h.avgRain}%)</span>
+            </div>
+            ${h.maxPrecip > 0 ? `<div><span>Niederschlag:</span> <strong style="color:#67e8f9;">${h.precipRange}</strong> <span style="font-size:10px; color:#22d3ee; font-weight:500;">(${h.maxPrecip_label})</span> <span style="color:#67e8f9;">(Ø ${h.avgPrecip} mm)</span></div>` : ''}
             <div><span>Schnee:</span> <strong style="color:#bae6fd;">${h.snowRange}</strong></div>
             <div><span>Sonne:</span> <strong style="color:#fbbf24;">${Math.round(h.minSun)}–${Math.round(h.maxSun)} min (Ø ${h.avgSun} min)</strong></div>
             <div><span>Wolkenstockwerke:</span> <strong style="color:#a78bfa;">🟣 Tiefe: ${h.avgLowCloud}%</strong> · <strong style="color:#f472b6;">🌸 Mittlere: ${h.avgMidCloud}%</strong> · <strong style="color:#fbbf24;">🟡 Hohe: ${h.avgHighCloud}%</strong> ${h.isFoggyHour ? '<span style="color:#fde047; background:#581c87; font-weight:700; padding:1px 5px; border-radius:4px; margin-left:4px;">🌫️ Nebel möglich</span>' : ''}</div>
@@ -2592,81 +2625,152 @@
         const x = getX(idx);
 
         // Temp hover
-        $('#tempHover').style.display = 'block';
-        $('#tempHoverLine').setAttribute('x1', x);
-        $('#tempHoverLine').setAttribute('x2', x);
-        $('#tempCircleMax').setAttribute('cx', x);
-        $('#tempCircleMax').setAttribute('cy', getTempY(h.maxT !== null ? h.maxT : 0));
-        $('#tempCircleAvg').setAttribute('cx', x);
-        $('#tempCircleAvg').setAttribute('cy', getTempY(h.avgT !== null ? h.avgT : 0));
-        $('#tempCircleMin').setAttribute('cx', x);
-        $('#tempCircleMin').setAttribute('cy', getTempY(h.minT !== null ? h.minT : 0));
+        const tHover = $('#tempHover');
+        if (tHover) {
+          tHover.style.display = 'block';
+          $('#tempHoverLine').setAttribute('x1', x);
+          $('#tempHoverLine').setAttribute('x2', x);
+          $('#tempCircleMax').setAttribute('cx', x);
+          $('#tempCircleMax').setAttribute('cy', getTempY(h.maxT !== null ? h.maxT : 0));
+          $('#tempCircleAvg').setAttribute('cx', x);
+          $('#tempCircleAvg').setAttribute('cy', getTempY(h.avgT !== null ? h.avgT : 0));
+          $('#tempCircleMin').setAttribute('cx', x);
+          $('#tempCircleMin').setAttribute('cy', getTempY(h.minT !== null ? h.minT : 0));
+          
+          // Labels
+          let tLabels = tHover.querySelector('.hover-labels');
+          if (!tLabels) {
+            tLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            tLabels.setAttribute('class', 'hover-labels');
+            tHover.appendChild(tLabels);
+          }
+          tLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getTempY(h.maxT) - 4) + '" fill="#f59e0b" font-size="10" font-weight="bold">' + h.maxT_label + '</text>' +
+                              '<text x="' + (x + 8) + '" y="' + (getTempY(h.minT) + 12) + '" fill="#06b6d4" font-size="10" font-weight="bold">' + h.minT_label + '</text>';
+        }
 
         // Wind hover
-        $('#windHover').style.display = 'block';
-        $('#windHoverLine').setAttribute('x1', x);
-        $('#windHoverLine').setAttribute('x2', x);
-        $('#windCircleMax').setAttribute('cx', x);
-        $('#windCircleMax').setAttribute('cy', getWindY(h.maxWind));
-        $('#windCircleAvg').setAttribute('cx', x);
-        $('#windCircleAvg').setAttribute('cy', getWindY(h.avgWind));
-        $('#windCircleMin').setAttribute('cx', x);
-        $('#windCircleMin').setAttribute('cy', getWindY(h.minWind));
+        const wHover = $('#windHover');
+        if (wHover) {
+          wHover.style.display = 'block';
+          $('#windHoverLine').setAttribute('x1', x);
+          $('#windHoverLine').setAttribute('x2', x);
+          $('#windCircleMax').setAttribute('cx', x);
+          $('#windCircleMax').setAttribute('cy', getWindY(h.maxWind));
+          $('#windCircleAvg').setAttribute('cx', x);
+          $('#windCircleAvg').setAttribute('cy', getWindY(h.avgWind));
+          $('#windCircleMin').setAttribute('cx', x);
+          $('#windCircleMin').setAttribute('cy', getWindY(h.minWind));
+
+          let wLabels = wHover.querySelector('.hover-labels');
+          if (!wLabels) {
+            wLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            wLabels.setAttribute('class', 'hover-labels');
+            wHover.appendChild(wLabels);
+          }
+          wLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getWindY(h.maxWind) - 4) + '" fill="#2dd4bf" font-size="10" font-weight="bold">' + h.maxWind_label + '</text>';
+        }
 
         // Rain hover
-        $('#rainHover').style.display = 'block';
-        $('#rainHoverLine').setAttribute('x1', x);
-        $('#rainHoverLine').setAttribute('x2', x);
-        $('#rainCircleMax').setAttribute('cx', x);
-        $('#rainCircleMax').setAttribute('cy', getRainY(h.maxRain));
-        $('#rainCircleAvg').setAttribute('cx', x);
-        $('#rainCircleAvg').setAttribute('cy', getRainY(h.avgRain));
-        $('#rainCircleMin').setAttribute('cx', x);
-        $('#rainCircleMin').setAttribute('cy', getRainY(h.minRain));
+        const rHover = $('#rainHover');
+        if (rHover) {
+          rHover.style.display = 'block';
+          $('#rainHoverLine').setAttribute('x1', x);
+          $('#rainHoverLine').setAttribute('x2', x);
+          $('#rainCircleMax').setAttribute('cx', x);
+          $('#rainCircleMax').setAttribute('cy', getRainY(h.maxRain));
+          $('#rainCircleAvg').setAttribute('cx', x);
+          $('#rainCircleAvg').setAttribute('cy', getRainY(h.avgRain));
+          $('#rainCircleMin').setAttribute('cx', x);
+          $('#rainCircleMin').setAttribute('cy', getRainY(h.minRain));
+
+          let rLabels = rHover.querySelector('.hover-labels');
+          if (!rLabels) {
+            rLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            rLabels.setAttribute('class', 'hover-labels');
+            rHover.appendChild(rLabels);
+          }
+          rLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getRainY(h.maxRain) - 4) + '" fill="#38bdf8" font-size="10" font-weight="bold">' + h.maxRain_label + '</text>';
+        }
 
         // Precip hover
-        $('#precipHover').style.display = 'block';
-        $('#precipHoverLine').setAttribute('x1', x);
-        $('#precipHoverLine').setAttribute('x2', x);
-        $('#precipCircleMax').setAttribute('cx', x);
-        $('#precipCircleMax').setAttribute('cy', getPrecipY(h.maxPrecip));
-        $('#precipCircleAvg').setAttribute('cx', x);
-        $('#precipCircleAvg').setAttribute('cy', getPrecipY(h.avgPrecip));
-        $('#precipCircleMin').setAttribute('cx', x);
-        $('#precipCircleMin').setAttribute('cy', getPrecipY(h.minPrecip));
+        const pHover = $('#precipHover');
+        if (pHover) {
+          pHover.style.display = 'block';
+          $('#precipHoverLine').setAttribute('x1', x);
+          $('#precipHoverLine').setAttribute('x2', x);
+          $('#precipCircleMax').setAttribute('cx', x);
+          $('#precipCircleMax').setAttribute('cy', getPrecipY(h.maxPrecip));
+          $('#precipCircleAvg').setAttribute('cx', x);
+          $('#precipCircleAvg').setAttribute('cy', getPrecipY(h.avgPrecip));
+          $('#precipCircleMin').setAttribute('cx', x);
+          $('#precipCircleMin').setAttribute('cy', getPrecipY(h.minPrecip));
+
+          let pLabels = pHover.querySelector('.hover-labels');
+          if (!pLabels) {
+            pLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            pLabels.setAttribute('class', 'hover-labels');
+            pHover.appendChild(pLabels);
+          }
+          pLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getPrecipY(h.maxPrecip) - 4) + '" fill="#06b6d4" font-size="10" font-weight="bold">' + h.maxPrecip_label + '</text>';
+        }
 
         // Snow hover
-        $('#snowHover').style.display = 'block';
-        $('#snowHoverLine').setAttribute('x1', x);
-        $('#snowHoverLine').setAttribute('x2', x);
-        $('#snowCircleMax').setAttribute('cx', x);
-        $('#snowCircleMax').setAttribute('cy', getSnowY(h.maxSnow));
-        $('#snowCircleAvg').setAttribute('cx', x);
-        $('#snowCircleAvg').setAttribute('cy', getSnowY(h.avgSnow));
-        $('#snowCircleMin').setAttribute('cx', x);
-        $('#snowCircleMin').setAttribute('cy', getSnowY(h.minSnow));
+        const sHover = $('#snowHover');
+        if (sHover) {
+          sHover.style.display = 'block';
+          $('#snowHoverLine').setAttribute('x1', x);
+          $('#snowHoverLine').setAttribute('x2', x);
+          $('#snowCircleMax').setAttribute('cx', x);
+          $('#snowCircleMax').setAttribute('cy', getSnowY(h.maxSnow));
+          $('#snowCircleAvg').setAttribute('cx', x);
+          $('#snowCircleAvg').setAttribute('cy', getSnowY(h.avgSnow));
+          $('#snowCircleMin').setAttribute('cx', x);
+          $('#snowCircleMin').setAttribute('cy', getSnowY(h.minSnow));
+
+          let sLabels = sHover.querySelector('.hover-labels');
+          if (!sLabels) {
+            sLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            sLabels.setAttribute('class', 'hover-labels');
+            sHover.appendChild(sLabels);
+          }
+          sLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getSnowY(h.maxSnow) - 4) + '" fill="#38bdf8" font-size="10" font-weight="bold">' + h.maxSnow_label + '</text>';
+        }
 
         // Sun hover
-        $('#sunHover').style.display = 'block';
-        $('#sunHoverLine').setAttribute('x1', x);
-        $('#sunHoverLine').setAttribute('x2', x);
-        $('#sunCircleMax').setAttribute('cx', x);
-        $('#sunCircleMax').setAttribute('cy', getSunY(h.maxSun));
-        $('#sunCircleAvg').setAttribute('cx', x);
-        $('#sunCircleAvg').setAttribute('cy', getSunY(h.avgSun));
-        $('#sunCircleMin').setAttribute('cx', x);
-        $('#sunCircleMin').setAttribute('cy', getSunY(h.minSun));
+        const suHover = $('#sunHover');
+        if (suHover) {
+          suHover.style.display = 'block';
+          $('#sunHoverLine').setAttribute('x1', x);
+          $('#sunHoverLine').setAttribute('x2', x);
+          $('#sunCircleMax').setAttribute('cx', x);
+          $('#sunCircleMax').setAttribute('cy', getSunY(h.maxSun));
+          $('#sunCircleAvg').setAttribute('cx', x);
+          $('#sunCircleAvg').setAttribute('cy', getSunY(h.avgSun));
+          $('#sunCircleMin').setAttribute('cx', x);
+          $('#sunCircleMin').setAttribute('cy', getSunY(h.minSun));
+
+          let suLabels = suHover.querySelector('.hover-labels');
+          if (!suLabels) {
+            suLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            suLabels.setAttribute('class', 'hover-labels');
+            suHover.appendChild(suLabels);
+          }
+          suLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getSunY(h.maxSun) - 4) + '" fill="#fbbf24" font-size="10" font-weight="bold">' + h.maxSun_label + '</text>';
+        }
 
         // Cloud hover
-        $('#cloudHover').style.display = 'block';
-        $('#cloudHoverLine').setAttribute('x1', x);
-        $('#cloudHoverLine').setAttribute('x2', x);
-        $('#cloudCircleLow').setAttribute('cx', x);
-        $('#cloudCircleLow').setAttribute('cy', getCloudY(h.avgLowCloud));
-        $('#cloudCircleMid').setAttribute('cx', x);
-        $('#cloudCircleMid').setAttribute('cy', getCloudY(h.avgMidCloud));
-        $('#cloudCircleHigh').setAttribute('cx', x);
-        $('#cloudCircleHigh').setAttribute('cy', getCloudY(h.avgHighCloud));
+        const cHover = $('#cloudHover');
+        if (cHover) {
+          cHover.style.display = 'block';
+          $('#cloudHoverLine').setAttribute('x1', x);
+          $('#cloudHoverLine').setAttribute('x2', x);
+          $('#cloudCircleLow').setAttribute('cx', x);
+          $('#cloudCircleLow').setAttribute('cy', getCloudY(h.avgLowCloud));
+          $('#cloudCircleMid').setAttribute('cx', x);
+          $('#cloudCircleMid').setAttribute('cy', getCloudY(h.avgMidCloud));
+          $('#cloudCircleHigh').setAttribute('cx', x);
+          $('#cloudCircleHigh').setAttribute('cy', getCloudY(h.avgHighCloud));
+        }
 
         // Pressure hover
         const prEl = $('#pressureHover');
@@ -2946,20 +3050,43 @@
       setStatus('Lade bis zu 384 Vorhersagestunden für Altenburg …');
 
       try {
-        const url = new URL('https://api.open-meteo.com/v1/forecast');
-        url.searchParams.set('latitude', LOCATION.latitude);
-        url.searchParams.set('longitude', LOCATION.longitude);
-        url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,precipitation,snowfall,sunshine_duration,wind_speed_10m,wind_direction_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,pressure_msl');
-        url.searchParams.set('forecast_hours', '384');
-        url.searchParams.set('timezone', 'auto');
-        url.searchParams.set('temperature_unit', 'celsius');
-        url.searchParams.set('wind_speed_unit', 'kmh');
-        url.searchParams.set('precipitation_unit', 'mm');
-        url.searchParams.set('models', MODELS.map((m) => m.id).join(','));
+        const BATCH_SIZE = 8;
+        const chunks = [];
+        for (let i = 0; i < MODELS.length; i += BATCH_SIZE) {
+          chunks.push(MODELS.slice(i, i + BATCH_SIZE).map(m => m.id));
+        }
 
-        const res = await fetch(url.toString());
-        if (!res.ok) throw new Error('API-Fehler HTTP ' + res.status);
-        forecast = await res.json();
+        const results = [];
+        const variables = 'temperature_2m,precipitation_probability,precipitation,snowfall,sunshine_duration,wind_speed_10m,wind_direction_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,pressure_msl';
+
+        for (const chunk of chunks) {
+          const url = new URL('https://api.open-meteo.com/v1/forecast');
+          url.searchParams.set('latitude', LOCATION.latitude);
+          url.searchParams.set('longitude', LOCATION.longitude);
+          url.searchParams.set('hourly', variables);
+          url.searchParams.set('forecast_hours', '384');
+          url.searchParams.set('timezone', 'auto');
+          url.searchParams.set('temperature_unit', 'celsius');
+          url.searchParams.set('wind_speed_unit', 'kmh');
+          url.searchParams.set('precipitation_unit', 'mm');
+          url.searchParams.set('models', chunk.join(','));
+
+          const res = await fetch(url.toString());
+          if (!res.ok) throw new Error('API-Fehler HTTP ' + res.status);
+          const data = await res.json();
+          results.push(data);
+        }
+
+        if (results.length === 0) throw new Error('Keine Daten empfangen');
+        
+        forecast = {
+          ...results[0],
+          hourly: {}
+        };
+        results.forEach(res => {
+          Object.assign(forecast.hourly, res.hourly);
+        });
+
         renderTable();
       } catch (err) {
         setStatus('Fehler beim Laden: ' + err.message);
