@@ -993,6 +993,7 @@
         <h1 id="headerTitle">Altenburg – Stündliche Wettermodelle</h1>
         <div class="sub" id="headerSub"><span id="headerModelCount">35</span> Wettermodelle im Multimodell-Vergleich (inkl. hochauflösende Regionalmodelle &amp; KI-Modelle)</div>
         <div class="location" id="headerLoc">📍 Altenburg, Thüringen (50.988° N, 12.437° O · 202 m)</div>
+        <div id="currentWeatherPill" style="display:inline-flex; align-items:center; gap:8px; margin-top:6px; font-family:monospace; font-size:12px; background:#16212e; padding:4px 10px; border-radius:6px; border:1px solid #26374a; color:#f59e0b; font-weight:700;"></div>
       </div>
 
       <!-- Prominentes Suchfeld für Orte direkt im Header -->
@@ -1008,8 +1009,10 @@
 
       <div class="actions">
         <div class="view-switch">
-          <button id="viewTableBtn" class="tab-btn active" type="button">📊 Tabelle</button>
+          <button id="viewForecastBtn" class="tab-btn active" type="button">✨ Vorhersage</button>
+          <button id="viewTableBtn" class="tab-btn" type="button">📊 Tabelle</button>
           <button id="viewChartBtn" class="tab-btn" type="button">📈 Ensemble-Charts</button>
+          <button id="viewModelBtn" class="tab-btn" type="button">💻 Modelle</button>
         </div>
         <button id="refreshBtn" type="button">Aktualisieren</button>
       </div>
@@ -1037,11 +1040,16 @@
       <div id="summary"></div>
     </div>
 
-    <!-- TREND-ANALYSE MODUL (HEUTE & MORGEN) -->
-    <div id="trendSection" class="trend-module" style="display:none;"></div>
+    <!-- TAB 1: VORHERSAGE (STANDARD) -->
+    <div id="forecastSection">
+      <!-- 24-STUNDEN AGGREGIERTE MODELL-TRENDS SPARK LINES -->
+      <div id="sparklinesSection" style="margin-bottom: 20px;"></div>
+      <!-- TREND-ANALYSE MODUL (HEUTE & MORGEN) -->
+      <div id="trendSection" class="trend-module"></div>
+    </div>
 
-    <!-- TAB 1: STUNDENTABELLE -->
-    <div id="tableSection">
+    <!-- TAB 2: STUNDENTABELLE -->
+    <div id="tableSection" style="display:none;">
       <!-- Mobile Day Filter Chips -->
       <div class="day-scroll-bar" id="dayScrollBar"></div>
 
@@ -1058,8 +1066,8 @@
       </div>
     </div>
 
-    <!-- TAB 2: MODELL-ENSEMBLE CHARTS -->
-    <div id="chartContainer" class="chart-container">
+    <!-- TAB 3: MODELL-ENSEMBLE CHARTS -->
+    <div id="chartContainer" class="chart-container" style="display:none;">
       <div class="chart-controls">
         <div class="chart-controls-title">
           Ensemble-Visualisierung (Min/Max Spanne)
@@ -1274,6 +1282,15 @@
       </div>
     </div>
 
+    <!-- TAB 4: MODELL-ÜBERSICHT -->
+    <div id="modelCardsSection" style="display:none; margin-top: 20px;">
+      <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+        <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;" id="modelCardsTitle">Die 35 meteorologischen Wettermodelle</h3>
+        <p style="font-size: 12px; color: var(--text-muted);">Umfassender Multimodell-Vergleich mit allen für diesen Standort verfügbaren globalen, regionalen und KI-gestützten Rechenmodellen.</p>
+      </div>
+      <div id="modelCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;"></div>
+    </div>
+
     <div class="note">
       <strong>Hinweise:</strong> Datenquelle: Open-Meteo.com API für Altenburg (Thüringen).
       Alle Berechnungen (Spannen, Vektor-Windrichtung) basieren auf den aktiven Modellen.
@@ -1347,8 +1364,15 @@
         <p style="margin-bottom:8px;">Wetterdaten werden direkt von der Open-Meteo API abgerufen. Es werden keine Nutzerprofile angelegt.</p>
         <h4 style="color:#fff; margin-bottom:4px;">3. Widerrufsrecht (Art. 7 Abs. 3 DSGVO)</h4>
         <p style="margin-bottom:8px;">Sie können die Cookie- und Speichereinstellungen jederzeit über die Fußzeile aufrufen und anpassen.</p>
-        <h4 style="color:#fff; margin-bottom:4px;">Impressum</h4>
-        <p>Altenburger Wettermodell-Vergleich · Private meteorologische Auswertung für Altenburg (Thüringen).</p>
+        <h4 style="color:#fff; margin-bottom:6px; font-size:13px; margin-top:12px;">Angaben gemäß § 5 DDG (Impressum)</h4>
+        <div style="background:#172332; padding:12px; border-radius:8px; border:1px solid #27384a; margin-bottom:12px; color:#e2e8f0; font-family:monospace; font-size:12px; line-height:1.5;">
+          <p style="font-weight:700; color:#fff; font-size:13px;">Andy Hessel</p>
+          <p>Albert-Levy-Str. 20</p>
+          <p>04600 Altenburg</p>
+          <div style="margin-top:8px; padding-top:8px; border-top:1px solid #243547; color:#94a3b8;">
+            E-Mail: <a href="mailto:webmaster@wetter-altenburg.de" style="color:#38bdf8; font-weight:600;">webmaster@wetter-altenburg.de</a>
+          </div>
+        </div>
       </div>
       <div class="cookie-actions">
         <button type="button" id="btnOkLegalModal" class="cookie-btn cookie-btn-accept">Verstanden</button>
@@ -1435,7 +1459,7 @@
 
     let forecast = null;
     let loading = false;
-    let currentView = 'table';
+    let currentView = 'forecast';
     let chartDays = 5;
     let highlightedModelId = null;
     let activeDayFilter = 'all';
@@ -1772,25 +1796,70 @@
     function setStatus(msg) { $('#status').textContent = msg; }
 
     // Tab Switching
-    $('#viewTableBtn').addEventListener('click', () => switchView('table'));
-    $('#viewChartBtn').addEventListener('click', () => switchView('chart'));
+    if ($('#viewForecastBtn')) $('#viewForecastBtn').addEventListener('click', () => switchView('forecast'));
+    if ($('#viewTableBtn')) $('#viewTableBtn').addEventListener('click', () => switchView('table'));
+    if ($('#viewChartBtn')) $('#viewChartBtn').addEventListener('click', () => switchView('chart'));
+    if ($('#viewModelBtn')) $('#viewModelBtn').addEventListener('click', () => switchView('models'));
 
     function switchView(view) {
       currentView = view;
-      if (view === 'table') {
-        $('#tableSection').style.display = 'block';
-        $('#chartContainer').style.display = 'none';
-        $('#trendSection').style.display = 'block';
-        $('#viewTableBtn').classList.add('active');
-        $('#viewChartBtn').classList.remove('active');
-      } else {
-        $('#tableSection').style.display = 'none';
-        $('#chartContainer').style.display = 'block';
-        $('#trendSection').style.display = 'none';
-        $('#viewTableBtn').classList.remove('active');
-        $('#viewChartBtn').classList.add('active');
-        renderCharts();
-      }
+      if ($('#viewForecastBtn')) $('#viewForecastBtn').classList.toggle('active', view === 'forecast');
+      if ($('#viewTableBtn')) $('#viewTableBtn').classList.toggle('active', view === 'table');
+      if ($('#viewChartBtn')) $('#viewChartBtn').classList.toggle('active', view === 'chart');
+      if ($('#viewModelBtn')) $('#viewModelBtn').classList.toggle('active', view === 'models');
+
+      if ($('#forecastSection')) $('#forecastSection').style.display = view === 'forecast' ? 'block' : 'none';
+      if ($('#tableSection')) $('#tableSection').style.display = view === 'table' ? 'block' : 'none';
+      if ($('#chartContainer')) $('#chartContainer').style.display = view === 'chart' ? 'block' : 'none';
+      if ($('#modelCardsSection')) $('#modelCardsSection').style.display = view === 'models' ? 'block' : 'none';
+
+      if (view === 'chart') renderCharts();
+      if (view === 'models') renderModelCards();
+    }
+
+    function renderModelCards() {
+      const grid = $('#modelCardsGrid');
+      if (!grid) return;
+      grid.innerHTML = ALL_WEATHER_MODELS.map(m => `
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background-color: ${m.color}; display: inline-block;"></span>
+                <strong style="font-size: 13px; color: #fff;">${m.label}</strong>
+              </div>
+              <span style="font-size: 10px; font-family: monospace; padding: 2px 6px; border-radius: 4px; background: #1f2d3d; color: #94a3b8; border: 1px solid #334155;">
+                ${m.isRegional ? 'Regional' : 'Global'}
+              </span>
+            </div>
+            <div style="font-size: 11px; color: #38bdf8; font-weight: 600; margin-bottom: 4px;">ID: ${m.id}</div>
+          </div>
+          <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #233142; font-size: 10px; color: #34d399; font-weight: 600;">
+            ✓ Aktiv
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateCurrentWeatherPill(availableModels, times) {
+      const pill = $('#currentWeatherPill');
+      if (!pill || !availableModels.length || !times.length) return;
+      const nowIso = new Date().toISOString().slice(0, 13);
+      let curIdx = times.findIndex(t => t.startsWith(nowIso));
+      if (curIdx < 0) curIdx = 0;
+
+      const regModels = availableModels.filter(m => m.isRegional);
+      const targetModels = regModels.length ? regModels : availableModels;
+
+      const temps = targetModels.map(m => m.temperature[curIdx]).filter(Number.isFinite);
+      const rains = targetModels.map(m => m.probability[curIdx]).filter(Number.isFinite);
+      const winds = targetModels.map(m => m.windSpeed[curIdx]).filter(Number.isFinite);
+
+      const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—';
+      const avgRain = rains.length ? Math.round(rains.reduce((a,b)=>a+b,0)/rains.length) : '0';
+      const avgWind = winds.length ? (winds.reduce((a,b)=>a+b,0)/winds.length).toFixed(1) : '—';
+
+      pill.innerHTML = `<span>🌡️ Aktuell: +${avgTemp}°C</span> <span>·</span> <span>🌧️ Regen: ${avgRain}%</span> <span>·</span> <span>💨 Wind: ${avgWind} km/h</span>`;
     }
 
     // Chart Time Window Buttons
@@ -2058,10 +2127,377 @@
       setStatus('Vorhersage geladen.');
 
       renderTrendAnalysis(availableModels, times, lastHour);
+      renderSparklines(availableModels, times);
+      updateCurrentWeatherPill(availableModels, times);
 
       if (currentView === 'chart') {
         renderCharts();
       }
+      if (currentView === 'models') {
+        renderModelCards();
+      }
+    }
+
+    let sparklineModelFilter = 'all';
+    let sparklineHoverIdx = null;
+
+    function renderSparklines(availableModels, times) {
+      const container = $('#sparklinesSection');
+      if (!container) return;
+      if (!availableModels || !availableModels.length || !times || times.length < 2) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'block';
+
+      const nowIsoPrefix = new Date().toISOString().slice(0, 13);
+      let currentHourIdx = times.findIndex(t => t.startsWith(nowIsoPrefix));
+      if (currentHourIdx < 0) currentHourIdx = 0;
+
+      const hours24Count = Math.min(24, times.length - currentHourIdx);
+      if (hours24Count < 2) {
+        container.style.display = 'none';
+        return;
+      }
+      const hours24Times = times.slice(currentHourIdx, currentHourIdx + hours24Count);
+
+      const regModels = availableModels.filter(m => m.isRegional);
+
+      // Determine model to use
+      let activeModels = availableModels;
+      let filterLabel = 'Multimodell-Mittel';
+      if (sparklineModelFilter !== 'all') {
+        const found = availableModels.find(m => m.id === sparklineModelFilter);
+        if (found) {
+          activeModels = [found];
+          filterLabel = found.label;
+        }
+      }
+
+      // Compute hourly values (24 hours starting from current hour)
+      const hours24 = [];
+      for (let i = 0; i < hours24Count; i++) {
+        const globalIdx = currentHourIdx + i;
+        const tp = getTimestampParts(hours24Times[i]);
+        const temps = activeModels.map(m => m.temperature[globalIdx]).filter(Number.isFinite);
+        const rainProbs = activeModels.map(m => m.probability[globalIdx]).filter(Number.isFinite);
+        const precips = activeModels.map(m => m.precipitation[globalIdx]).filter(Number.isFinite);
+        const winds = activeModels.map(m => m.windSpeed[globalIdx]).filter(Number.isFinite);
+        const press = activeModels.map(m => m.pressure ? m.pressure[globalIdx] : null).filter(Number.isFinite);
+
+        const avgT = temps.length ? Math.round((temps.reduce((a,b)=>a+b,0)/temps.length) * 10) / 10 : 0;
+        const maxR = rainProbs.length ? Math.max(...rainProbs) : 0;
+        const maxP = precips.length ? Math.max(...precips) : 0;
+        const avgW = winds.length ? Math.round((winds.reduce((a,b)=>a+b,0)/winds.length) * 10) / 10 : 0;
+        const avgPr = press.length ? Math.round((press.reduce((a,b)=>a+b,0)/press.length) * 10) / 10 : 1013.25;
+
+        hours24.push({
+          idx: i,
+          timeFormatted: tp ? tp.time : '',
+          weekday: tp ? tp.weekday : '',
+          temp: avgT,
+          rainProb: maxR,
+          precip: maxP,
+          windSpeed: avgW,
+          pressure: avgPr
+        });
+      }
+
+      const startTp = getTimestampParts(hours24Times[0]);
+      const endTp = getTimestampParts(hours24Times[hours24Count - 1]);
+      const timeRangeStr = (startTp && endTp) 
+        ? `${startTp.weekday}, ${startTp.time} Uhr bis ${endTp.weekday}, ${endTp.time} Uhr`
+        : '';
+
+      // SVG Dimensions
+      const svgW = 280, svgH = 64, padTop = 8, padBottom = 10, padX = 4;
+      const usableW = svgW - 2 * padX;
+      const usableH = svgH - padTop - padBottom;
+      const getX = (idx) => padX + (idx / (hours24Count - 1)) * usableW;
+
+      // 1. Temperature
+      const temps = hours24.map(h => h.temp);
+      const minTemp = Math.min(...temps);
+      const maxTemp = Math.max(...temps);
+      const tempRange = (maxTemp - minTemp) || 1;
+      const getTempY = (val) => padTop + (1 - (val - minTemp) / tempRange) * usableH;
+      const tempLinePath = 'M ' + temps.map((t, i) => `${getX(i).toFixed(1)},${getTempY(t).toFixed(1)}`).join(' L ');
+      const tempAreaPath = `${tempLinePath} L ${(svgW - padX).toFixed(1)} ${(svgH - padBottom).toFixed(1)} L ${padX} ${(svgH - padBottom).toFixed(1)} Z`;
+      const tempDelta = temps[temps.length - 1] - temps[0];
+      const minTempIdx = temps.indexOf(minTemp);
+      const maxTempIdx = temps.indexOf(maxTemp);
+
+      // 2. Rain
+      const rainProbs = hours24.map(h => h.rainProb);
+      const precipAmts = hours24.map(h => h.precip);
+      const maxRain = Math.max(...rainProbs);
+      const totalPrecip = precipAmts.reduce((a,b)=>a+b, 0);
+      const maxPrecipSingle = Math.max(...precipAmts);
+      const rainRangeMax = Math.max(40, Math.ceil(maxRain / 10) * 10);
+      const getRainY = (val) => padTop + (1 - Math.min(rainRangeMax, Math.max(0, val)) / rainRangeMax) * usableH;
+      const rainLinePath = 'M ' + rainProbs.map((r, i) => `${getX(i).toFixed(1)},${getRainY(r).toFixed(1)}`).join(' L ');
+      const rainAreaPath = `${rainLinePath} L ${(svgW - padX).toFixed(1)} ${(svgH - padBottom).toFixed(1)} L ${padX} ${(svgH - padBottom).toFixed(1)} Z`;
+      const maxRainIdx = rainProbs.indexOf(maxRain);
+
+      // 3. Wind
+      const windSpeeds = hours24.map(h => h.windSpeed);
+      const peakWind = Math.max(...windSpeeds);
+      const windScaleMax = Math.max(25, Math.ceil((peakWind + 5) / 5) * 5);
+      const getWindY = (val) => padTop + (1 - Math.min(windScaleMax, Math.max(0, val)) / windScaleMax) * usableH;
+      const windLinePath = 'M ' + windSpeeds.map((w, i) => `${getX(i).toFixed(1)},${getWindY(w).toFixed(1)}`).join(' L ');
+      const windAreaPath = `${windLinePath} L ${(svgW - padX).toFixed(1)} ${(svgH - padBottom).toFixed(1)} L ${padX} ${(svgH - padBottom).toFixed(1)} Z`;
+      const peakWindIdx = windSpeeds.indexOf(peakWind);
+
+      // 4. Pressure
+      const pressures = hours24.map(h => h.pressure);
+      const minPress = Math.min(...pressures);
+      const maxPress = Math.max(...pressures);
+      const pressBuffer = Math.max(1.5, (maxPress - minPress) * 0.2);
+      const pressScaleMin = minPress - pressBuffer;
+      const pressScaleMax = maxPress + pressBuffer;
+      const pressScaleRange = pressScaleMax - pressScaleMin || 1;
+      const getPressY = (val) => padTop + (1 - (val - pressScaleMin) / pressScaleRange) * usableH;
+      const pressLinePath = 'M ' + pressures.map((p, i) => `${getX(i).toFixed(1)},${getPressY(p).toFixed(1)}`).join(' L ');
+      const pressAreaPath = `${pressLinePath} L ${(svgW - padX).toFixed(1)} ${(svgH - padBottom).toFixed(1)} L ${padX} ${(svgH - padBottom).toFixed(1)} Z`;
+      const pressDelta = pressures[pressures.length - 1] - pressures[0];
+
+      // Active Hover Hour
+      const activeH = sparklineHoverIdx !== null ? hours24[sparklineHoverIdx] : null;
+
+      container.innerHTML = `
+        <div style="background:#111923; border:1px solid #243547; border-radius:12px; padding:14px; box-shadow:0 10px 25px rgba(0,0,0,0.4); margin-bottom:16px;">
+          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid #1e2d3d; padding-bottom:10px; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="background:rgba(30,58,138,0.7); border:1px solid rgba(37,99,235,0.5); color:#60a5fa; padding:4px 8px; border-radius:8px; font-size:14px;">⏱️</span>
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <strong style="font-size:14px; color:#fff;">24-Stunden Aggregierte Modell-Trends</strong>
+                  <span style="font-size:10px; font-family:monospace; background:rgba(30,58,138,0.8); color:#93c5fd; border:1px solid rgba(37,99,235,0.5); padding:1px 8px; border-radius:10px;">${filterLabel}</span>
+                </div>
+                <div style="font-size:11px; color:#94a3b8;">${timeRangeStr}</div>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:12px; color:#94a3b8; font-weight:500;">Modell:</span>
+              <select id="sparklineModelSelect" style="background:#16212e; color:#e2e8f0; border:1px solid #2e4056; border-radius:8px; padding:4px 8px; font-size:12px; font-weight:600; outline:none; cursor:pointer;">
+                <option value="all" ${sparklineModelFilter === 'all' ? 'selected' : ''}>Multimodell-Mittel (Alle)</option>
+                ${regModels.length ? `<optgroup label="Regionale Hochauflösende Modelle">
+                  ${regModels.map(m => `<option value="${m.id}" ${sparklineModelFilter === m.id ? 'selected' : ''}>${m.label}</option>`).join('')}
+                </optgroup>` : ''}
+              </select>
+            </div>
+
+            <div style="font-size:11px; font-family:monospace;">
+              ${activeH ? `
+                <div style="background:#182635; padding:4px 10px; border-radius:8px; border:1px solid rgba(59,130,246,0.4); color:#93c5fd; display:flex; align-items:center; gap:8px;">
+                  <strong style="color:#fff;">+${sparklineHoverIdx}h (${activeH.timeFormatted} Uhr):</strong>
+                  <span style="color:#fde68a; font-weight:bold;">+${activeH.temp.toFixed(1)}°C</span>
+                  <span style="color:#64748b;">·</span>
+                  <span style="color:#38bdf8;">Regen: ${activeH.rainProb}%</span>
+                  <span style="color:#64748b;">·</span>
+                  <span style="color:#2dd4bf;">Wind: ${activeH.windSpeed.toFixed(1)} km/h</span>
+                  <span style="color:#64748b;">·</span>
+                  <span style="color:#34d399;">${activeH.pressure.toFixed(1)} hPa</span>
+                </div>
+              ` : `
+                <span style="color:#94a3b8;">Hover/Wischen über Diagramme für Stundenwerte</span>
+              `}
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px;">
+            <!-- CARD 1: TEMPERATUR -->
+            <div class="spark-card" data-card="temp" style="background:#141e2b; border:1px solid #223344; border-radius:10px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; cursor:crosshair; position:relative; overflow:hidden;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+                <span style="font-weight:600; color:#cbd5e1; display:flex; align-items:center; gap:4px;">🌡️ Temperatur-Verlauf</span>
+                <span style="font-size:10px; font-family:monospace; font-weight:700; padding:1px 6px; border-radius:4px; ${tempDelta > 0.5 ? 'background:rgba(120,53,15,0.6); color:#fde68a;' : tempDelta < -0.5 ? 'background:rgba(22,78,99,0.6); color:#67e8f9;' : 'background:#1e293b; color:#cbd5e1;'}">
+                  ${tempDelta > 0 ? `+${tempDelta.toFixed(1)}°` : `${tempDelta.toFixed(1)}°`}
+                </span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <div style="display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#fff;">+${(sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].temp : temps[0]).toFixed(1)} °C</span>
+                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Jetzt'}</span>
+                </div>
+                <div style="font-size:10px; font-family:monospace; color:#94a3b8;">
+                  <span style="color:#38bdf8;">${minTemp.toFixed(1)}°</span> ↔ <span style="color:#f59e0b;">+${maxTemp.toFixed(1)}°</span>
+                </div>
+              </div>
+              <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none" style="width:100%; height:54px; overflow:hidden;" class="spark-svg" data-spark="temp">
+                <defs>
+                  <linearGradient id="spk-t-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="${tempAreaPath}" fill="url(#spk-t-grad)" />
+                <path d="${tempLinePath}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="${getX(minTempIdx)}" cy="${getTempY(minTemp)}" r="3" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>
+                <circle cx="${getX(maxTempIdx)}" cy="${getTempY(maxTemp)}" r="3" fill="#f59e0b" stroke="#0d131a" stroke-width="1.5"/>
+                ${sparklineHoverIdx !== null ? `
+                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getTempY(temps[sparklineHoverIdx])}" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="2"/>
+                ` : ''}
+              </svg>
+              <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
+                <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
+              </div>
+            </div>
+
+            <!-- CARD 2: REGEN -->
+            <div class="spark-card" data-card="rain" style="background:#141e2b; border:1px solid #223344; border-radius:10px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; cursor:crosshair; position:relative; overflow:hidden;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+                <span style="font-weight:600; color:#cbd5e1; display:flex; align-items:center; gap:4px;">🌧️ Regen &amp; Niederschlag</span>
+                <span style="font-size:10px; font-family:monospace; font-weight:700; padding:1px 6px; border-radius:4px; ${maxRain >= 50 ? 'background:rgba(30,58,138,0.7); color:#93c5fd;' : 'background:#1e293b; color:#cbd5e1;'}">
+                  ${maxRain >= 50 ? 'Schauer aktiv' : maxRain > 15 ? 'Leichtes Risiko' : 'Überw. trocken'}
+                </span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <div style="display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#38bdf8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].rainProb : rainProbs[0]} %</span>
+                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Max. ' + maxRain + '%'}</span>
+                </div>
+                <div style="font-size:10px; font-family:monospace; color:#06b6d4;">
+                  ${totalPrecip > 0 ? `Σ ${totalPrecip.toFixed(1)} mm` : '0.0 mm'}
+                </div>
+              </div>
+              <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none" style="width:100%; height:54px; overflow:hidden;" class="spark-svg" data-spark="rain">
+                <defs>
+                  <linearGradient id="spk-r-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                ${maxPrecipSingle > 0 ? precipAmts.map((p, idx) => {
+                  if (p <= 0.05) return '';
+                  const barH = Math.min(usableH * 0.8, (p / Math.max(2, maxPrecipSingle)) * usableH * 0.8);
+                  const barW = Math.max(3, usableW / hours24Count - 2);
+                  return `<rect x="${getX(idx) - barW / 2}" y="${svgH - padBottom - barH}" width="${barW}" height="${barH}" rx="1" fill="#06b6d4" fill-opacity="0.5"/>`;
+                }).join('') : ''}
+                <path d="${rainAreaPath}" fill="url(#spk-r-grad)" />
+                <path d="${rainLinePath}" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>
+                ${maxRain > 0 ? `<circle cx="${getX(maxRainIdx)}" cy="${getRainY(maxRain)}" r="3" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>` : ''}
+                ${sparklineHoverIdx !== null ? `
+                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getRainY(rainProbs[sparklineHoverIdx])}" r="4" fill="#38bdf8" stroke="#0d131a" stroke-width="2"/>
+                ` : ''}
+              </svg>
+              <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
+                <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
+              </div>
+            </div>
+
+            <!-- CARD 3: WIND -->
+            <div class="spark-card" data-card="wind" style="background:#141e2b; border:1px solid #223344; border-radius:10px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; cursor:crosshair; position:relative; overflow:hidden;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+                <span style="font-weight:600; color:#cbd5e1; display:flex; align-items:center; gap:4px;">💨 Wind &amp; Böen</span>
+                <span style="font-size:10px; font-family:monospace; font-weight:700; padding:1px 6px; border-radius:4px; ${peakWind >= 45 ? 'background:rgba(159,18,57,0.7); color:#fda4af;' : 'background:#1e293b; color:#cbd5e1;'}">
+                  ${peakWind >= 45 ? 'Stürmisch' : peakWind >= 25 ? 'Mäßig/Frisch' : 'Ruhig'}
+                </span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <div style="display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#2dd4bf;">${(sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].windSpeed : windSpeeds[0]).toFixed(1)} km/h</span>
+                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Mittel'}</span>
+                </div>
+                <div style="font-size:10px; font-family:monospace; color:#94a3b8;">
+                  Böen bis <span style="color:#2dd4bf; font-weight:bold;">${peakWind.toFixed(1)}</span>
+                </div>
+              </div>
+              <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none" style="width:100%; height:54px; overflow:hidden;" class="spark-svg" data-spark="wind">
+                <defs>
+                  <linearGradient id="spk-w-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.28"/>
+                    <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="${windAreaPath}" fill="url(#spk-w-grad)" />
+                <path d="${windLinePath}" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="${getX(peakWindIdx)}" cy="${getWindY(windSpeeds[peakWindIdx])}" r="3" fill="#5eead4" stroke="#0d131a" stroke-width="1.5"/>
+                ${sparklineHoverIdx !== null ? `
+                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getWindY(windSpeeds[sparklineHoverIdx])}" r="4" fill="#2dd4bf" stroke="#0d131a" stroke-width="2"/>
+                ` : ''}
+              </svg>
+              <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
+                <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
+              </div>
+            </div>
+
+            <!-- CARD 4: LUFTDRUCK -->
+            <div class="spark-card" data-card="press" style="background:#141e2b; border:1px solid #223344; border-radius:10px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; cursor:crosshair; position:relative; overflow:hidden;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+                <span style="font-weight:600; color:#cbd5e1; display:flex; align-items:center; gap:4px;">⏲️ Luftdruck-Tendenz</span>
+                <span style="font-size:10px; font-family:monospace; font-weight:700; padding:1px 6px; border-radius:4px; ${pressDelta >= 1.5 ? 'background:rgba(6,78,59,0.7); color:#6ee7b7;' : pressDelta <= -1.5 ? 'background:rgba(49,46,129,0.7); color:#c7d2fe;' : 'background:#1e293b; color:#cbd5e1;'}">
+                  ${pressDelta >= 1.5 ? '↗ Steigend' : pressDelta <= -1.5 ? '↘ Fallend' : '→ Stabil'}
+                </span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <div style="display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#34d399;">${(sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].pressure : pressures[0]).toFixed(1)} hPa</span>
+                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Aktuell'}</span>
+                </div>
+                <div style="font-size:10px; font-family:monospace; color:#94a3b8;">
+                  Δ ${pressDelta >= 0 ? `+${pressDelta.toFixed(1)}` : pressDelta.toFixed(1)} hPa
+                </div>
+              </div>
+              <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none" style="width:100%; height:54px; overflow:hidden;" class="spark-svg" data-spark="press">
+                <defs>
+                  <linearGradient id="spk-p-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="${pressAreaPath}" fill="url(#spk-p-grad)" />
+                <path d="${pressLinePath}" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round"/>
+                ${sparklineHoverIdx !== null ? `
+                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getPressY(pressures[sparklineHoverIdx])}" r="4" fill="#34d399" stroke="#0d131a" stroke-width="2"/>
+                ` : ''}
+              </svg>
+              <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
+                <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Event Handlers for Model Selector
+      const sel = $('#sparklineModelSelect');
+      if (sel) {
+        sel.onchange = (e) => {
+          sparklineModelFilter = e.target.value;
+          renderSparklines(availableModels, times);
+        };
+      }
+
+      // Pointer Handlers for Scrubbing across all sparkline SVGs
+      $$('.spark-card').forEach(card => {
+        const handlePointer = (clientX) => {
+          const svgEl = card.querySelector('.spark-svg');
+          if (!svgEl) return;
+          const rect = svgEl.getBoundingClientRect();
+          const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+          const newIdx = Math.round(ratio * (hours24Count - 1));
+          if (newIdx !== sparklineHoverIdx) {
+            sparklineHoverIdx = newIdx;
+            renderSparklines(availableModels, times);
+          }
+        };
+
+        card.onmousemove = (e) => handlePointer(e.clientX);
+        card.onmouseleave = () => {
+          if (sparklineHoverIdx !== null) {
+            sparklineHoverIdx = null;
+            renderSparklines(availableModels, times);
+          }
+        };
+        card.ontouchmove = (e) => {
+          if (e.touches && e.touches[0]) handlePointer(e.touches[0].clientX);
+        };
+      });
     }
 
     function renderTrendAnalysis(availableModels, times, lastHour) {
