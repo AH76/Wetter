@@ -3043,20 +3043,20 @@
         if (maxPress !== null && maxPress > maxPressAll) maxPressAll = maxPress;
         const isHochdruck = avgPress !== null ? avgPress >= 1013.25 : null;
 
-        const minCloud = clouds.length ? Math.min(...clouds) : 0;
-        const maxCloud = clouds.length ? Math.max(...clouds) : 0;
+        const minCloud = clouds.length ? Math.round(Math.min(...clouds)) : 0;
+        const maxCloud = clouds.length ? Math.round(Math.max(...clouds)) : 0;
         const avgCloud = clouds.length ? Math.round(clouds.reduce((a, b) => a + b, 0) / clouds.length) : 0;
 
-        const minLowCloud = lowClouds.length ? Math.min(...lowClouds) : 0;
-        const maxLowCloud = lowClouds.length ? Math.max(...lowClouds) : 0;
+        const minLowCloud = lowClouds.length ? Math.round(Math.min(...lowClouds)) : 0;
+        const maxLowCloud = lowClouds.length ? Math.round(Math.max(...lowClouds)) : 0;
         const avgLowCloud = lowClouds.length ? Math.round(lowClouds.reduce((a, b) => a + b, 0) / lowClouds.length) : 0;
 
-        const minMidCloud = midClouds.length ? Math.min(...midClouds) : 0;
-        const maxMidCloud = midClouds.length ? Math.max(...midClouds) : 0;
+        const minMidCloud = midClouds.length ? Math.round(Math.min(...midClouds)) : 0;
+        const maxMidCloud = midClouds.length ? Math.round(Math.max(...midClouds)) : 0;
         const avgMidCloud = midClouds.length ? Math.round(midClouds.reduce((a, b) => a + b, 0) / midClouds.length) : 0;
 
-        const minHighCloud = highClouds.length ? Math.min(...highClouds) : 0;
-        const maxHighCloud = highClouds.length ? Math.max(...highClouds) : 0;
+        const minHighCloud = highClouds.length ? Math.round(Math.min(...highClouds)) : 0;
+        const maxHighCloud = highClouds.length ? Math.round(Math.max(...highClouds)) : 0;
         const avgHighCloud = highClouds.length ? Math.round(highClouds.reduce((a, b) => a + b, 0) / highClouds.length) : 0;
 
         const minVis = visibilities.length ? Math.min(...visibilities) : null;
@@ -3116,7 +3116,7 @@
           minPress,
           maxPress,
           avgPress,
-          pressRange: pressures.length ? Math.round(minPress) + '–' + Math.round(maxPress) + ' hPa' : '—',
+          pressRange: pressures.length ? minPress.toFixed(1) + '–' + maxPress.toFixed(1) + ' hPa' : '—',
           isHochdruck,
           minCloud,
           maxCloud,
@@ -3203,7 +3203,7 @@
             <div class="hud-row">
               <span class="hud-lbl">Luftdruck:</span>
               <strong style="color:#38bdf8;">${h.pressRange} (Ø ${h.avgPress !== null ? h.avgPress.toFixed(1) : '—'} hPa)</strong>
-              ${h.isHochdruck !== null ? (h.isHochdruck ? '<span style="color:#fde047; background:rgba(234,179,8,0.2); border:1px solid rgba(234,179,8,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">☀️ Hochdruck (≥ 1013,2 hPa)</span>' : '<span style="color:#60a5fa; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">🌧️ Tiefdruck (&lt; 1013,2 hPa)</span>') : ''}
+              ${h.isHochdruck !== null ? (h.isHochdruck ? '<span style="color:#fde047; background:rgba(234,179,8,0.2); border:1px solid rgba(234,179,8,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">☀️ Hochdruck (≥ 1013,3 hPa)</span>' : '<span style="color:#60a5fa; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">🌧️ Tiefdruck (&lt; 1013,3 hPa)</span>') : ''}
             </div>
           </div>
         `;
@@ -3635,11 +3635,11 @@
         pressSvgEl.innerHTML = `
           <!-- Hochdruck Zone (> 1013.25 hPa) -->
           <rect x="${padL}" y="${padT}" width="${plotW}" height="${Math.max(0, normY - padT)}" fill="#f59e0b" fill-opacity="0.04"/>
-          <text x="${svgW - padR - 8}" y="${padT + 14}" text-anchor="end" fill="#fbbf24" font-size="10" font-weight="600" opacity="0.8">☀️ HOCHDRUCK-BEREICH (≥ 1013,2 hPa · ruhiges Wetter)</text>
+          <text x="${svgW - padR - 8}" y="${padT + 14}" text-anchor="end" fill="#fbbf24" font-size="10" font-weight="600" opacity="0.8">☀️ HOCHDRUCK-BEREICH (≥ 1013,3 hPa · ruhiges Wetter)</text>
 
           <!-- Tiefdruck Zone (< 1013.25 hPa) -->
           <rect x="${padL}" y="${normY}" width="${plotW}" height="${Math.max(0, padT + plotH - normY)}" fill="#3b82f6" fill-opacity="0.04"/>
-          <text x="${svgW - padR - 8}" y="${padT + plotH - 6}" text-anchor="end" fill="#60a5fa" font-size="10" font-weight="600" opacity="0.8">🌧️ TIEFDRUCK-BEREICH (&lt; 1013,2 hPa · wechselhaft / Hebung)</text>
+          <text x="${svgW - padR - 8}" y="${padT + plotH - 6}" text-anchor="end" fill="#60a5fa" font-size="10" font-weight="600" opacity="0.8">🌧️ TIEFDRUCK-BEREICH (&lt; 1013,3 hPa · wechselhaft / Hebung)</text>
 
           ${pressGridSvg}
           ${dateLabelsSvg}
@@ -3648,7 +3648,7 @@
           <line x1="${padL}" y1="${normY}" x2="${svgW - padR}" y2="${normY}" stroke="#f8fafc" stroke-width="2" stroke-dasharray="5 3"/>
           <g transform="translate(${padL + 8}, ${normY - 11})">
             <rect x="0" y="0" width="235" height="18" rx="4" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
-            <text x="6" y="13" fill="#f8fafc" font-size="10" font-weight="700">Norm-Druckgrenze: 1013,25 hPa (Hoch / Tief)</text>
+            <text x="6" y="13" fill="#f8fafc" font-size="10" font-weight="700">Norm-Druckgrenze: 1013,3 hPa (Hoch / Tief)</text>
           </g>
 
           <!-- Envelope & Curves -->
