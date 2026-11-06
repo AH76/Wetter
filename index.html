@@ -845,51 +845,81 @@
       cursor: crosshair;
     }
 
-    /* Mobile Sticky Readout HUD */
+    /* Mobile Sticky Readout HUD - Strictly 3 Rows Layout */
     .chart-hud {
       margin-top: 14px;
       margin-bottom: 8px;
-      padding: 10px 14px;
+      padding: 8px 14px;
       background: #16212e;
       border: 1px solid rgba(59, 130, 246, 0.45);
       border-radius: 12px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-      font-size: 11px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px 16px;
+      gap: 12px;
       align-items: center;
-      justify-content: space-between;
+      min-height: 84px;
+      overflow: hidden;
     }
     .hud-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      flex-shrink: 0;
     }
-    .hud-title {
+    .hud-date-block {
+      display: flex;
+      flex-direction: column;
       font-weight: 700;
       color: #ffffff;
       font-size: 13px;
+      line-height: 1.25;
     }
-    .hud-pill {
+    .hud-weekday { color: #f1f5f9; }
+    .hud-date { color: #94a3b8; font-size: 11px; }
+    .hud-time-pill {
       background: rgba(30, 58, 138, 0.7);
       color: #93c5fd;
       border: 1px solid rgba(37, 99, 235, 0.5);
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 6px;
       font-family: ui-monospace, SFMono-Regular, monospace;
       font-weight: 700;
-      font-size: 11px;
+      font-size: 12px;
+      white-space: nowrap;
     }
-    .hud-stats {
+    .hud-3rows {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
       font-family: ui-monospace, SFMono-Regular, monospace;
-      color: #94a3b8;
     }
-    .hud-stats strong { color: #f1f5f9; }
+    .hud-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      font-size: 11px;
+      line-height: 1.35;
+      color: #cbd5e1;
+    }
+    .hud-row::-webkit-scrollbar { display: none; }
+    .hud-lbl { color: #94a3b8; }
+    .hud-model { font-size: 10px; font-weight: 500; }
+    .hud-sep { color: #475569; margin: 0 2px; }
+    .hud-pipe { color: #334155; margin: 0 4px; font-weight: bold; }
+    .hud-avg-badge {
+      color: #fde68a;
+      background: rgba(30,41,59,0.8);
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #334155;
+    }
 
     .mobile-tip {
       font-size: 10px;
@@ -1042,8 +1072,8 @@
 
     <!-- TAB 1: VORHERSAGE (STANDARD) -->
     <div id="forecastSection">
-      <!-- 24-STUNDEN AGGREGIERTE MODELL-TRENDS SPARK LINES -->
-      <div id="sparklinesSection" style="margin-bottom: 20px;"></div>
+      <!-- 24-STUNDEN AGGREGIERTE MODELL-TRENDS SPARK LINES (ENTFERNT PER BENUTZERWUNSCH) -->
+      <div id="sparklinesSection" style="display:none;"></div>
       <!-- TREND-ANALYSE MODUL (HEUTE & MORGEN) -->
       <div id="trendSection" class="trend-module"></div>
     </div>
@@ -1095,10 +1125,9 @@
 
       <div class="model-pills" id="modelPillRow"></div>
 
-      <div class="chart-hud" id="chartHud"></div>
-
       <!-- 1. TEMPERATUR ENSEMBLEBAND -->
       <div class="chart-card" id="tempCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>🌡️ Temperatur-Ensembleband (°C)</span>
@@ -1117,6 +1146,7 @@
 
       <!-- 2. WIND ENSEMBLEBAND -->
       <div class="chart-card" id="windCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>💨 Windgeschwindigkeit- &amp; Böen-Ensembleband (km/h)</span>
@@ -1135,6 +1165,7 @@
 
       <!-- 3. REGENWAHRSCHEINLICHKEIT ENSEMBLEBAND -->
       <div class="chart-card" id="rainCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>🌧️ Regenwahrscheinlichkeit-Ensembleband (%)</span>
@@ -1153,6 +1184,7 @@
 
       <!-- 4. NIEDERSCHLAGSMENGE ENSEMBLEBAND -->
       <div class="chart-card" id="precipCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>💧 Niederschlagsmenge-Ensembleband (mm / Stunde)</span>
@@ -1171,6 +1203,7 @@
 
       <!-- 5. SCHNEE ENSEMBLEBAND -->
       <div class="chart-card" id="snowCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>❄️ Schnee-Ensembleband (cm / Stunde)</span>
@@ -1189,6 +1222,7 @@
 
       <!-- 6. SONNENSCHEINDAUER ENSEMBLEBAND -->
       <div class="chart-card" id="sunCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>☀️ Sonnenscheindauer-Ensembleband (Min / h)</span>
@@ -1207,6 +1241,7 @@
 
       <!-- 7. WOLKENSTOCKWERKE ENSEMBLE (TIEFE · MITTLERE · HOHE WOLKEN & NEBEL) -->
       <div class="chart-card" id="cloudCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>☁️ Wolkenstockwerke-Ensemble (Tiefe · Mittlere · Hohe Wolken)</span>
@@ -1256,6 +1291,7 @@
 
       <!-- 8. LUFTDRUCK ENSEMBLE (hPa auf Meereshöhe) MIT HOCHDRUCK / TIEFDRUCK TRENNLINIE -->
       <div class="chart-card" id="pressureCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
           <div class="chart-card-title">
             <span>⏲️ Luftdruck-Ensembleband (hPa auf Meereshöhe)</span>
@@ -1381,34 +1417,44 @@
   </div>
 
   <script>
+    function getCurrentLocalHourIso(utcOffsetSeconds = 3600) {
+      const localMs = Date.now() + (utcOffsetSeconds * 1000);
+      const d = new Date(localMs);
+      const year = d.getUTCFullYear();
+      const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(d.getUTCDate()).padStart(2, '0');
+      const hours = String(d.getUTCHours()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}`;
+    }
+
     const ALL_WEATHER_MODELS = [
       // 14 hochauflösende Regionalmodelle
-      { id: 'icon_d2', label: 'DWD ICON-D2 (2.2km)', color: '#059669', isRegional: true, bounds: { minLat: 43.5, maxLat: 58.0, minLon: 1.5, maxLon: 20.0 } },
-      { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2km)', color: '#10b981', isRegional: true, bounds: { minLat: 43.5, maxLat: 58.0, minLon: 1.5, maxLon: 20.0 } },
-      { id: 'icon_eu', label: 'DWD ICON-EU (7km)', color: '#0d9488', isRegional: true, bounds: { minLat: 29.5, maxLat: 70.5, minLon: -23.5, maxLon: 45.0 } },
-      { id: 'chmi_aladin_seamless', label: 'CHMI ALADIN (Tschechien)', color: '#0284c7', isRegional: true, bounds: { minLat: 46.5, maxLat: 52.5, minLon: 10.5, maxLon: 20.5 } },
-      { id: 'chmi_aladin_central_europe_2km', label: 'CHMI ALADIN 2km', color: '#38bdf8', isRegional: true, bounds: { minLat: 46.5, maxLat: 52.5, minLon: 10.5, maxLon: 20.5 } },
-      { id: 'geosphere_seamless', label: 'GeoSphere Austria', color: '#b45309', isRegional: true, bounds: { minLat: 44.5, maxLat: 50.5, minLon: 8.0, maxLon: 18.0 } },
-      { id: 'geosphere_arome_austria', label: 'GeoSphere AROME (2.5km)', color: '#d97706', isRegional: true, bounds: { minLat: 45.0, maxLat: 50.0, minLon: 8.5, maxLon: 17.5 } },
-      { id: 'meteofrance_arome_france_hd', label: 'AROME HD (1.5km)', color: '#db2777', isRegional: true, bounds: { minLat: 41.0, maxLat: 52.0, minLon: -5.5, maxLon: 10.5 } },
-      { id: 'meteofrance_arome_france', label: 'AROME France (2.5km)', color: '#e11d48', isRegional: true, bounds: { minLat: 41.0, maxLat: 52.0, minLon: -5.5, maxLon: 10.5 } },
-      { id: 'meteofrance_arpege_europe', label: 'ARPEGE (11km)', color: '#f43f5e', isRegional: true, bounds: { minLat: 30.0, maxLat: 72.0, minLon: -32.0, maxLon: 42.0 } },
-      { id: 'knmi_harmonie_arome_europe', label: 'KNMI HARMONIE (2.5km)', color: '#ea580c', isRegional: true, bounds: { minLat: 49.0, maxLat: 55.5, minLon: 1.5, maxLon: 9.5 } },
-      { id: 'dmi_harmonie_arome_europe', label: 'DMI HARMONIE (2.5km)', color: '#7c3aed', isRegional: true, bounds: { minLat: 52.0, maxLat: 60.0, minLon: 6.0, maxLon: 16.0 } },
-      { id: 'metno_seamless', label: 'MET Norway (Yr.no)', color: '#047857', isRegional: true, bounds: { minLat: 50.0, maxLat: 72.0, minLon: 2.0, maxLon: 33.0 } },
-      { id: 'gem_regional', label: 'Kanada GEM Regional', color: '#fbbf24', isRegional: true, bounds: { minLat: 25.0, maxLat: 72.0, minLon: -145.0, maxLon: -50.0 } },
+      { id: 'icon_d2', label: 'DWD ICON-D2 (2.2 km)', color: '#059669', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
+      { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2 km)', color: '#10b981', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
+      { id: 'icon_eu', label: 'DWD ICON-EU (7 km)', color: '#0d9488', isRegional: true, bounds: { minLat: 29.5, maxLat: 70.5, minLon: -25.0, maxLon: 45.0 } },
+      { id: 'chmi_aladin_seamless', label: 'CHMI ALADIN (Tschechien)', color: '#0284c7', isRegional: true, bounds: { minLat: 46.0, maxLat: 53.5, minLon: 10.0, maxLon: 21.0 } },
+      { id: 'chmi_aladin_central_europe_2km', label: 'CHMI ALADIN 2 km', color: '#38bdf8', isRegional: true, bounds: { minLat: 46.0, maxLat: 53.5, minLon: 10.0, maxLon: 21.0 } },
+      { id: 'geosphere_seamless', label: 'GeoSphere Austria', color: '#b45309', isRegional: true, bounds: { minLat: 43.5, maxLat: 51.5, minLon: 7.0, maxLon: 19.5 } },
+      { id: 'geosphere_arome_austria', label: 'GeoSphere AROME (2.5 km)', color: '#d97706', isRegional: true, bounds: { minLat: 44.5, maxLat: 50.0, minLon: 8.0, maxLon: 18.5 } },
+      { id: 'meteofrance_arome_france_hd', label: 'AROME HD (1.5 km)', color: '#db2777', isRegional: true, bounds: { minLat: 40.5, maxLat: 53.5, minLon: -6.0, maxLon: 15.0 } },
+      { id: 'meteofrance_arome_france', label: 'AROME France (2.5 km)', color: '#e11d48', isRegional: true, bounds: { minLat: 40.5, maxLat: 53.5, minLon: -6.0, maxLon: 15.0 } },
+      { id: 'meteofrance_arpege_europe', label: 'ARPEGE Europe (11 km)', color: '#f43f5e', isRegional: true, bounds: { minLat: 30.0, maxLat: 72.0, minLon: -25.0, maxLon: 45.0 } },
+      { id: 'knmi_harmonie_arome_europe', label: 'KNMI HARMONIE (2.5 km)', color: '#ea580c', isRegional: true, bounds: { minLat: 48.0, maxLat: 61.0, minLon: -8.0, maxLon: 14.0 } },
+      { id: 'dmi_harmonie_arome_europe', label: 'DMI HARMONIE (2.5 km)', color: '#7c3aed', isRegional: true, bounds: { minLat: 50.0, maxLat: 72.0, minLon: 2.0, maxLon: 32.0 } },
+      { id: 'metno_seamless', label: 'MET Norway (Yr.no)', color: '#047857', isRegional: true, bounds: { minLat: 50.0, maxLat: 75.0, minLon: -6.0, maxLon: 36.0 } },
+      { id: 'gem_regional', label: 'Kanada GEM Regional', color: '#fbbf24', isRegional: true, bounds: { minLat: 15.0, maxLat: 75.0, minLon: -170.0, maxLon: -40.0 } },
       // 17 weltweite Großraummodelle
       { id: 'ecmwf_ifs025', label: 'ECMWF IFS (0.25°)', color: '#2563eb', isRegional: false },
       { id: 'ecmwf_ifs04', label: 'ECMWF IFS (0.4°)', color: '#3b82f6', isRegional: false },
-      { id: 'gfs_seamless', label: 'NOAA GFS Seamless', color: '#06b6d4', isRegional: false },
+      { id: 'gfs_seamless', label: 'NOAA GFS (Seamless)', color: '#06b6d4', isRegional: false },
       { id: 'gfs_global', label: 'NOAA GFS Global', color: '#22d3ee', isRegional: false },
       { id: 'icon_seamless', label: 'DWD ICON (Global)', color: '#16a34a', isRegional: false },
       { id: 'icon_global', label: 'DWD ICON Grid', color: '#22c55e', isRegional: false },
       { id: 'ukmo_seamless', label: 'UK Met Office Seamless', color: '#6366f1', isRegional: false },
-      { id: 'ukmo_global_deterministic_10km', label: 'UK Met Office (10km)', color: '#818cf8', isRegional: false },
+      { id: 'ukmo_global_deterministic_10km', label: 'UK Met Office (10 km)', color: '#818cf8', isRegional: false },
       { id: 'gem_seamless', label: 'Kanada GEM Seamless', color: '#f59e0b', isRegional: false },
       { id: 'gem_global', label: 'Kanada GEM Global', color: '#d97706', isRegional: false },
-      { id: 'meteofrance_seamless', label: 'Météo-France Global', color: '#e11d48', isRegional: false },
+      { id: 'meteofrance_seamless', label: 'Météo-France ARPEGE (Global)', color: '#e11d48', isRegional: false },
       { id: 'meteofrance_arpege_world', label: 'ARPEGE World', color: '#be123c', isRegional: false },
       { id: 'jma_seamless', label: 'Japan JMA GSM', color: '#14b8a6', isRegional: false },
       { id: 'jma_gsm', label: 'Japan JMA Global', color: '#0d9488', isRegional: false },
@@ -1416,10 +1462,10 @@
       { id: 'kma_seamless', label: 'Korea KMA GDPS', color: '#f97316', isRegional: false },
       { id: 'bom_access_global', label: 'Australien BOM ACCESS', color: '#84cc16', isRegional: false },
       // 4 KI-Modelle
-      { id: 'ecmwf_aifs025_single', label: 'ECMWF AIFS (KI)', color: '#8b5cf6', isRegional: false, isAi: true },
+      { id: 'ecmwf_aifs025_single', label: 'ECMWF AIFS (KI 0.25°)', color: '#8b5cf6', isRegional: false, isAi: true },
       { id: 'ncep_aigfs025', label: 'NOAA AI-GFS (KI)', color: '#a855f7', isRegional: false, isAi: true },
       { id: 'dwd_aicon_global_native', label: 'DWD A-ICON (KI)', color: '#c084fc', isRegional: false, isAi: true },
-      { id: 'gfs_graphcast025', label: 'Google GraphCast (KI)', color: '#d8b4fe', isRegional: false, isAi: true }
+      { id: 'gfs_graphcast025', label: 'Google GraphCast (KI 0.25°)', color: '#d8b4fe', isRegional: false, isAi: true }
     ];
 
     const LOCATION_STORAGE_KEY = 'weather_current_location_v1';
@@ -1844,22 +1890,22 @@
     function updateCurrentWeatherPill(availableModels, times) {
       const pill = $('#currentWeatherPill');
       if (!pill || !availableModels.length || !times.length) return;
-      const nowIso = new Date().toISOString().slice(0, 13);
+      const nowIso = getCurrentLocalHourIso(forecast?.utc_offset_seconds || 3600);
       let curIdx = times.findIndex(t => t.startsWith(nowIso));
       if (curIdx < 0) curIdx = 0;
 
-      const regModels = availableModels.filter(m => m.isRegional);
-      const targetModels = regModels.length ? regModels : availableModels;
+      const targetModels = availableModels;
 
       const temps = targetModels.map(m => m.temperature[curIdx]).filter(Number.isFinite);
       const rains = targetModels.map(m => m.probability[curIdx]).filter(Number.isFinite);
       const winds = targetModels.map(m => m.windSpeed[curIdx]).filter(Number.isFinite);
 
-      const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—';
+      const numTemp = temps.length ? Math.round((temps.reduce((a,b)=>a+b,0)/temps.length) * 10) / 10 : null;
+      const formattedTemp = numTemp !== null ? (numTemp > 0 ? `+${numTemp.toFixed(1)}` : `${numTemp.toFixed(1)}`) : '—';
       const avgRain = rains.length ? Math.round(rains.reduce((a,b)=>a+b,0)/rains.length) : '0';
       const avgWind = winds.length ? (winds.reduce((a,b)=>a+b,0)/winds.length).toFixed(1) : '—';
 
-      pill.innerHTML = `<span>🌡️ Aktuell: +${avgTemp}°C</span> <span>·</span> <span>🌧️ Regen: ${avgRain}%</span> <span>·</span> <span>💨 Wind: ${avgWind} km/h</span>`;
+      pill.innerHTML = `<span>🌡️ Aktuell: ${formattedTemp} °C</span> <span>·</span> <span>🌧️ Regen: ${avgRain}%</span> <span>·</span> <span>💨 Wind: ${avgWind} km/h</span>`;
     }
 
     // Chart Time Window Buttons
@@ -2139,27 +2185,37 @@
     }
 
     let sparklineModelFilter = 'all';
-    let sparklineHoverIdx = null;
 
     function renderSparklines(availableModels, times) {
       const container = $('#sparklinesSection');
       if (!container) return;
-      if (!availableModels || !availableModels.length || !times || times.length < 2) {
+      if (!availableModels || !availableModels.length) {
         container.style.display = 'none';
         return;
       }
       container.style.display = 'block';
 
-      const nowIsoPrefix = new Date().toISOString().slice(0, 13);
-      let currentHourIdx = times.findIndex(t => t.startsWith(nowIsoPrefix));
-      if (currentHourIdx < 0) currentHourIdx = 0;
+      // Always retrieve master times array with maximum available hours
+      const allTimes = (forecast?.hourly?.time && forecast.hourly.time.length >= 25) 
+        ? forecast.hourly.time 
+        : (times && times.length >= 25 ? times : (forecast?.hourly?.time || times || []));
 
-      const hours24Count = Math.min(24, times.length - currentHourIdx);
-      if (hours24Count < 2) {
+      if (!allTimes || allTimes.length < 2) {
         container.style.display = 'none';
         return;
       }
-      const hours24Times = times.slice(currentHourIdx, currentHourIdx + hours24Count);
+
+      const nowIsoPrefix = getCurrentLocalHourIso(forecast?.utc_offset_seconds || 3600);
+      let currentHourIdx = allTimes.findIndex(t => t.startsWith(nowIsoPrefix));
+      if (currentHourIdx < 0) currentHourIdx = 0;
+
+      // Always guarantee exactly 25 points to cover exactly 24 full hours of duration (e.g. 19:00 to 19:00 next day)
+      const targetHours = 25;
+      if (currentHourIdx + targetHours > allTimes.length) {
+        currentHourIdx = Math.max(0, allTimes.length - targetHours);
+      }
+      const hours24Count = Math.min(targetHours, allTimes.length - currentHourIdx);
+      const hours24Times = allTimes.slice(currentHourIdx, currentHourIdx + hours24Count);
 
       const regModels = availableModels.filter(m => m.isRegional);
 
@@ -2179,17 +2235,33 @@
       for (let i = 0; i < hours24Count; i++) {
         const globalIdx = currentHourIdx + i;
         const tp = getTimestampParts(hours24Times[i]);
+        const prevH = i > 0 ? hours24[i - 1] : null;
+
+        // Ensemble values across all available models as rock-solid fallback
+        const allTemps = availableModels.map(m => m.temperature[globalIdx]).filter(Number.isFinite);
+        const allRains = availableModels.map(m => m.probability[globalIdx]).filter(Number.isFinite);
+        const allPrecips = availableModels.map(m => m.precipitation[globalIdx]).filter(Number.isFinite);
+        const allWinds = availableModels.map(m => m.windSpeed[globalIdx]).filter(Number.isFinite);
+        const allPress = availableModels.map(m => m.pressure ? m.pressure[globalIdx] : null).filter(Number.isFinite);
+
+        const ensembleT = allTemps.length ? Math.round((allTemps.reduce((a,b)=>a+b,0)/allTemps.length) * 10) / 10 : (prevH ? prevH.temp : 0);
+        const ensembleR = allRains.length ? Math.max(...allRains) : (prevH ? prevH.rainProb : 0);
+        const ensembleP = allPrecips.length ? Math.max(...allPrecips) : 0;
+        const ensembleW = allWinds.length ? Math.round((allWinds.reduce((a,b)=>a+b,0)/allWinds.length) * 10) / 10 : (prevH ? prevH.windSpeed : 5);
+        const ensemblePr = allPress.length ? Math.round((allPress.reduce((a,b)=>a+b,0)/allPress.length) * 10) / 10 : (prevH ? prevH.pressure : 1013.25);
+
+        // Active model values (selected model or ensemble)
         const temps = activeModels.map(m => m.temperature[globalIdx]).filter(Number.isFinite);
         const rainProbs = activeModels.map(m => m.probability[globalIdx]).filter(Number.isFinite);
         const precips = activeModels.map(m => m.precipitation[globalIdx]).filter(Number.isFinite);
         const winds = activeModels.map(m => m.windSpeed[globalIdx]).filter(Number.isFinite);
         const press = activeModels.map(m => m.pressure ? m.pressure[globalIdx] : null).filter(Number.isFinite);
 
-        const avgT = temps.length ? Math.round((temps.reduce((a,b)=>a+b,0)/temps.length) * 10) / 10 : 0;
-        const maxR = rainProbs.length ? Math.max(...rainProbs) : 0;
-        const maxP = precips.length ? Math.max(...precips) : 0;
-        const avgW = winds.length ? Math.round((winds.reduce((a,b)=>a+b,0)/winds.length) * 10) / 10 : 0;
-        const avgPr = press.length ? Math.round((press.reduce((a,b)=>a+b,0)/press.length) * 10) / 10 : 1013.25;
+        const avgT = temps.length ? Math.round((temps.reduce((a,b)=>a+b,0)/temps.length) * 10) / 10 : ensembleT;
+        const maxR = rainProbs.length ? Math.max(...rainProbs) : ensembleR;
+        const maxP = precips.length ? Math.max(...precips) : ensembleP;
+        const avgW = winds.length ? Math.round((winds.reduce((a,b)=>a+b,0)/winds.length) * 10) / 10 : ensembleW;
+        const avgPr = press.length ? Math.round((press.reduce((a,b)=>a+b,0)/press.length) * 10) / 10 : ensemblePr;
 
         hours24.push({
           idx: i,
@@ -2261,9 +2333,6 @@
       const pressAreaPath = `${pressLinePath} L ${(svgW - padX).toFixed(1)} ${(svgH - padBottom).toFixed(1)} L ${padX} ${(svgH - padBottom).toFixed(1)} Z`;
       const pressDelta = pressures[pressures.length - 1] - pressures[0];
 
-      // Active Hover Hour
-      const activeH = sparklineHoverIdx !== null ? hours24[sparklineHoverIdx] : null;
-
       container.innerHTML = `
         <div style="background:#111923; border:1px solid #243547; border-radius:12px; padding:14px; box-shadow:0 10px 25px rgba(0,0,0,0.4); margin-bottom:16px;">
           <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid #1e2d3d; padding-bottom:10px; margin-bottom:12px;">
@@ -2288,21 +2357,8 @@
               </select>
             </div>
 
-            <div style="font-size:11px; font-family:monospace;">
-              ${activeH ? `
-                <div style="background:#182635; padding:4px 10px; border-radius:8px; border:1px solid rgba(59,130,246,0.4); color:#93c5fd; display:flex; align-items:center; gap:8px;">
-                  <strong style="color:#fff;">+${sparklineHoverIdx}h (${activeH.timeFormatted} Uhr):</strong>
-                  <span style="color:#fde68a; font-weight:bold;">+${activeH.temp.toFixed(1)}°C</span>
-                  <span style="color:#64748b;">·</span>
-                  <span style="color:#38bdf8;">Regen: ${activeH.rainProb}%</span>
-                  <span style="color:#64748b;">·</span>
-                  <span style="color:#2dd4bf;">Wind: ${activeH.windSpeed.toFixed(1)} km/h</span>
-                  <span style="color:#64748b;">·</span>
-                  <span style="color:#34d399;">${activeH.pressure.toFixed(1)} hPa</span>
-                </div>
-              ` : `
-                <span style="color:#94a3b8;">Hover/Wischen über Diagramme für Stundenwerte</span>
-              `}
+            <div id="spkHudReadout" style="font-size:11px; font-family:monospace;">
+              <span style="color:#94a3b8;">Hover/Wischen über Diagramme für Stundenwerte</span>
             </div>
           </div>
 
@@ -2317,11 +2373,11 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
                 <div style="display:flex; align-items:baseline; gap:6px;">
-                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#fff;">+${(sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].temp : temps[0]).toFixed(1)} °C</span>
-                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Jetzt'}</span>
+                  <span id="spkValTemp" style="font-size:18px; font-weight:700; font-family:monospace; color:#fff;">${(temps[0] > 0 ? '+' : '') + temps[0].toFixed(1)} °C</span>
+                  <span id="spkLblTemp" style="font-size:10px; color:#94a3b8;">Jetzt</span>
                 </div>
                 <div style="font-size:10px; font-family:monospace; color:#94a3b8;">
-                  <span style="color:#38bdf8;">${minTemp.toFixed(1)}°</span> ↔ <span style="color:#f59e0b;">+${maxTemp.toFixed(1)}°</span>
+                  <span style="color:#38bdf8;">${minTemp > 0 ? '+' : ''}${minTemp.toFixed(1)}°</span> ↔ <span style="color:#f59e0b;">${maxTemp > 0 ? '+' : ''}${maxTemp.toFixed(1)}°</span>
                 </div>
               </div>
               <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none" style="width:100%; height:54px; overflow:hidden;" class="spark-svg" data-spark="temp">
@@ -2335,10 +2391,10 @@
                 <path d="${tempLinePath}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
                 <circle cx="${getX(minTempIdx)}" cy="${getTempY(minTemp)}" r="3" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>
                 <circle cx="${getX(maxTempIdx)}" cy="${getTempY(maxTemp)}" r="3" fill="#f59e0b" stroke="#0d131a" stroke-width="1.5"/>
-                ${sparklineHoverIdx !== null ? `
-                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
-                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getTempY(temps[sparklineHoverIdx])}" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="2"/>
-                ` : ''}
+                <g id="spkHovTemp" style="display:none;">
+                  <line id="spkLnTemp" y1="${padTop}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle id="spkDotTemp" r="4" fill="#fbbf24" stroke="#0d131a" stroke-width="2"/>
+                </g>
               </svg>
               <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
                 <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
@@ -2355,8 +2411,8 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
                 <div style="display:flex; align-items:baseline; gap:6px;">
-                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#38bdf8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].rainProb : rainProbs[0]} %</span>
-                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Max. ' + maxRain + '%'}</span>
+                  <span id="spkValRain" style="font-size:18px; font-weight:700; font-family:monospace; color:#38bdf8;">${rainProbs[0]} %</span>
+                  <span id="spkLblRain" style="font-size:10px; color:#94a3b8;">Jetzt</span>
                 </div>
                 <div style="font-size:10px; font-family:monospace; color:#06b6d4;">
                   ${totalPrecip > 0 ? `Σ ${totalPrecip.toFixed(1)} mm` : '0.0 mm'}
@@ -2378,10 +2434,10 @@
                 <path d="${rainAreaPath}" fill="url(#spk-r-grad)" />
                 <path d="${rainLinePath}" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>
                 ${maxRain > 0 ? `<circle cx="${getX(maxRainIdx)}" cy="${getRainY(maxRain)}" r="3" fill="#38bdf8" stroke="#0d131a" stroke-width="1.5"/>` : ''}
-                ${sparklineHoverIdx !== null ? `
-                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
-                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getRainY(rainProbs[sparklineHoverIdx])}" r="4" fill="#38bdf8" stroke="#0d131a" stroke-width="2"/>
-                ` : ''}
+                <g id="spkHovRain" style="display:none;">
+                  <line id="spkLnRain" y1="${padTop}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle id="spkDotRain" r="4" fill="#38bdf8" stroke="#0d131a" stroke-width="2"/>
+                </g>
               </svg>
               <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
                 <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
@@ -2398,8 +2454,8 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
                 <div style="display:flex; align-items:baseline; gap:6px;">
-                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#2dd4bf;">${(sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].windSpeed : windSpeeds[0]).toFixed(1)} km/h</span>
-                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Mittel'}</span>
+                  <span id="spkValWind" style="font-size:18px; font-weight:700; font-family:monospace; color:#2dd4bf;">${windSpeeds[0].toFixed(1)} km/h</span>
+                  <span id="spkLblWind" style="font-size:10px; color:#94a3b8;">Jetzt</span>
                 </div>
                 <div style="font-size:10px; font-family:monospace; color:#94a3b8;">
                   Böen bis <span style="color:#2dd4bf; font-weight:bold;">${peakWind.toFixed(1)}</span>
@@ -2415,10 +2471,10 @@
                 <path d="${windAreaPath}" fill="url(#spk-w-grad)" />
                 <path d="${windLinePath}" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"/>
                 <circle cx="${getX(peakWindIdx)}" cy="${getWindY(windSpeeds[peakWindIdx])}" r="3" fill="#5eead4" stroke="#0d131a" stroke-width="1.5"/>
-                ${sparklineHoverIdx !== null ? `
-                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
-                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getWindY(windSpeeds[sparklineHoverIdx])}" r="4" fill="#2dd4bf" stroke="#0d131a" stroke-width="2"/>
-                ` : ''}
+                <g id="spkHovWind" style="display:none;">
+                  <line id="spkLnWind" y1="${padTop}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle id="spkDotWind" r="4" fill="#2dd4bf" stroke="#0d131a" stroke-width="2"/>
+                </g>
               </svg>
               <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
                 <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
@@ -2435,8 +2491,8 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
                 <div style="display:flex; align-items:baseline; gap:6px;">
-                  <span style="font-size:18px; font-weight:700; font-family:monospace; color:#34d399;">${(sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].pressure : pressures[0]).toFixed(1)} hPa</span>
-                  <span style="font-size:10px; color:#94a3b8;">${sparklineHoverIdx !== null ? hours24[sparklineHoverIdx].timeFormatted : 'Aktuell'}</span>
+                  <span id="spkValPress" style="font-size:18px; font-weight:700; font-family:monospace; color:#34d399;">${pressures[0].toFixed(1)} hPa</span>
+                  <span id="spkLblPress" style="font-size:10px; color:#94a3b8;">Jetzt</span>
                 </div>
                 <div style="font-size:10px; font-family:monospace; color:#94a3b8;">
                   Δ ${pressDelta >= 0 ? `+${pressDelta.toFixed(1)}` : pressDelta.toFixed(1)} hPa
@@ -2451,10 +2507,10 @@
                 </defs>
                 <path d="${pressAreaPath}" fill="url(#spk-p-grad)" />
                 <path d="${pressLinePath}" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round"/>
-                ${sparklineHoverIdx !== null ? `
-                  <line x1="${getX(sparklineHoverIdx)}" y1="${padTop}" x2="${getX(sparklineHoverIdx)}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
-                  <circle cx="${getX(sparklineHoverIdx)}" cy="${getPressY(pressures[sparklineHoverIdx])}" r="4" fill="#34d399" stroke="#0d131a" stroke-width="2"/>
-                ` : ''}
+                <g id="spkHovPress" style="display:none;">
+                  <line id="spkLnPress" y1="${padTop}" y2="${svgH - padBottom}" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <circle id="spkDotPress" r="4" fill="#34d399" stroke="#0d131a" stroke-width="2"/>
+                </g>
               </svg>
               <div style="display:flex; justify-content:space-between; font-size:9px; font-family:monospace; color:#64748b; margin-top:2px;">
                 <span>${hours24[0].timeFormatted}</span><span>+6h</span><span>+12h</span><span>+18h</span><span>${hours24[hours24Count-1].timeFormatted}</span>
@@ -2473,30 +2529,97 @@
         };
       }
 
-      // Pointer Handlers for Scrubbing across all sparkline SVGs
+      // Smooth in-place DOM updates for hover without redrawing innerHTML
+      const spkHudReadout = $('#spkHudReadout');
+      const spkValTemp = $('#spkValTemp'), spkLblTemp = $('#spkLblTemp'), spkHovTemp = $('#spkHovTemp'), spkLnTemp = $('#spkLnTemp'), spkDotTemp = $('#spkDotTemp');
+      const spkValRain = $('#spkValRain'), spkLblRain = $('#spkLblRain'), spkHovRain = $('#spkHovRain'), spkLnRain = $('#spkLnRain'), spkDotRain = $('#spkDotRain');
+      const spkValWind = $('#spkValWind'), spkLblWind = $('#spkLblWind'), spkHovWind = $('#spkHovWind'), spkLnWind = $('#spkLnWind'), spkDotWind = $('#spkDotWind');
+      const spkValPress = $('#spkValPress'), spkLblPress = $('#spkLblPress'), spkHovPress = $('#spkHovPress'), spkLnPress = $('#spkLnPress'), spkDotPress = $('#spkDotPress');
+
+      const updateHoverState = (idx) => {
+        if (idx === null || idx < 0 || idx >= hours24Count) {
+          if (spkHudReadout) spkHudReadout.innerHTML = `<span style="color:#94a3b8;">Hover/Wischen über Diagramme für Stundenwerte</span>`;
+          if (spkValTemp) spkValTemp.textContent = `${(temps[0] > 0 ? '+' : '') + temps[0].toFixed(1)} °C`;
+          if (spkLblTemp) spkLblTemp.textContent = 'Jetzt';
+          if (spkHovTemp) spkHovTemp.style.display = 'none';
+
+          if (spkValRain) spkValRain.textContent = `${rainProbs[0]} %`;
+          if (spkLblRain) spkLblRain.textContent = 'Jetzt';
+          if (spkHovRain) spkHovRain.style.display = 'none';
+
+          if (spkValWind) spkValWind.textContent = `${windSpeeds[0].toFixed(1)} km/h`;
+          if (spkLblWind) spkLblWind.textContent = 'Jetzt';
+          if (spkHovWind) spkHovWind.style.display = 'none';
+
+          if (spkValPress) spkValPress.textContent = `${pressures[0].toFixed(1)} hPa`;
+          if (spkLblPress) spkLblPress.textContent = 'Jetzt';
+          if (spkHovPress) spkHovPress.style.display = 'none';
+          return;
+        }
+
+        const h = hours24[idx];
+        const xPos = getX(idx).toFixed(1);
+
+        if (spkHudReadout) {
+          spkHudReadout.innerHTML = `
+            <div style="background:#182635; padding:4px 10px; border-radius:8px; border:1px solid rgba(59,130,246,0.4); color:#93c5fd; display:flex; align-items:center; gap:8px;">
+              <strong style="color:#fff;">+${idx}h (${h.timeFormatted} Uhr):</strong>
+              <span style="color:#fde68a; font-weight:bold;">${h.temp > 0 ? '+' : ''}${h.temp.toFixed(1)}°C</span>
+              <span style="color:#64748b;">·</span>
+              <span style="color:#38bdf8;">Regen: ${h.rainProb}%</span>
+              <span style="color:#64748b;">·</span>
+              <span style="color:#2dd4bf;">Wind: ${h.windSpeed.toFixed(1)} km/h</span>
+              <span style="color:#64748b;">·</span>
+              <span style="color:#34d399;">${h.pressure.toFixed(1)} hPa</span>
+            </div>
+          `;
+        }
+
+        // Temp
+        if (spkValTemp) spkValTemp.textContent = `${(h.temp > 0 ? '+' : '') + h.temp.toFixed(1)} °C`;
+        if (spkLblTemp) spkLblTemp.textContent = `(${h.timeFormatted})`;
+        if (spkHovTemp) spkHovTemp.style.display = 'inline';
+        if (spkLnTemp) { spkLnTemp.setAttribute('x1', xPos); spkLnTemp.setAttribute('x2', xPos); }
+        if (spkDotTemp) { spkDotTemp.setAttribute('cx', xPos); spkDotTemp.setAttribute('cy', getTempY(h.temp).toFixed(1)); }
+
+        // Rain
+        if (spkValRain) spkValRain.textContent = `${h.rainProb} %`;
+        if (spkLblRain) spkLblRain.textContent = `(${h.timeFormatted})`;
+        if (spkHovRain) spkHovRain.style.display = 'inline';
+        if (spkLnRain) { spkLnRain.setAttribute('x1', xPos); spkLnRain.setAttribute('x2', xPos); }
+        if (spkDotRain) { spkDotRain.setAttribute('cx', xPos); spkDotRain.setAttribute('cy', getRainY(h.rainProb).toFixed(1)); }
+
+        // Wind
+        if (spkValWind) spkValWind.textContent = `${h.windSpeed.toFixed(1)} km/h`;
+        if (spkLblWind) spkLblWind.textContent = `(${h.timeFormatted})`;
+        if (spkHovWind) spkHovWind.style.display = 'inline';
+        if (spkLnWind) { spkLnWind.setAttribute('x1', xPos); spkLnWind.setAttribute('x2', xPos); }
+        if (spkDotWind) { spkDotWind.setAttribute('cx', xPos); spkDotWind.setAttribute('cy', getWindY(h.windSpeed).toFixed(1)); }
+
+        // Pressure
+        if (spkValPress) spkValPress.textContent = `${h.pressure.toFixed(1)} hPa`;
+        if (spkLblPress) spkLblPress.textContent = `(${h.timeFormatted})`;
+        if (spkHovPress) spkHovPress.style.display = 'inline';
+        if (spkLnPress) { spkLnPress.setAttribute('x1', xPos); spkLnPress.setAttribute('x2', xPos); }
+        if (spkDotPress) { spkDotPress.setAttribute('cx', xPos); spkDotPress.setAttribute('cy', getPressY(h.pressure).toFixed(1)); }
+      };
+
       $$('.spark-card').forEach(card => {
         const handlePointer = (clientX) => {
           const svgEl = card.querySelector('.spark-svg');
           if (!svgEl) return;
           const rect = svgEl.getBoundingClientRect();
           const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-          const newIdx = Math.round(ratio * (hours24Count - 1));
-          if (newIdx !== sparklineHoverIdx) {
-            sparklineHoverIdx = newIdx;
-            renderSparklines(availableModels, times);
-          }
+          const idx = Math.round(ratio * (hours24Count - 1));
+          updateHoverState(idx);
         };
 
         card.onmousemove = (e) => handlePointer(e.clientX);
-        card.onmouseleave = () => {
-          if (sparklineHoverIdx !== null) {
-            sparklineHoverIdx = null;
-            renderSparklines(availableModels, times);
-          }
-        };
+        card.onmouseleave = () => updateHoverState(null);
         card.ontouchmove = (e) => {
           if (e.touches && e.touches[0]) handlePointer(e.touches[0].clientX);
         };
+        card.ontouchend = () => updateHoverState(null);
       });
     }
 
@@ -2949,14 +3072,14 @@
         const maxSun = sunMins.length ? Math.max(...sunMins) : 0;
         const avgSun = sunMins.length ? Math.round(sunMins.reduce((a, b) => a + b, 0) / sunMins.length) : 0;
 
-        const minT_obj = temps.length ? availableModels.filter(m => m.temperature[i] === minT)[0] : null;
-        const maxT_obj = temps.length ? availableModels.filter(m => m.temperature[i] === maxT)[0] : null;
+        const minT_obj = temps.length ? availableModels.find(m => Math.abs(m.temperature[i] - minT) < 0.01) : null;
+        const maxT_obj = temps.length ? availableModels.find(m => Math.abs(m.temperature[i] - maxT) < 0.01) : null;
 
-        const maxWind_obj = windSpeeds.length ? availableModels.filter(m => m.windSpeed[i] === maxWind)[0] : null;
-        const maxRain_obj = rainProbs.length ? availableModels.filter(m => m.probability[i] === maxRain)[0] : null;
-        const maxPrecip_obj = precipAmounts.length ? availableModels.filter(m => m.precipitation[i] === maxPrecip)[0] : null;
-        const maxSnow_obj = snowAmounts.length ? availableModels.filter(m => m.snowfall && m.snowfall[i] === maxSnow)[0] : null;
-        const maxSun_obj = sunMins.length ? availableModels.filter(m => m.sunshine && (m.sunshine[i]/60) === maxSun)[0] : null;
+        const maxWind_obj = windSpeeds.length ? availableModels.find(m => Math.abs(m.windSpeed[i] - maxWind) < 0.01) : null;
+        const maxRain_obj = rainProbs.length ? availableModels.find(m => Math.abs(m.probability[i] - maxRain) < 0.01) : null;
+        const maxPrecip_obj = precipAmounts.length ? availableModels.find(m => Math.abs(m.precipitation[i] - maxPrecip) < 0.01) : null;
+        const maxSnow_obj = snowAmounts.length ? availableModels.find(m => m.snowfall && Math.abs(m.snowfall[i] - maxSnow) < 0.01) : null;
+        const maxSun_obj = sunMins.length ? availableModels.find(m => m.sunshine && Math.abs((m.sunshine[i]/60) - maxSun) < 0.01) : null;
 
         hourlyStats.push({
           index: i,
@@ -3016,46 +3139,78 @@
       function renderHudContent(h) {
         if (!h) return '';
         const tp = getTimestampParts(h.time);
-        const dateStr = tp ? `${tp.weekday}, ${tp.date}` : h.time;
+        const weekdayStr = tp ? tp.weekday : '';
+        const dateStr = tp ? tp.date : (h.time || '');
         const timeStr = tp ? `${tp.time} Uhr` : '';
 
         return `
           <div class="hud-left">
-            <span class="hud-title">${dateStr}</span>
-            <span class="hud-pill">${timeStr}</span>
+            <div class="hud-date-block">
+              <span class="hud-weekday">${weekdayStr},</span>
+              <span class="hud-date">${dateStr}</span>
+            </div>
+            <div class="hud-time-pill">${timeStr}</div>
           </div>
-          <div class="hud-stats">
-            <div>
-              <span>Temperatur:</span> 
-              <strong style="color:#06b6d4;">${formatTemperature(h.minT)}</strong> 
-              <span style="font-size:10px; color:#22d3ee; font-weight:500;">(${h.minT_label})</span> · 
-              <strong style="color:#fde68a; background:rgba(30,41,59,0.8); padding:1px 5px; border-radius:4px; border:1px solid #334155;">Ø ${formatTemperature(h.avgT)}</strong> · 
+          <div class="hud-3rows">
+            <!-- Zeile 1: Temperatur & Wind -->
+            <div class="hud-row">
+              <span class="hud-lbl">Temperatur:</span>
+              <strong style="color:#06b6d4;">${formatTemperature(h.minT)}</strong>
+              <span class="hud-model" style="color:#22d3ee;">(${h.minT_label})</span>
+              <span class="hud-sep">·</span>
+              <strong class="hud-avg-badge">Ø ${formatTemperature(h.avgT)}</strong>
+              <span class="hud-sep">·</span>
               <strong style="color:#f59e0b;">${formatTemperature(h.maxT)}</strong>
-              <span style="font-size:10px; color:#fbbf24; font-weight:500;">(${h.maxT_label})</span>
+              <span class="hud-model" style="color:#fbbf24;">(${h.maxT_label})</span>
+              <span class="hud-pipe">|</span>
+              <span class="hud-lbl">Wind:</span>
+              <strong style="color:#2dd4bf;">${h.windSpeedRange}</strong>
+              <span class="hud-model" style="color:#2dd4bf;">(${h.maxWind_label})</span>
+              <span style="color:#94a3b8;">(Ø ${h.avgWind} km/h) ${h.windAvg}</span>
             </div>
-            <div><span>Luftdruck:</span> <strong style="color:#38bdf8;">${h.pressRange} (Ø ${h.avgPress !== null ? h.avgPress.toFixed(1) : '—'} hPa)</strong> ${h.isHochdruck !== null ? (h.isHochdruck ? '<span style="color:#fde047; background:rgba(234,179,8,0.2); border:1px solid rgba(234,179,8,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">☀️ Hochdruck (≥ 1013,2 hPa)</span>' : '<span style="color:#60a5fa; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">🌧️ Tiefdruck (&lt; 1013,2 hPa)</span>') : ''}</div>
-            <div>
-              <span>Wind:</span> 
-              <strong style="color:#2dd4bf;">${h.windSpeedRange}</strong> 
-              <span style="font-size:10px; color:#2dd4bf; font-weight:500;">(${h.maxWind_label})</span>
-              <span style="color:#2dd4bf;">(Ø ${h.avgWind} km/h) ${h.windAvg}</span>
+
+            <!-- Zeile 2: Regenchance, Niederschlag, Schnee, Sonne, Wolken, Nebel -->
+            <div class="hud-row">
+              <span class="hud-lbl">Regenchance:</span>
+              <strong style="color:#38bdf8;">${h.minRain}%–${h.maxRain}%</strong>
+              <span class="hud-model" style="color:#60a5fa;">(${h.maxRain_label})</span>
+              <span style="color:#94a3b8;">(Ø ${h.avgRain}%)</span>
+              ${h.maxPrecip > 0 ? `
+                <span class="hud-pipe">|</span>
+                <span class="hud-lbl">Niederschlag:</span>
+                <strong style="color:#67e8f9;">${h.precipRange}</strong>
+                <span class="hud-model" style="color:#22d3ee;">(${h.maxPrecip_label})</span>
+              ` : ''}
+              ${h.maxSnow > 0 ? `
+                <span class="hud-pipe">|</span>
+                <span class="hud-lbl">Schnee:</span>
+                <strong style="color:#bae6fd;">${h.snowRange}</strong>
+              ` : ''}
+              <span class="hud-pipe">|</span>
+              <span class="hud-lbl">Sonne:</span>
+              <strong style="color:#fbbf24;">${Math.round(h.minSun)}–${Math.round(h.maxSun)} min (Ø ${h.avgSun} min)</strong>
+              <span class="hud-pipe">|</span>
+              <span class="hud-lbl">Wolken:</span>
+              <strong style="color:#a78bfa;">🟣 Tiefe: ${h.avgLowCloud}%</strong>
+              <span class="hud-sep">·</span>
+              <strong style="color:#f472b6;">🌸 Mittlere: ${h.avgMidCloud}%</strong>
+              <span class="hud-sep">·</span>
+              <strong style="color:#fbbf24;">🟡 Hohe: ${h.avgHighCloud}%</strong>
+              ${h.isFoggyHour ? '<span style="color:#fde047; background:#581c87; font-weight:700; padding:1px 5px; border-radius:4px; margin-left:4px;">🌫️ Nebel möglich</span>' : ''}
             </div>
-            <div>
-              <span>Regenchance:</span> 
-              <strong style="color:#38bdf8;">${h.minRain}%–${h.maxRain}%</strong> 
-              <span style="font-size:10px; color:#60a5fa; font-weight:500;">(${h.maxRain_label})</span>
-              <span style="color:#38bdf8;">(Ø ${h.avgRain}%)</span>
+
+            <!-- Zeile 3: Luftdruck -->
+            <div class="hud-row">
+              <span class="hud-lbl">Luftdruck:</span>
+              <strong style="color:#38bdf8;">${h.pressRange} (Ø ${h.avgPress !== null ? h.avgPress.toFixed(1) : '—'} hPa)</strong>
+              ${h.isHochdruck !== null ? (h.isHochdruck ? '<span style="color:#fde047; background:rgba(234,179,8,0.2); border:1px solid rgba(234,179,8,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">☀️ Hochdruck (≥ 1013,2 hPa)</span>' : '<span style="color:#60a5fa; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">🌧️ Tiefdruck (&lt; 1013,2 hPa)</span>') : ''}
             </div>
-            ${h.maxPrecip > 0 ? `<div><span>Niederschlag:</span> <strong style="color:#67e8f9;">${h.precipRange}</strong> <span style="font-size:10px; color:#22d3ee; font-weight:500;">(${h.maxPrecip_label})</span> <span style="color:#67e8f9;">(Ø ${h.avgPrecip} mm)</span></div>` : ''}
-            <div><span>Schnee:</span> <strong style="color:#bae6fd;">${h.snowRange}</strong></div>
-            <div><span>Sonne:</span> <strong style="color:#fbbf24;">${Math.round(h.minSun)}–${Math.round(h.maxSun)} min (Ø ${h.avgSun} min)</strong></div>
-            <div><span>Wolkenstockwerke:</span> <strong style="color:#a78bfa;">🟣 Tiefe: ${h.avgLowCloud}%</strong> · <strong style="color:#f472b6;">🌸 Mittlere: ${h.avgMidCloud}%</strong> · <strong style="color:#fbbf24;">🟡 Hohe: ${h.avgHighCloud}%</strong> ${h.isFoggyHour ? '<span style="color:#fde047; background:#581c87; font-weight:700; padding:1px 5px; border-radius:4px; margin-left:4px;">🌫️ Nebel möglich</span>' : ''}</div>
           </div>
         `;
       }
 
       // Initialize all chart-hud elements
-      const nowIsoPrefix = new Date().toISOString().slice(0, 13);
+      const nowIsoPrefix = getCurrentLocalHourIso(forecast?.utc_offset_seconds || 3600);
       const defaultIdx = hourlyStats.findIndex((item) => item.time && item.time.startsWith(nowIsoPrefix));
       const initialIdx = defaultIdx >= 0 ? defaultIdx : 0;
       const initialHudHtml = renderHudContent(hourlyStats[initialIdx] || hourlyStats[0]);
@@ -3512,11 +3667,49 @@
         `;
       }
 
+      // Model Attribution in Dedicated Top and Bottom Marked Zones (per reference image)
+      const updateModelBands = (svgId, maxLabel, maxVal, maxColor, minLabel, minVal, minColor, tp) => {
+        const svg = $(svgId);
+        if (!svg) return;
+        let bandG = svg.querySelector('.model-bands-overlay');
+        if (!bandG) {
+          bandG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          bandG.setAttribute('class', 'model-bands-overlay');
+          bandG.setAttribute('style', 'pointer-events: none;');
+          svg.appendChild(bandG);
+        }
+        const timeStr = tp ? `${tp.weekday}, ${tp.time} Uhr` : '';
+        const maxModelX = padL + 86;
+        const minModelX = padL + 82;
+        
+        let html = '';
+        if (maxLabel) {
+          html += `
+            <rect x="${padL}" y="2" width="${plotW}" height="18" rx="4" fill="#0c131c" fill-opacity="0.95" stroke="#223344" stroke-width="1"/>
+            <text x="${padL + 8}" y="15" fill="#94a3b8" font-size="10" font-weight="600">▲ Höchstwert:</text>
+            <text x="${maxModelX}" y="15" fill="${maxColor}" font-size="10.5" font-weight="700">${maxLabel}</text>
+            ${maxVal !== undefined && maxVal !== null ? `<text x="${maxModelX + Math.max(65, maxLabel.length * 6.8 + 8)}" y="15" fill="${maxColor}" font-size="10" font-weight="700">(${maxVal})</text>` : ''}
+            <text x="${svgW - padR - 8}" y="15" text-anchor="end" fill="#64748b" font-size="9.5" font-family="monospace">${timeStr}</text>
+          `;
+        }
+        if (minLabel) {
+          html += `
+            <rect x="${padL}" y="${svgH - 17}" width="${plotW}" height="15" rx="3" fill="#0c131c" fill-opacity="0.95" stroke="#223344" stroke-width="1"/>
+            <text x="${padL + 8}" y="${svgH - 6}" fill="#94a3b8" font-size="9.5" font-weight="600">▼ Tiefstwert:</text>
+            <text x="${minModelX}" y="${svgH - 6}" fill="${minColor}" font-size="10" font-weight="700">${minLabel}</text>
+            ${minVal !== undefined && minVal !== null ? `<text x="${minModelX + Math.max(60, minLabel.length * 6.5 + 8)}" y="${svgH - 6}" fill="${minColor}" font-size="9.5" font-weight="700">(${minVal})</text>` : ''}
+            <text x="${svgW - padR - 8}" y="${svgH - 6}" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">${timeStr}</text>
+          `;
+        }
+        bandG.innerHTML = html;
+      };
+
       // Touch & Mouse Handler for scrubbing on mobile and desktop
       const updateHoverAt = (idx) => {
         const h = hourlyStats[idx];
         if (!h) return;
         const x = getX(idx);
+        const tp = getTimestampParts(h.time);
 
         // Temp hover
         const tHover = $('#tempHover');
@@ -3530,16 +3723,7 @@
           $('#tempCircleAvg').setAttribute('cy', getTempY(h.avgT !== null ? h.avgT : 0));
           $('#tempCircleMin').setAttribute('cx', x);
           $('#tempCircleMin').setAttribute('cy', getTempY(h.minT !== null ? h.minT : 0));
-          
-          // Labels
-          let tLabels = tHover.querySelector('.hover-labels');
-          if (!tLabels) {
-            tLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            tLabels.setAttribute('class', 'hover-labels');
-            tHover.appendChild(tLabels);
-          }
-          tLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getTempY(h.maxT) - 4) + '" fill="#f59e0b" font-size="10" font-weight="bold">' + h.maxT_label + '</text>' +
-                              '<text x="' + (x + 8) + '" y="' + (getTempY(h.minT) + 12) + '" fill="#06b6d4" font-size="10" font-weight="bold">' + h.minT_label + '</text>';
+          updateModelBands('#tempSvg', h.maxT_label, formatTemperature(h.maxT), '#f59e0b', h.minT_label, formatTemperature(h.minT), '#06b6d4', tp);
         }
 
         // Wind hover
@@ -3554,14 +3738,7 @@
           $('#windCircleAvg').setAttribute('cy', getWindY(h.avgWind));
           $('#windCircleMin').setAttribute('cx', x);
           $('#windCircleMin').setAttribute('cy', getWindY(h.minWind));
-
-          let wLabels = wHover.querySelector('.hover-labels');
-          if (!wLabels) {
-            wLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            wLabels.setAttribute('class', 'hover-labels');
-            wHover.appendChild(wLabels);
-          }
-          wLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getWindY(h.maxWind) - 4) + '" fill="#2dd4bf" font-size="10" font-weight="bold">' + h.maxWind_label + '</text>';
+          updateModelBands('#windSvg', h.maxWind_label, h.maxWind + ' km/h', '#2dd4bf', 'Min. Wind', h.minWind + ' km/h', '#94a3b8', tp);
         }
 
         // Rain hover
@@ -3576,14 +3753,7 @@
           $('#rainCircleAvg').setAttribute('cy', getRainY(h.avgRain));
           $('#rainCircleMin').setAttribute('cx', x);
           $('#rainCircleMin').setAttribute('cy', getRainY(h.minRain));
-
-          let rLabels = rHover.querySelector('.hover-labels');
-          if (!rLabels) {
-            rLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            rLabels.setAttribute('class', 'hover-labels');
-            rHover.appendChild(rLabels);
-          }
-          rLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getRainY(h.maxRain) - 4) + '" fill="#38bdf8" font-size="10" font-weight="bold">' + h.maxRain_label + '</text>';
+          updateModelBands('#rainSvg', h.maxRain_label, h.maxRain + '%', '#38bdf8', 'Min. Regen', h.minRain + '%', '#94a3b8', tp);
         }
 
         // Precip hover
@@ -3598,14 +3768,7 @@
           $('#precipCircleAvg').setAttribute('cy', getPrecipY(h.avgPrecip));
           $('#precipCircleMin').setAttribute('cx', x);
           $('#precipCircleMin').setAttribute('cy', getPrecipY(h.minPrecip));
-
-          let pLabels = pHover.querySelector('.hover-labels');
-          if (!pLabels) {
-            pLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            pLabels.setAttribute('class', 'hover-labels');
-            pHover.appendChild(pLabels);
-          }
-          pLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getPrecipY(h.maxPrecip) - 4) + '" fill="#06b6d4" font-size="10" font-weight="bold">' + h.maxPrecip_label + '</text>';
+          updateModelBands('#precipSvg', h.maxPrecip_label, h.maxPrecip + ' mm', '#06b6d4', null, null, null, tp);
         }
 
         // Snow hover
@@ -3620,14 +3783,7 @@
           $('#snowCircleAvg').setAttribute('cy', getSnowY(h.avgSnow));
           $('#snowCircleMin').setAttribute('cx', x);
           $('#snowCircleMin').setAttribute('cy', getSnowY(h.minSnow));
-
-          let sLabels = sHover.querySelector('.hover-labels');
-          if (!sLabels) {
-            sLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            sLabels.setAttribute('class', 'hover-labels');
-            sHover.appendChild(sLabels);
-          }
-          sLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getSnowY(h.maxSnow) - 4) + '" fill="#38bdf8" font-size="10" font-weight="bold">' + h.maxSnow_label + '</text>';
+          updateModelBands('#snowSvg', h.maxSnow_label, h.maxSnow + ' cm', '#38bdf8', null, null, null, tp);
         }
 
         // Sun hover
@@ -3642,14 +3798,7 @@
           $('#sunCircleAvg').setAttribute('cy', getSunY(h.avgSun));
           $('#sunCircleMin').setAttribute('cx', x);
           $('#sunCircleMin').setAttribute('cy', getSunY(h.minSun));
-
-          let suLabels = suHover.querySelector('.hover-labels');
-          if (!suLabels) {
-            suLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            suLabels.setAttribute('class', 'hover-labels');
-            suHover.appendChild(suLabels);
-          }
-          suLabels.innerHTML = '<text x="' + (x + 8) + '" y="' + (getSunY(h.maxSun) - 4) + '" fill="#fbbf24" font-size="10" font-weight="bold">' + h.maxSun_label + '</text>';
+          updateModelBands('#sunSvg', h.maxSun_label, Math.round(h.maxSun) + ' min', '#fbbf24', null, null, null, tp);
         }
 
         // Cloud hover
@@ -3664,6 +3813,7 @@
           $('#cloudCircleMid').setAttribute('cy', getCloudY(h.avgMidCloud));
           $('#cloudCircleHigh').setAttribute('cx', x);
           $('#cloudCircleHigh').setAttribute('cy', getCloudY(h.avgHighCloud));
+          updateModelBands('#cloudSvg', 'Tiefe Wolken: ' + h.avgLowCloud + '%', null, '#a78bfa', 'Hohe Wolken: ' + h.avgHighCloud + '%', null, '#fbbf24', tp);
         }
 
         // Pressure hover
@@ -3678,6 +3828,7 @@
           $('#pressureCircleAvg').setAttribute('cy', getPressY(h.avgPress !== null ? h.avgPress : pressNorm));
           $('#pressureCircleMin').setAttribute('cx', x);
           $('#pressureCircleMin').setAttribute('cy', getPressY(h.minPress !== null ? h.minPress : pressNorm));
+          updateModelBands('#pressureSvg', 'Max: ' + (h.maxPress ? h.maxPress.toFixed(1) : '—') + ' hPa', null, '#f59e0b', 'Min: ' + (h.minPress ? h.minPress.toFixed(1) : '—') + ' hPa', null, '#60a5fa', tp);
         }
 
         const hudHtml = renderHudContent(h);
@@ -3690,6 +3841,9 @@
         ['#tempHover', '#windHover', '#rainHover', '#precipHover', '#snowHover', '#sunHover', '#cloudHover', '#pressureHover'].forEach((sel) => {
           const el = $(sel);
           if (el) el.style.display = 'none';
+        });
+        $$('.model-bands-overlay').forEach(el => {
+          el.innerHTML = '';
         });
       };
 
@@ -3958,6 +4112,7 @@
           url.searchParams.set('latitude', CURRENT_LOCATION.latitude);
           url.searchParams.set('longitude', CURRENT_LOCATION.longitude);
           url.searchParams.set('hourly', variables);
+          url.searchParams.set('forecast_days', '16');
           url.searchParams.set('forecast_hours', '384');
           url.searchParams.set('timezone', 'auto');
           url.searchParams.set('temperature_unit', 'celsius');
@@ -3973,6 +4128,13 @@
 
         if (results.length === 0) throw new Error('Keine Daten empfangen');
         
+        let longestTime = [];
+        results.forEach(res => {
+          if (res.hourly && Array.isArray(res.hourly.time) && res.hourly.time.length > longestTime.length) {
+            longestTime = res.hourly.time;
+          }
+        });
+
         forecast = {
           ...results[0],
           hourly: {}
@@ -3980,6 +4142,9 @@
         results.forEach(res => {
           Object.assign(forecast.hourly, res.hourly);
         });
+        if (longestTime.length) {
+          forecast.hourly.time = longestTime;
+        }
 
         renderTable();
         setStatus(`Vorhersage für ${CURRENT_LOCATION.name} erfolgreich aktualisiert.`);
