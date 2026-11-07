@@ -1088,8 +1088,12 @@
     /* ---------- Handy-Optimierung: alles auf einen Blick ---------- */
     @media (max-width: 480px) {
       body { font-size: 14px; }
-      /* Wertezeilen umbrechen statt abschneiden */
-      .hud-row { white-space: normal; overflow: visible; }
+      /* Wertezeilen der 3 Einzelkarten umbrechen statt abschneiden */
+      .h24sub .chart-hud.h24val .hud-row { white-space: normal; overflow: visible; }
+      #h24Hud .hud-row { white-space: normal; overflow: visible; }
+      /* Ensemble-HUD: einzeilig + seitlich wischbar (kein Zerbrechen) */
+      .chart-container .chart-hud .hud-row { white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
+      .chart-container .chart-hud { padding: 6px 10px; gap: 8px; min-height: 0; flex-direction: column; align-items: stretch; }
       .hud-3rows { gap: 5px; }
       /* Diagramme: weniger Wischweg, Schrift bleibt lesbar */
       .svg-wrapper svg { min-width: 560px; }
