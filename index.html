@@ -222,6 +222,26 @@
     @media (min-width: 640px) {
       h1 { font-size: 20px; }
     }
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-title-row h1 {
+      flex: 1;
+      text-align: center;
+    }
+    .header-logo {
+      height: 22px;
+      width: 22px;
+      object-fit: cover;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: block;
+    }
+    @media (min-width: 640px) {
+      .header-logo { height: 25px; width: 25px; }
+    }
     .sub { color: var(--text-muted); font-size: 12px; margin-top: 3px; }
     .location { font-weight: 600; color: #60a5fa; margin-top: 3px; font-size: 12px; }
     .actions {
@@ -1717,7 +1737,12 @@
       { id: 'ecmwf_aifs025_single', label: 'ECMWF AIFS (KI 0.25°)', color: '#8b5cf6', isRegional: false, isAi: true },
       { id: 'ncep_aigfs025', label: 'NOAA AI-GFS (KI)', color: '#a855f7', isRegional: false, isAi: true },
       { id: 'dwd_aicon_global_native', label: 'DWD A-ICON (KI)', color: '#c084fc', isRegional: false, isAi: true },
-      { id: 'gfs_graphcast025', label: 'Google GraphCast (KI 0.25°)', color: '#d8b4fe', isRegional: false, isAi: true }
+      { id: 'gfs_graphcast025', label: 'Google GraphCast (KI 0.25°)', color: '#d8b4fe', isRegional: false, isAi: true },
+      // 4 Ensemblesysteme (Member-Mittel aus der Ensemble-API, grüne Schrift)
+      { id: 'ens_ifs', label: 'IFS ENS (51 Member)', color: '#4ade80', isRegional: false, members: true, ensReq: 'ecmwf_ifs025' },
+      { id: 'ens_gefs', label: 'GEFS (31 Member)', color: '#22c55e', isRegional: false, members: true, ensReq: 'gfs_seamless' },
+      { id: 'ens_geps', label: 'GEPS (21 Member)', color: '#84cc16', isRegional: false, members: true, ensReq: 'gem_global' },
+      { id: 'ens_iconge', label: 'ICON-EPS (40 Member)', color: '#10b981', isRegional: false, members: true, ensReq: 'icon_seamless' }
     ];
 
     const LOCATION_STORAGE_KEY = 'weather_current_location_v2';
@@ -1764,7 +1789,8 @@
 
     // 24h-Anzeige-State (muss vor renderModelList()/populateH24Select() stehen,
     // da der Boot-Code weiter unten diese sofort aufruft)
-    let h24Model = 'icon_d2';
+    const H24_MEAN_ID = '__mean__';
+    let h24Model = H24_MEAN_ID;
     try { const s = storeGet('h24Model_v1'); if (s) h24Model = s; } catch (e) {}
     let h24Data = [];
     let h24Sel = 0;
@@ -1792,8 +1818,8 @@
         <label>
           <input class="model-check" type="checkbox" value="${m.id}" checked>
           <span class="dot" style="background:${m.color}"></span>
-          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.label}</span>
-          ${m.isRegional ? '<span style="font-size:9px; background:#064e3b; color:#6ee7b7; padding:1px 4px; border-radius:4px; margin-left:auto;">REG</span>' : m.isAi ? '<span style="font-size:9px; background:#4c1d95; color:#d8b4fe; padding:1px 4px; border-radius:4px; margin-left:auto;">KI</span>' : ''}
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;${m.members ? ' color:#4ade80; font-weight:700;' : ''}">${m.label}</span>
+          ${m.members ? '<span style="font-size:9px; background:#14532d; color:#4ade80; padding:1px 4px; border-radius:4px; margin-left:auto;">ENS</span>' : m.isRegional ? '<span style="font-size:9px; background:#064e3b; color:#6ee7b7; padding:1px 4px; border-radius:4px; margin-left:auto;">REG</span>' : m.isAi ? '<span style="font-size:9px; background:#4c1d95; color:#d8b4fe; padding:1px 4px; border-radius:4px; margin-left:auto;">KI</span>' : ''}
         </label>
       `).join('');
 
@@ -2136,10 +2162,10 @@
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <span style="width: 10px; height: 10px; border-radius: 50%; background-color: ${m.color}; display: inline-block;"></span>
-                <strong style="font-size: 13px; color: #fff;">${m.label}</strong>
+                <strong style="font-size: 13px; color: ${m.members ? '#4ade80' : '#fff'};">${m.label}</strong>
               </div>
               <span style="font-size: 10px; font-family: monospace; padding: 2px 6px; border-radius: 4px; background: #1f2d3d; color: #94a3b8; border: 1px solid #334155;">
-                ${m.isRegional ? 'Regional' : 'Global'}
+                ${m.members ? 'Ensemble' : m.isRegional ? 'Regional' : 'Global'}
               </span>
             </div>
             <div style="font-size: 11px; color: #38bdf8; font-weight: 600; margin-bottom: 4px;">ID: ${m.id}</div>
@@ -2157,12 +2183,25 @@
     function populateH24Select() {
       const sel = $('#h24ModelSelect');
       if (!sel || !MODELS.length) return;
-      if (!MODELS.some(m => m.id === h24Model)) {
-        h24Model = MODELS.some(m => m.id === 'icon_d2') ? 'icon_d2' : MODELS[0].id;
+      // Nur Modelle mit echten Daten für diesen Ort anbieten
+      const withData = h24ModelsWithData();
+      if (h24Model !== H24_MEAN_ID && !withData.some(m => m.id === h24Model)) {
+        h24Model = H24_MEAN_ID;
       }
-      sel.innerHTML = MODELS.map(m =>
-        `<option value="${m.id}"${m.id === h24Model ? ' selected' : ''}>${m.label}</option>`
-      ).join('');
+      sel.innerHTML =
+        `<option value="${H24_MEAN_ID}"${h24Model === H24_MEAN_ID ? ' selected' : ''}>📊 Mittel aller Modelle</option>` +
+        withData.map(m =>
+          `<option value="${m.id}"${m.id === h24Model ? ' selected' : ''}${m.members ? ' style="color:#4ade80;font-weight:bold;"' : ''}>${m.label}</option>`
+        ).join('');
+    }
+
+    // Modelle mit tatsächlich geladenen Daten (Temperatur-Spalte vorhanden)
+    function h24ModelsWithData() {
+      if (!forecast?.hourly) return MODELS.slice();
+      return MODELS.filter((m) => {
+        const arr = forecast.hourly[`temperature_2m_${m.id}`];
+        return Array.isArray(arr) && arr.some(Number.isFinite);
+      });
     }
 
     function h24Icon(code) {
@@ -2226,10 +2265,32 @@
       const times = forecast.hourly.time || [];
       if (!times.length || !h24Model) return;
       const H = forecast.hourly;
-      const col = (base) => H[`${base}_${h24Model}`] || [];
-      const T = col('temperature_2m'), D = col('dew_point_2m'), P = col('precipitation_probability'),
-            MM = col('precipitation'), W = col('wind_speed_10m'), G = col('wind_gusts_10m'),
-            WD = col('wind_direction_10m'), WC = col('weather_code');
+      let T, D, P, MM, W, G, WD, WC;
+      if (h24Model === H24_MEAN_ID) {
+        // Mittel aller Modelle mit Daten für diesen Ort
+        const ids = h24ModelsWithData().map(m => m.id);
+        const meanArr = (base) => {
+          const L = Math.max(0, ...ids.map(id => ((H[`${base}_${id}`] || []).length)));
+          const out = new Array(L);
+          for (let j = 0; j < L; j++) {
+            let s = 0, c = 0;
+            for (const id of ids) {
+              const v = (H[`${base}_${id}`] || [])[j];
+              if (Number.isFinite(v)) { s += v; c++; }
+            }
+            out[j] = c ? s / c : null;
+          }
+          return out;
+        };
+        T = meanArr('temperature_2m'); D = meanArr('dew_point_2m'); P = meanArr('precipitation_probability');
+        MM = meanArr('precipitation'); W = meanArr('wind_speed_10m'); G = meanArr('wind_gusts_10m');
+        WD = []; WC = [];
+      } else {
+        const col = (base) => H[`${base}_${h24Model}`] || [];
+        T = col('temperature_2m'); D = col('dew_point_2m'); P = col('precipitation_probability');
+        MM = col('precipitation'); W = col('wind_speed_10m'); G = col('wind_gusts_10m');
+        WD = col('wind_direction_10m'); WC = col('weather_code');
+      }
       if (!T.some(Number.isFinite)) {
         [svgT, svgR, svgW].forEach(s => { if (s) s.innerHTML = ''; });
         h24Data = [];
@@ -2255,9 +2316,10 @@
       }
       if (h24Sel >= h24Data.length) h24Sel = 0;
       const cur = MODELS.find(m => m.id === h24Model);
+      const curLabel = h24Model === H24_MEAN_ID ? 'Mittel aller Modelle' : (cur ? cur.label : h24Model);
       const a = getTimestampParts(h24Data[0].time), b = getTimestampParts(h24Data[h24Data.length - 1].time);
       const sub = $('#h24Range');
-      if (sub && a && b) sub.textContent = `${a.weekday}, ${a.time} Uhr → ${b.weekday}, ${b.time} Uhr · ${cur ? cur.label : h24Model}`;
+      if (sub && a && b) sub.textContent = `${a.weekday}, ${a.time} Uhr → ${b.weekday}, ${b.time} Uhr · ${curLabel}`;
 
       const n = h24Data.length;
       const x0 = 46, x1 = 906;
@@ -2774,6 +2836,7 @@
       renderTrendAnalysis(availableModels, times, lastHour);
       updateCurrentWeatherPill(availableModels, times);
       updateSunMoon();
+      populateH24Select();
       renderHour24();
 
       if (currentView === 'chart') {
@@ -3196,7 +3259,7 @@
         <span style="font-size:11px; color:var(--text-muted); align-self:center; margin-right:4px;">Einzelkurve:</span>
         <button type="button" class="model-tag-btn ${!highlightedModelId ? 'active' : ''}" data-model="">Alle (Bereich)</button>
         ${availableModels.map((m) => `
-          <button type="button" class="model-tag-btn ${highlightedModelId === m.id ? 'active' : ''}" data-model="${m.id}">
+          <button type="button" class="model-tag-btn ${highlightedModelId === m.id ? 'active' : ''}" data-model="${m.id}"${m.members ? ' style="color:#4ade80;"' : ''}>
             <span class="dot" style="background:${m.color}"></span>
             ${m.label}
           </button>
@@ -4388,6 +4451,58 @@
       syncFrozenAxes();
     }
 
+    // Ensemble-Mittel je System: mittelt Basislauf + alle Member auf das
+    // Stundenraster der Hauptvorhersage (Zeitabgleich über ISO-Stempel).
+    // Systeme: IFS ENS, GEFS, GEPS, ICON-EPS. (MOGREPS-G liefert die
+    // Ensemble-API für Open-Meteo-Standorte nicht – daher nicht dabei.)
+    async function loadEnsembleMeans(fc) {
+      const ensModels = MODELS.filter(m => m.members && m.ensReq);
+      if (!ensModels.length || !fc?.hourly) return;
+      const eUrl = new URL('https://ensemble-api.open-meteo.com/v1/ensemble');
+      eUrl.searchParams.set('latitude', CURRENT_LOCATION.latitude);
+      eUrl.searchParams.set('longitude', CURRENT_LOCATION.longitude);
+      eUrl.searchParams.set('hourly', 'temperature_2m,dew_point_2m,precipitation,wind_speed_10m');
+      eUrl.searchParams.set('forecast_days', '16');
+      eUrl.searchParams.set('forecast_hours', '384');
+      eUrl.searchParams.set('timezone', 'auto');
+      eUrl.searchParams.set('models', ensModels.map(m => m.ensReq).join(','));
+      const eRes = await fetch(eUrl.toString());
+      if (!eRes.ok) throw new Error('Ensemble-API HTTP ' + eRes.status);
+      const eData = await eRes.json();
+      if (!eData.hourly) return;
+      const mainTime = fc.hourly.time || [];
+      const mainIdx = new Map(mainTime.map((t, i) => [t, i]));
+      const eTime = eData.hourly.time || [];
+      const eVars = ['temperature_2m', 'dew_point_2m', 'precipitation', 'wind_speed_10m'];
+      const marks = { ens_ifs: 'ecmwf', ens_gefs: 'gefs', ens_geps: 'gem', ens_iconge: 'icon' };
+      for (const m of ensModels) {
+        const mark = marks[m.id];
+        if (!mark) continue;
+        for (const v of eVars) {
+          const acc = new Array(mainTime.length).fill(0);
+          const cnt = new Array(mainTime.length).fill(0);
+          for (const k of Object.keys(eData.hourly)) {
+            if (k !== v && k.indexOf(v + '_') !== 0) continue;
+            const rest = k === v ? '' : k.slice(v.length + 1);
+            const suf = rest.replace(/^member\d+_/, '');
+            if (suf && suf.indexOf(mark) < 0) continue;
+            if (!suf && ensModels.length !== 1) continue; // blanke Variable nur bei Einzelabfrage zuordenbar
+            const arr = eData.hourly[k];
+            if (!Array.isArray(arr)) continue;
+            const lim = Math.min(arr.length, eTime.length);
+            for (let j = 0; j < lim; j++) {
+              const val = arr[j];
+              if (!Number.isFinite(val)) continue;
+              const mi = mainIdx.get(eTime[j]);
+              if (mi === undefined) continue;
+              acc[mi] += val; cnt[mi]++;
+            }
+          }
+          fc.hourly[`${v}_${m.id}`] = acc.map((s, i) => cnt[i] ? s / cnt[i] : null);
+        }
+      }
+    }
+
     async function loadForecast() {
       if (loading) return;
       loading = true;
@@ -4396,9 +4511,10 @@
 
       try {
         const BATCH_SIZE = 8;
+        const detModels = MODELS.filter(m => !m.members);
         const chunks = [];
-        for (let i = 0; i < MODELS.length; i += BATCH_SIZE) {
-          chunks.push(MODELS.slice(i, i + BATCH_SIZE).map(m => m.id));
+        for (let i = 0; i < detModels.length; i += BATCH_SIZE) {
+          chunks.push(detModels.slice(i, i + BATCH_SIZE).map(m => m.id));
         }
 
         const results = [];
@@ -4443,6 +4559,14 @@
         if (longestTime.length) {
           forecast.hourly.time = longestTime;
         }
+
+        // --- Ensemble-Systeme (IFS ENS, GEFS, GEPS, ICON-EPS): Member-Mittel ---
+        // Läuft bewusst separat: Schlägt die Ensemble-API fehl, stehen trotzdem
+        // alle deterministischen Modelle (die Ensemble-Einträge fallen dann über
+        // lastIndex aus Tabelle/Charts/Auswahl).
+        try {
+          await loadEnsembleMeans(forecast);
+        } catch (e) {}
 
         renderTable();
         setStatus(`Vorhersage für ${CURRENT_LOCATION.name} erfolgreich aktualisiert.`);
