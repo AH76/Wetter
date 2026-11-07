@@ -1773,8 +1773,8 @@
     const $$ = (s) => document.querySelectorAll(s);
 
     function updateHeaderInfo() {
-      const title = `${CURRENT_LOCATION.name} – Stündliche Wettermodelle`;
-      document.title = title;
+      const title = `Wetter für ${CURRENT_LOCATION.name}`;
+      document.title = `${title} – Stündliche Wettermodelle`;
       $('#headerTitle').textContent = title;
       $('#headerModelCount').textContent = MODELS.length;
       $('#modelCountLabel').textContent = MODELS.length;
