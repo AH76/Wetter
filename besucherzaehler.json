@@ -1,0 +1,8 @@
+{
+  "seite": "wetter-altenburg-standalone.html",
+  "namespace": "wetter-altenburg",
+  "key": "besucher",
+  "besucher_gesamt": 2,
+  "aktualisiert": null,
+  "hinweis": "Wird automatisch per GitHub Action aus dem Live-Zähler aktualisiert."
+}
