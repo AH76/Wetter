@@ -1,0 +1,43 @@
+name: Besucherzähler-Archiv
+# Schreibt den aktuellen Gesamtstand des Zählers einmal täglich
+# in die Datei besucherzaehler.json (manuell startbar unter Actions).
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  archiv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zählerstand abrufen
+        run: |
+          curl -s "https://abacus.jasoncameron.dev/get/wetter-altenburg/besucher" -o /tmp/stand.json
+          cat /tmp/stand.json
+          WERT=$(python3 -c "import json;print(json.load(open('/tmp/stand.json'))['value'])")
+          python3 - "$WERT" <<'EOF'
+          import json, sys, datetime
+          p = "besucherzaehler.json"
+          try:
+            d = json.load(open(p))
+          except Exception:
+            d = {}
+          d.update({
+            "seite": "wetter-altenburg-standalone.html",
+            "namespace": "wetter-altenburg",
+            "key": "besucher",
+            "besucher_gesamt": int(sys.argv[1]),
+            "aktualisiert": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+          })
+          json.dump(d, open(p, "w"), indent=2, ensure_ascii=False)
+          open(p, "a").write("\n")
+          EOF
+      - name: Änderung einchecken
+        run: |
+          git config user.name "besucherzaehler-bot"
+          git config user.email "besucherzaehler-bot@users.noreply.github.com"
+          git add besucherzaehler.json
+          git diff --cached --quiet || git commit -m "Besucherzähler: Gesamtstand aktualisiert"
+          git push
