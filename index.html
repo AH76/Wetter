@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- wetter-altenburg STANDALONE build 2026-11-07, Header-Fix v4 (fehlendes </div> ergänzt) (Titel eigene Zeile, Logo links) -->
+<!-- wetter-altenburg STANDALONE build 2026-11-07, Header-Fix v5 + Besucherzaehler + GitHub-Abacus (fehlendes </div> ergänzt) (Titel eigene Zeile, Logo links) -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -1587,6 +1587,8 @@
         <button type="button" id="openCookieSettingsBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">🍪 Cookie-Einstellungen</button>
         <span>·</span>
         <button type="button" id="openPrivacyBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">Datenschutz &amp; Impressum</button>
+        <span>·</span>
+        <span id="visitCountWrap" title="Seitenaufrufe seit Einführung des Zählers">👁 <span id="visitCount">…</span> Besucher</span>
       </div>
     </footer>
   </div>
@@ -1649,7 +1651,9 @@
         <p style="margin-bottom:8px;">Diese Anwendung speichert Benutzereinstellungen (Wettermodelle, Tabs) lokal im LocalStorage Ihres Browsers. Keine Weitergabe an Dritte zu Werbezwecken.</p>
         <h4 style="color:#fff; margin-bottom:4px;">2. Wetterdaten-Abfrage</h4>
         <p style="margin-bottom:8px;">Wetterdaten werden direkt von der Open-Meteo API abgerufen. Es werden keine Nutzerprofile angelegt.</p>
-        <h4 style="color:#fff; margin-bottom:4px;">3. Widerrufsrecht (Art. 7 Abs. 3 DSGVO)</h4>
+        <h4 style="color:#fff; margin-bottom:4px;">3. Besucherzähler</h4>
+        <p style="margin-bottom:8px;">Beim Seitenaufruf wird die Gesamtbesucherzahl über den Dienst abacus.jasoncameron.dev gezählt (ein anonymer Zählaufruf ohne Cookies und ohne Nutzerprofile). Der aktuelle Gesamtstand wird zusätzlich per GitHub Action in die Datei besucherzaehler.json dieses Repositories archiviert.</p>
+        <h4 style="color:#fff; margin-bottom:4px;">4. Widerrufsrecht (Art. 7 Abs. 3 DSGVO)</h4>
         <p style="margin-bottom:8px;">Sie können die Cookie- und Speichereinstellungen jederzeit über die Fußzeile aufrufen und anpassen.</p>
         <h4 style="color:#fff; margin-bottom:6px; font-size:13px; margin-top:12px;">Angaben gemäß § 5 DDG (Impressum)</h4>
         <div style="background:#172332; padding:12px; border-radius:8px; border:1px solid #27384a; margin-bottom:12px; color:#e2e8f0; font-family:monospace; font-size:12px; line-height:1.5;">
@@ -1666,6 +1670,66 @@
       </div>
     </div>
   </div>
+  <script type="text/x-server-plugin">
+    // Globaler Besucherzähler (Seitenaufrufe). Binärlayout in `state`:
+    // Byte 0: Version (1) · Bytes 1-4: Zähler (u32 LE) · Bytes 5-7: Reserve ·
+    // ab Byte 8: Drossel-Tabelle, 256 Einträge à 8 Byte (net3 u32 LE + Zeitstempel-Sekunden u32 LE).
+    var VCOUNT_VERSION = 1;
+    var VCOUNT_OFF = 1;
+    var VTHROTTLE_OFF = 8;
+    var VTHROTTLE_N = 256;
+    var VTHROTTLE_SEC = 10;
+    function vU32(o) {
+      return (state[o] | (state[o + 1] << 8) | (state[o + 2] << 16) | (state[o + 3] << 24)) >>> 0;
+    }
+    function vU32Set(o, v) {
+      state[o] = v & 255;
+      state[o + 1] = (v >>> 8) & 255;
+      state[o + 2] = (v >>> 16) & 255;
+      state[o + 3] = (v >>> 24) & 255;
+    }
+    function vEnsure() {
+      if (state[0] !== VCOUNT_VERSION) {
+        state[0] = VCOUNT_VERSION;
+        vU32Set(VCOUNT_OFF, 0);
+      }
+    }
+    function vAllowed(net3, nowSec) {
+      var empty = -1;
+      for (var i = 0; i < VTHROTTLE_N; i++) {
+        var o = VTHROTTLE_OFF + i * 8;
+        var n = vU32(o);
+        var t = vU32(o + 4);
+        if (n === net3) {
+          if (nowSec - t < VTHROTTLE_SEC) return false;
+          vU32Set(o + 4, nowSec);
+          return true;
+        }
+        if (empty < 0 && n === 0 && t === 0) empty = i;
+      }
+      var slot = empty >= 0 ? empty : (nowSec % VTHROTTLE_N);
+      var so = VTHROTTLE_OFF + slot * 8;
+      vU32Set(so, net3);
+      vU32Set(so + 4, nowSec);
+      return true;
+    }
+    self.rpc = {
+      visit: function (ctx, data) {
+        vEnsure();
+        var nowSec = Math.floor(Date.now() / 1000);
+        var net3 = 0;
+        try { net3 = (ctx.conn.net[3]) >>> 0; } catch (e) {}
+        if (vAllowed(net3, nowSec)) {
+          vU32Set(VCOUNT_OFF, (vU32(VCOUNT_OFF) + 1) >>> 0);
+        }
+        return String(vU32(VCOUNT_OFF));
+      },
+      getCount: function () {
+        vEnsure();
+        return String(vU32(VCOUNT_OFF));
+      }
+    };
+  </script>
 <script>
     // Globaler Startfehler-Fänger: zeigt Boot-Abstürze (z. B. blockierter Speicher
     // bei file://-Öffnung) in der Statuszeile statt stillem Stillstand.
@@ -4647,6 +4711,50 @@
       e.preventDefault();
     });
 
+    // Besucherzähler für GitHub Pages (Abacus-API). Zählt Seitenaufrufe (gesamt).
+    // Pro Browser-Sitzung wird nur einmal gezählt, danach nur gelesen.
+    function initVisitCounter() {
+      var wrap = document.getElementById('visitCountWrap');
+      if (!wrap) return;
+      var num = document.getElementById('visitCount');
+      var API = 'https://abacus.jasoncameron.dev';
+      var NS = 'wetter-altenburg';
+      var KEY = 'besucher';
+      var done = false;
+      function finish(val) {
+        if (done) return;
+        done = true;
+        if (val == null) { wrap.style.display = 'none'; }
+        else if (num) { num.textContent = val; }
+      }
+      function show(data) {
+        var v = data && typeof data.value !== 'undefined' ? Number(data.value) : NaN;
+        if (!isFinite(v)) { finish(null); return; }
+        finish(String(v));
+      }
+      function read() {
+        fetch(API + '/get/' + NS + '/' + KEY).then(function (r) {
+          if (!r.ok) throw 0;
+          return r.json();
+        }).then(show, function () { finish(null); });
+      }
+      try {
+        var counted = false;
+        try { counted = !!sessionStorage.getItem('vcounted'); } catch (e) {}
+        if (counted) { read(); }
+        else {
+          fetch(API + '/hit/' + NS + '/' + KEY).then(function (r) {
+            if (!r.ok) throw 0;
+            return r.json();
+          }).then(function (d) {
+            try { sessionStorage.setItem('vcounted', '1'); } catch (e) {}
+            show(d);
+          }, read);
+        }
+      } catch (e) { finish(null); }
+      setTimeout(function () { finish(null); }, 12000);
+    }
+    // Bei lokaler file://-Öffnung: Laufzeit-Manifest als Rückfall, kein Service Worker.
     // PWA: Manifest + Icons + Service Worker nur bei gehosteter (http/https) Nutzung.
     // Bei lokaler file://-Öffnung: Laufzeit-Manifest als Rückfall, kein Service Worker.
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
@@ -4701,6 +4809,7 @@
     } // file:-Rückfall Ende
 
     try { initCookieConsent(); } catch (e) {}
+    try { initVisitCounter(); } catch (e) {}
 
     // Initial load (läuft auch bei blockiertem Speicher / Cookie-Fehlern)
     loadForecast();
