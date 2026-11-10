@@ -5999,7 +5999,22 @@
       var r = null;
       try { r = (typeof root !== 'undefined') ? root : null; } catch (e) { r = null; }
       if ((!r || !r.createServerSocket) && typeof createServerSocket !== 'undefined') r = { createServerSocket: createServerSocket };
-      if (!r || !r.createServerSocket) { wrap.style.display = 'none'; return; }
+      if (!r || !r.createServerSocket) { localVisitFallback(); return; }
+      // Standalone-Datei / offline: kein Server vorhanden — stattdessen lokaler
+      // Geräte-Zähler, damit der Zählerplatz sichtbar bleibt (kein globaler Zähler).
+      function localVisitFallback() {
+        done = true;
+        let n = 0;
+        try {
+          n = (parseInt(storeGet('local_visit_count_v1') || '0', 10) || 0) + 1;
+          storeSet('local_visit_count_v1', String(n));
+        } catch (e) { n = 0; }
+        try {
+          wrap.innerHTML = '👁 <span id="visitCount">' + (n || '–') + '</span> Besuche (dieses Gerät)';
+          wrap.title = 'Lokaler Zähler: Aufrufe auf diesem Gerät (Standalone-Datei ohne Server).';
+          wrap.style.display = '';
+        } catch (e2) {}
+      }
       var done = false;
       var socket = null;
       function finish(val) {
