@@ -2,7 +2,7 @@
   "seite": "wetter-altenburg-standalone.html",
   "namespace": "wetter-altenburg",
   "key": "besucher",
-  "besucher_gesamt": 2,
-  "aktualisiert": "2026-11-09T16:42:28Z",
+  "besucher_gesamt": 12,
+  "aktualisiert": "2026-11-10T11:09:56Z",
   "hinweis": "Wird automatisch per GitHub Action aus dem Live-Zähler aktualisiert."
 }
