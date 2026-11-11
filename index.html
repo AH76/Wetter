@@ -3528,6 +3528,11 @@
       if (json) h['Content-Type'] = 'application/json';
       return h;
     }
+    function verifDbGet(url) {
+      const opt = { headers: verifDbHeaders() };
+      try { if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) opt.signal = AbortSignal.timeout(20000); } catch (e) {}
+      return fetch(url, opt);
+    }
     async function verifDbPushSnaps() {
       try {
         if (!VERIF_DB_KEY) return;
@@ -3574,8 +3579,8 @@
       const lk = verifLocKey();
       const cut = verifLocDate(-(maxDays || 90));
       const [rs, rt] = await Promise.all([
-        seasFetch(VERIF_DB_URL + '/verif_snapshots?loc_key=eq.' + encodeURIComponent(lk) + '&run_date=gte.' + cut + '&select=run_date,model_id,target_date,tmin,tmax,precip&order=run_date.desc&limit=20000', 20000),
-        seasFetch(VERIF_DB_URL + '/verif_truth?loc_key=eq.' + encodeURIComponent(lk) + '&select=target_date,tmax,tmin,precip,station_id,station_name&limit=5000', 20000)
+        verifDbGet(VERIF_DB_URL + '/verif_snapshots?loc_key=eq.' + encodeURIComponent(lk) + '&run_date=gte.' + cut + '&select=run_date,model_id,target_date,tmin,tmax,precip&order=run_date.desc&limit=20000'),
+        verifDbGet(VERIF_DB_URL + '/verif_truth?loc_key=eq.' + encodeURIComponent(lk) + '&select=target_date,tmax,tmin,precip,station_id,station_name&limit=5000')
       ]);
       if (!rs.ok || !rt.ok) return null;
       const sRows = await rs.json(), tRows = await rt.json();
