@@ -1796,6 +1796,17 @@
         <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;" id="modelCardsTitle">Die 36 meteorologischen Wettermodelle</h3>
         <p style="font-size: 12px; color: var(--text-muted);">Umfassender Multimodell-Vergleich mit allen für diesen Standort verfügbaren globalen, regionalen und KI-gestützten Rechenmodellen.</p>
       </div>
+      <div id="verifCard" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+        <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">🏆 Modell-Treffgenauigkeit — Prognose gegen Messung</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Täglich wird der erste Abruf je Modell gespeichert (tiefste/höchste Tagestemperatur &amp; Tagesniederschlag für +1 bis +16 Tage) und mit den echten Tagesmesswerten der nächsten DWD-Station verglichen. Treffer = Temperaturfehler ≤ 1,5 °C bzw. Niederschlagsfehler ≤ 1 mm. Läufe aller Geräte fließen in eine gemeinsame Datenbank-Auswertung. Rückwirkend geht das nicht — abgelaufene Prognosen werden nirgends archiviert, nur Messwerte. Die Sammlung startet daher mit dem ersten Abruf.</p>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+          <button type="button" class="seas-pill" id="verifExportBtn">💾 Sammlung als JSON sichern</button>
+          <button type="button" class="seas-pill" id="verifImportBtn">📂 JSON einlesen</button>
+          <input type="file" id="verifImportFile" accept="application/json,.json" style="display:none;">
+        </div>
+        <div id="verifStatus" style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Noch nicht ausgewertet — Auswertung läuft …</div>
+        <div id="verifTables" style="overflow-x: auto;"></div>
+      </div>
       <div id="modelCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;"></div>
     </div>
 
@@ -2040,6 +2051,10 @@
           über die
           <a href="https://brightsky.dev/" target="_blank" rel="noopener" style="color:#38bdf8;">Bright Sky API</a>
           (CC-BY, Abruf am Standort der angezeigten Station). Im Orts-Modus zeigt die Aktuell-Pille dagegen das Modellmittel am Datenpunkt – daher können sich die Werte unterscheiden.</p>
+        <p style="margin-bottom:6px;"><strong style="color:#e2e8f0;">Geteilte Trefferquoten-Sammlung:</strong>
+          Prognose-Schnappschüsse und Tagesmesswerte (gerundete Koordinaten, keine Personendaten) werden zusätzlich in einer
+          <a href="https://supabase.com/" target="_blank" rel="noopener" style="color:#38bdf8;">Supabase</a>-Datenbank
+          gesammelt, damit alle Geräte gemeinsam auswerten. Lesen darf jeder, Schreiben nur plausible Werte (Datenbank-Checks), Löschen nur im Dashboard.</p>
         <p style="margin-bottom:6px;"><strong style="color:#e2e8f0;">Ortsuche &amp; GPS:</strong>
           Open-Meteo Geocoding; Rückwärtssuche und Ortsanzeige am Datenpunkt:
           <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener" style="color:#38bdf8;">OpenStreetMap Nominatim</a>
@@ -3468,7 +3483,7 @@
       if (view === 'chart') renderCharts();
       if (view === 'seasonal') (seasonalModel === 'cmip6' ? loadClimate() : loadSeasonal());
       if (view === 'history') loadHistory();
-      if (view === 'models') renderModelCards();
+      if (view === 'models') { renderModelCards(); renderVerif(); }
     }
 
     function renderModelCards() {
@@ -3493,6 +3508,412 @@
           </div>
         </div>
       `).join('');
+    }
+
+    // --- MODELL-VERIFIKATION (Prognose gegen DWD-Messung) ---
+    // Täglich speichert der erste erfolgreiche Abruf je Modell die prognostizierten
+    // Tageswerte (Tmin/Tmax/Niederschlagssumme für +1..+16 Tage). Geprüft wird gegen
+    // die echten Tagesmesswerte der nächsten DWD-Station (Bright Sky). Trefferquote:
+    // Temperaturfehler ≤ 1,5 °C bzw. Niederschlagsfehler ≤ 1 mm. Alte Prognosen
+    // lassen sich nicht nachholen — kein Dienst archiviert abgelaufene Vorhersagen.
+    const VERIF_MAX_LEAD = 16, VERIF_TEMP_HIT = 1.5, VERIF_PRECIP_HIT = 1.0;
+    // Geteilte Sammlung (Supabase, Free-Plan): ein Prognose-/Messwertsatz je Tag und
+    // Standort, Doppelte werden per Primärschlüssel ignoriert. Der Key ist der
+    // öffentliche anon-Key (darf im Code stehen); Schreiben ist zusätzlich durch
+    // CHECK-Constraints begrenzt, Löschen/Ändern geht nur im Dashboard.
+    const VERIF_DB_URL = 'https://cpoeiofxwhisorzxglom.supabase.co/rest/v1';
+    const VERIF_DB_KEY = 'sb_publishable_XRwlHJcMr2sxzfWnnNfY9Q_W3Mny9hP';
+    function verifDbHeaders(json) {
+      const h = { apikey: VERIF_DB_KEY, Authorization: 'Bearer ' + VERIF_DB_KEY };
+      if (json) h['Content-Type'] = 'application/json';
+      return h;
+    }
+    async function verifDbPushSnaps() {
+      try {
+        if (!VERIF_DB_KEY) return;
+        const lk = verifLocKey();
+        const store = verifRead('verifSnaps_v1_' + lk);
+        const snaps = store[verifLocDate(0)];
+        if (!snaps) return;
+        const rows = [];
+        for (const [mid, per] of Object.entries(snaps)) {
+          for (const [tgt, v] of Object.entries(per)) {
+            rows.push({ loc_key: lk, run_date: verifLocDate(0), model_id: mid, target_date: tgt, tmin: v[0], tmax: v[1], precip: v[2] });
+          }
+        }
+        for (let i = 0; i < rows.length; i += 500) {
+          await fetch(VERIF_DB_URL + '/verif_snapshots?on_conflict=loc_key,run_date,model_id,target_date', {
+            method: 'POST',
+            headers: Object.assign(verifDbHeaders(true), { Prefer: 'resolution=ignore-duplicates,return=minimal' }),
+            body: JSON.stringify(rows.slice(i, i + 500))
+          });
+        }
+      } catch (e) {}
+    }
+    async function verifDbPushTruth(cache, days) {
+      try {
+        if (!VERIF_DB_KEY || !cache || !days || !days.length) return;
+        const lk = verifLocKey();
+        const rows = days.filter(d => cache.days[d]).map(d => ({
+          loc_key: lk, target_date: d,
+          station_id: cache.station ? cache.station.id : null,
+          station_name: cache.station ? cache.station.name : null,
+          tmax: cache.days[d][0], tmin: cache.days[d][1], precip: cache.days[d][2]
+        }));
+        for (let i = 0; i < rows.length; i += 500) {
+          await fetch(VERIF_DB_URL + '/verif_truth?on_conflict=loc_key,target_date', {
+            method: 'POST',
+            headers: Object.assign(verifDbHeaders(true), { Prefer: 'resolution=ignore-duplicates,return=minimal' }),
+            body: JSON.stringify(rows.slice(i, i + 500))
+          });
+        }
+      } catch (e) {}
+    }
+    async function verifDbPull(maxDays) {
+      if (!VERIF_DB_KEY) return null;
+      const lk = verifLocKey();
+      const cut = verifLocDate(-(maxDays || 90));
+      const [rs, rt] = await Promise.all([
+        seasFetch(VERIF_DB_URL + '/verif_snapshots?loc_key=eq.' + encodeURIComponent(lk) + '&run_date=gte.' + cut + '&select=run_date,model_id,target_date,tmin,tmax,precip&order=run_date.desc&limit=20000', 20000),
+        seasFetch(VERIF_DB_URL + '/verif_truth?loc_key=eq.' + encodeURIComponent(lk) + '&select=target_date,tmax,tmin,precip,station_id,station_name&limit=5000', 20000)
+      ]);
+      if (!rs.ok || !rt.ok) return null;
+      const sRows = await rs.json(), tRows = await rt.json();
+      const snaps = {};
+      for (const r of sRows) {
+        if (!r || !r.run_date || !r.model_id || !r.target_date) continue;
+        const per = (snaps[r.run_date] = snaps[r.run_date] || {});
+        const pm = (per[r.model_id] = per[r.model_id] || {});
+        if (!(r.target_date in pm)) pm[r.target_date] = [r.tmin, r.tmax, r.precip];
+      }
+      const truthDays = {}, st = {};
+      for (const r of tRows) {
+        if (!r || !r.target_date || !Number.isFinite(r.tmax)) continue;
+        truthDays[r.target_date] = [r.tmax, r.tmin, r.precip];
+        if (r.station_name) st.name = r.station_name;
+        if (r.station_id != null) st.id = r.station_id;
+      }
+      return { snaps, truthDays, station: st.name ? st : null };
+    }
+    function verifLocKey() {
+      return CURRENT_LOCATION.latitude.toFixed(2) + '_' + CURRENT_LOCATION.longitude.toFixed(2);
+    }
+    function verifRead(key) {
+      try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : {}; } catch (e) { return {}; }
+    }
+    function verifWrite(key, obj) {
+      try { localStorage.setItem(key, JSON.stringify(obj)); } catch (e) {}
+    }
+    function verifLocDate(offsetDays) {
+      const off = (typeof forecast !== 'undefined' && forecast && Number.isFinite(forecast.utc_offset_seconds))
+        ? forecast.utc_offset_seconds : -new Date().getTimezoneOffset() * 60;
+      return new Date(Date.now() + off * 1000 + (offsetDays || 0) * 86400000).toISOString().slice(0, 10);
+    }
+    function captureVerifSnapshot() {
+      try {
+        if (typeof forecast === 'undefined' || !forecast?.hourly?.time?.length) return;
+        const run = verifLocDate(0);
+        const store = verifRead('verifSnaps_v1_' + verifLocKey());
+        if (store[run]) return; // ein Lauf pro Tag genügt
+        const time = forecast.hourly.time;
+        const dayIdx = {};
+        for (let i = 0; i < time.length; i++) {
+          const d = (time[i] || '').slice(0, 10);
+          if (d) (dayIdx[d] = dayIdx[d] || []).push(i);
+        }
+        const snaps = {};
+        for (const m of MODELS) {
+          const T = forecast.hourly['temperature_2m_' + m.id];
+          const P = forecast.hourly['precipitation_' + m.id];
+          if (!Array.isArray(T) || !Array.isArray(P)) continue;
+          const per = {};
+          for (let lead = 1; lead <= VERIF_MAX_LEAD; lead++) {
+            const tgt = verifLocDate(lead);
+            const idx = (dayIdx[tgt] || []).filter(i => Number.isFinite(T[i]));
+            if (!idx.length) continue;
+            let mn = Infinity, mx = -Infinity, ps = 0, hasP = false;
+            for (const i of idx) {
+              const v = T[i];
+              if (v < mn) mn = v; if (v > mx) mx = v;
+              const p = P[i];
+              if (Number.isFinite(p)) { ps += p; hasP = true; }
+            }
+            per[tgt] = [Math.round(mn * 10) / 10, Math.round(mx * 10) / 10, hasP ? Math.round(ps * 10) / 10 : null];
+          }
+          if (Object.keys(per).length) snaps[m.id] = per;
+        }
+        if (!Object.keys(snaps).length) return;
+        store[run] = snaps;
+        const cut = verifLocDate(-120);
+        for (const k of Object.keys(store)) if (k < cut) delete store[k];
+        verifWrite('verifSnaps_v1_' + verifLocKey(), store);
+      } catch (e) {}
+    }
+    function verifModelLabel(mid) {
+      try {
+        const m = ALL_WEATHER_MODELS.find(x => x.id === mid);
+        if (m) return { label: m.label, color: m.color };
+      } catch (e) {}
+      return { label: mid, color: '#94a3b8' };
+    }
+    function verifDe(v, digits) {
+      if (!Number.isFinite(v)) return '—';
+      return v.toFixed(digits === undefined ? 1 : digits).replace('.', ',');
+    }
+    async function fetchVerifTruth(needDates) {
+      const st = nearestDwdStation(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude);
+      const key = 'verifTruth_v1_' + verifLocKey();
+      const cache = verifRead(key);
+      cache.days = cache.days || {};
+      if (st) cache.station = { name: st.name, km: Math.round(st.km * 10) / 10, id: st.id };
+      const missing = needDates.filter(d => !(d in cache.days)).sort();
+      // fehlende Tage zu zusammenhängenden Blöcken bündeln (ein Abruf je Block)
+      const blocks = [];
+      for (const d of missing) {
+        const last = blocks[blocks.length - 1];
+        if (last && new Date(d) - new Date(last[1]) === 86400000) last[1] = d;
+        else blocks.push([d, d]);
+      }
+      const added = [];
+      for (const [from, to] of blocks.slice(0, 12)) {        try {
+          const u = new URL('https://api.brightsky.dev/weather');
+          u.searchParams.set('lat', st ? st.lat.toFixed(4) : CURRENT_LOCATION.latitude.toFixed(4));
+          u.searchParams.set('lon', st ? st.lon.toFixed(4) : CURRENT_LOCATION.longitude.toFixed(4));
+          u.searchParams.set('date', from);
+          // Bright-Sky-Eigenheit: Der last_date-Tag liefert nur den 00:00-Wert.
+          // Daher einen Tag weiter fassen, damit auch `to` voll (24 h) ankommt.
+          const toD = new Date(to + 'T12:00:00Z');
+          const toPlus = new Date(toD.getTime() + 86400000).toISOString().slice(0, 10);
+          u.searchParams.set('last_date', toPlus);
+          const res = await fetch(u.toString());
+          if (!res.ok) continue;
+          const j = await res.json();
+          const agg = {};
+          for (const r of (j.weather || [])) {
+            const d = (r.timestamp || '').slice(0, 10);
+            if (!d) continue;
+            const a = agg[d] = agg[d] || { t: [], p: [] };
+            if (Number.isFinite(r.temperature)) a.t.push(r.temperature);
+            if (Number.isFinite(r.precipitation)) a.p.push(r.precipitation);
+          }
+          for (const [d, a] of Object.entries(agg)) {
+            if (a.t.length < 20) continue; // unvollständiger Tag (läuft noch)
+            cache.days[d] = [
+              Math.round(Math.max(...a.t) * 10) / 10,
+              Math.round(Math.min(...a.t) * 10) / 10,
+              Math.round(a.p.reduce((x, y) => x + y, 0) * 10) / 10
+            ];
+            added.push(d);
+          }
+        } catch (e) {}
+      }
+      verifWrite(key, cache);
+      try { verifDbPushTruth(cache, added); } catch (e) {}
+      return cache;
+    }
+    function scoreVerif(snaps, truthDays) {
+      const agg = {};
+      let pairs = 0;
+      for (const [run, models] of Object.entries(snaps)) {
+        for (const [mid, per] of Object.entries(models)) {
+          for (const [tgt, vals] of Object.entries(per)) {
+            const obs = truthDays[tgt];
+            if (!obs) continue;
+            const lead = Math.round((new Date(tgt + 'T12:00:00Z') - new Date(run + 'T12:00:00Z')) / 86400000);
+            if (!(lead >= 1 && lead <= VERIF_MAX_LEAD)) continue;
+            const a = agg[mid] = agg[mid] || {};
+            const L = a[lead] = a[lead] || { n: 0, tmax: 0, tmin: 0, prec: 0, tmaxB: 0, tminB: 0, pB: 0, pN: 0, tmaxH: 0, tminH: 0, precH: 0 };
+            L.n++; pairs++;
+            const eMax = Math.abs(vals[1] - obs[0]), eMin = Math.abs(vals[0] - obs[1]);
+            L.tmax += eMax;
+            L.tmin += eMin;
+            if (eMax <= VERIF_TEMP_HIT) L.tmaxH++;
+            if (eMin <= VERIF_TEMP_HIT) L.tminH++;
+            L.tmaxB += vals[1] - obs[0];
+            L.tminB += vals[0] - obs[1];
+            if (vals[2] != null) {
+              const eP = Math.abs(vals[2] - obs[2]);
+              L.prec += eP; L.pB += vals[2] - obs[2]; L.pN++;
+              if (eP <= VERIF_PRECIP_HIT) L.precH++;
+            }
+          }
+        }
+      }
+      for (const a of Object.values(agg)) {
+        for (const L of Object.values(a)) {
+          L.mTmax = L.tmax / L.n; L.mTmin = L.tmin / L.n;
+          L.mPrec = L.pN ? L.prec / L.pN : null;
+          L.bTmax = L.tmaxB / L.n; L.bTmin = L.tminB / L.n;
+          L.bPrec = L.pN ? L.pB / L.pN : null;
+          L.mTemp = (L.mTmax + L.mTmin) / 2;
+          L.qTemp = (L.tmaxH + L.tminH) / (2 * L.n);
+          L.qPrec = L.pN ? L.precH / L.pN : null;
+        }
+      }
+      return { agg, pairs };
+    }
+    function verifPct(v) {
+      if (!Number.isFinite(v)) return '—';
+      return (v * 100).toFixed(0).replace('.', ',') + ' %';
+    }
+    function verifExport() {
+      try {
+        const data = {
+          app: 'wetter-altenburg-verifikation', version: 1,
+          standort: { name: CURRENT_LOCATION.name, lat: CURRENT_LOCATION.latitude, lon: CURRENT_LOCATION.longitude },
+          exportiert: new Date().toISOString(),
+          snapshots: verifRead('verifSnaps_v1_' + verifLocKey()),
+          messwerte: verifRead('verifTruth_v1_' + verifLocKey())
+        };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'wetter-verifikation-' + verifLocKey() + '.json';
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+      } catch (e) {}
+    }
+    function verifImportFile(file) {
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const data = JSON.parse(rd.result);
+          if (!data || typeof data !== 'object' || !data.snapshots) throw new Error('leer');
+          const ks = 'verifSnaps_v1_' + verifLocKey(), kt = 'verifTruth_v1_' + verifLocKey();
+          const snaps = verifRead(ks), truth = verifRead(kt);
+          for (const [run, models] of Object.entries(data.snapshots)) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(run)) continue;
+            snaps[run] = Object.assign(snaps[run] || {}, models);
+          }
+          if (data.messwerte && data.messwerte.days) {
+            truth.days = Object.assign(truth.days || {}, data.messwerte.days);
+            if (data.messwerte.station) truth.station = data.messwerte.station;
+          }
+          verifWrite(ks, snaps); verifWrite(kt, truth);
+          renderVerif();
+        } catch (e) {}
+      };
+      try { rd.readAsText(file); } catch (e) {}
+    }
+    let verifRunning = false;
+    async function renderVerif() {
+      const stEl = $('#verifStatus'), tEl = $('#verifTables');
+      if (!stEl || !tEl) return;
+      if (verifRunning) return;
+      verifRunning = true;
+      try {
+        const exB = $('#verifExportBtn');
+        if (exB && !exB.onclick) {
+          exB.onclick = verifExport;
+          const imB = $('#verifImportBtn'), imF = $('#verifImportFile');
+          if (imB) imB.onclick = () => { if (imF) imF.click(); };
+          if (imF) imF.onchange = () => { if (imF.files && imF.files[0]) { verifImportFile(imF.files[0]); imF.value = ''; } };
+        }
+        const snaps = verifRead('verifSnaps_v1_' + verifLocKey());
+        // Geteilte Läufe aus der Datenbank dazu mischen (lokal gewinnt bei Gleichstand)
+        let sharedRuns = 0;
+        try {
+          const remote = await verifDbPull(90);
+          if (remote) {
+            for (const [run, models] of Object.entries(remote.snaps)) {
+              if (!snaps[run]) { snaps[run] = models; continue; }
+              for (const [mid, per] of Object.entries(models)) {
+                if (!snaps[run][mid]) snaps[run][mid] = per;
+              }
+            }
+            sharedRuns = Object.keys(remote.snaps).length;
+            const tk = 'verifTruth_v1_' + verifLocKey();
+            const tc = verifRead(tk);
+            tc.days = tc.days || {};
+            let wrote = false;
+            for (const [d, v] of Object.entries(remote.truthDays)) {
+              if (!(d in tc.days)) { tc.days[d] = v; wrote = true; }
+            }
+            if (!tc.station && remote.station) { tc.station = remote.station; wrote = true; }
+            if (wrote) verifWrite(tk, tc);
+          }
+        } catch (e) {}
+        const sharedTxt = sharedRuns ? ` · 🌐 ${sharedRuns} geteilte Läufe` : '';
+        const runs = Object.keys(snaps).sort();
+        // Prüftage = alle prognostizierten Zieltage bis einschließlich gestern
+        const yesterday = verifLocDate(-1);
+        const needSet = {};
+        for (const models of Object.values(snaps)) {
+          for (const per of Object.values(models)) {
+            for (const tgt of Object.keys(per)) if (tgt <= yesterday) needSet[tgt] = 1;
+          }
+        }
+        const need = Object.keys(needSet).sort();
+        if (!runs.length) {
+          stEl.textContent = 'Noch keine Prognosen gespeichert — der heutige Abruf wurde als erster Lauf gesichert. Komm morgen wieder: Dann gibt es die erste Prüfung.';
+          tEl.innerHTML = '';
+          return;
+        }
+        stEl.textContent = `Werte ${need.length} Messtage gegen ${runs.length} Prognoseläufe …`;
+        const truth = await fetchVerifTruth(need);
+        const { agg, pairs } = scoreVerif(snaps, truth.days || {});
+        const stName = truth.station ? `${truth.station.name} (${String(truth.station.km).replace('.', ',')} km)` : 'DWD-Station';
+        const since = runs[0].split('-').reverse().join('.');
+        if (!pairs) {
+          stEl.textContent = `Sammle seit ${since} · ${runs.length} ${runs.length === 1 ? 'Prognoselauf' : 'Prognoseläufe'}${sharedTxt} · Wahrheit: ${stName}. Sobald die ersten Zieltage von morgen an als Messung vorliegen, erscheint hier die Rangliste.`;
+          tEl.innerHTML = '';
+          return;
+        }
+        stEl.textContent = `Sammle seit ${since} · ${runs.length} ${runs.length === 1 ? 'Prognoselauf' : 'Prognoseläufe'}${sharedTxt} · ${pairs} geprüfte Tagespaare · Wahrheit: DWD-Station ${stName} (Tmin/Tmax/Niederschlagssumme je Tag).`;
+        // Tabelle 1: bestes Modell je Vorlaufzeit (Tag für Tag bis +16)
+        let rows1 = '';
+        for (let lead = 1; lead <= VERIF_MAX_LEAD; lead++) {
+          let bestT = null, bestP = null;
+          for (const [mid, a] of Object.entries(agg)) {
+            const L = a[lead];
+            if (!L || L.n < 1) continue;
+            if (!bestT || L.mTemp < bestT.v) bestT = { mid, v: L.mTemp, n: L.n, q: L.qTemp };
+            if (L.mPrec != null && (!bestP || L.mPrec < bestP.v)) bestP = { mid, v: L.mPrec, n: L.n, q: L.qPrec };
+          }
+          if (!bestT && !bestP) continue;
+          const cT = bestT ? verifModelLabel(bestT.mid) : null;
+          const cP = bestP ? verifModelLabel(bestP.mid) : null;
+          rows1 += `<tr><td style="font-weight:700;">+${lead} ${lead === 1 ? 'Tag' : 'Tage'}</td>` +
+            `<td>${cT ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cT.color};margin-right:5px;"></span>${cT.label} <span style="color:var(--text-muted);">(${verifDe(bestT.v)} °C · <strong style="color:#4ade80;">${verifPct(bestT.q)}</strong>, n=${bestT.n})</span>` : '—'}</td>` +
+            `<td>${cP ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cP.color};margin-right:5px;"></span>${cP.label} <span style="color:var(--text-muted);">(${verifDe(bestP.v)} mm · <strong style="color:#4ade80;">${verifPct(bestP.q)}</strong>, n=${bestP.n})</span>` : '—'}</td></tr>`;
+        }
+        // Tabelle 2: Gesamtrangliste über alle Vorlaufzeiten
+        const totals = [];
+        for (const [mid, a] of Object.entries(agg)) {
+          let n = 0, tmax = 0, tmin = 0, pr = 0, pN = 0, bT = 0, hT = 0, hP = 0;
+          for (const L of Object.values(a)) {
+            n += L.n; tmax += L.mTmax * L.n; tmin += L.mTmin * L.n; bT += L.bTmax * L.n;
+            hT += L.tmaxH + L.tminH;
+            if (L.mPrec != null) { pr += L.mPrec * L.pN; pN += L.pN; hP += L.precH; }
+          }
+          if (!n) continue;
+          totals.push({ mid, n, mTmax: tmax / n, mTmin: tmin / n, mTemp: (tmax + tmin) / (2 * n), mPrec: pN ? pr / pN : null, bTmax: bT / n, qTemp: hT / (2 * n), qPrec: pN ? hP / pN : null });
+        }
+        totals.sort((x, y) => x.mTemp - y.mTemp);
+        const rows2 = totals.map((t, i) => {
+          const c = verifModelLabel(t.mid);
+          const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : `#${i + 1} `;
+          return `<tr><td>${medal}<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.color};margin-right:5px;"></span>${c.label}</td>` +
+            `<td style="text-align:right;">${t.n}</td><td style="text-align:right;">${verifDe(t.mTmax)} °C</td>` +
+            `<td style="text-align:right;">${verifDe(t.mTmin)} °C</td><td style="text-align:right;">${t.mPrec != null ? verifDe(t.mPrec) + ' mm' : '—'}</td>` +
+            `<td style="text-align:right;color:#4ade80;font-weight:700;">${verifPct(t.qTemp)}</td><td style="text-align:right;color:#4ade80;font-weight:700;">${t.qPrec != null ? verifPct(t.qPrec) : '—'}</td>` +
+            `<td style="text-align:right;">${(t.bTmax > 0 ? '+' : '') + verifDe(t.bTmax)} °C</td></tr>`;
+        }).join('');
+        tEl.innerHTML =
+          `<div style="font-size:13px;font-weight:700;color:#fff;margin:10px 0 4px;">Bestes Modell je Vorhersagezeitraum (mittlerer Fehler)</div>` +
+          `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
+          `<th style="padding:4px 6px;">Vorlauf</th><th style="padding:4px 6px;">🌡️ Genaueste Temperatur</th><th style="padding:4px 6px;">🌧️ Genauester Niederschlag</th></tr></thead>` +
+          `<tbody>${rows1}</tbody></table>` +
+          `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Gesamtrangliste (alle Vorlaufzeiten, sortiert nach Temperaturfehler)</div>` +
+          `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
+          `<th style="padding:4px 6px;">Modell</th><th style="padding:4px 6px;text-align:right;">Tage</th>` +
+          `<th style="padding:4px 6px;text-align:right;">Fehler Tmax</th><th style="padding:4px 6px;text-align:right;">Fehler Tmin</th>` +
+          `<th style="padding:4px 6px;text-align:right;">Fehler Nieder.</th><th style="padding:4px 6px;text-align:right;">Treffer Temp.</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;">Tendenz Tmax</th></tr></thead>` +
+          `<tbody>${rows2}</tbody></table>` +
+          `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Fehler = mittlerer absoluter Fehler der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(0)} mm. Tendenz: + = Modell zu warm, − = zu kalt. n = geprüfte Tage. Aussagekraft wächst mit jedem Sammeltag.</div>`;
+      } finally {
+        verifRunning = false;
+      }
     }
 
     // --- 24-STUNDEN-MODELLVISUALISIERUNG (Vorhersage-Tab) ---
@@ -6769,6 +7190,8 @@
           if (eData) mergeEnsembleMeans(forecast, eData);
         } catch (e) {}
 
+        captureVerifSnapshot();
+        try { verifDbPushSnaps(); } catch (e) {}
         renderTable();
         setStatus(`Vorhersage für ${CURRENT_LOCATION.name} erfolgreich aktualisiert.`);
       } catch (err) {
