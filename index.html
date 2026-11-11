@@ -1500,6 +1500,20 @@
       </div><!-- /#h24Group -->
       <!-- TREND-ANALYSE MODUL (HEUTE & MORGEN) -->
       <div id="trendSection" class="trend-module"></div>
+      <!-- PROTOTYP: MODELLVERGLEICH PRO TAG -->
+      <div class="chart-card" id="dayCompareCard" style="margin-top:14px;">
+        <div class="chart-card-title" style="margin-bottom:4px;">🆚 Modellvergleich pro Tag <span style="font-weight:400; font-size:11px; color:var(--text-muted);">(Prototyp)</span></div>
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Alle Modelle als Balken nebeneinander – Ausreißer nach oben/unten auf einen Blick. Kristall-Linie = Modellmittel.</div>
+        <div class="chart-btn-group" id="dcDays" style="margin-bottom:8px;"></div>
+        <div class="chart-btn-group" id="dcMetrics" style="margin-bottom:10px;">
+          <button type="button" class="chart-pill active" data-dcm="tmax">🌡️ Max-Temp</button>
+          <button type="button" class="chart-pill" data-dcm="tmin">❄️ Min-Temp</button>
+          <button type="button" class="chart-pill" data-dcm="precip">💧 Niederschlag</button>
+        </div>
+        <div id="dcSummary" style="font-size:12px; margin-bottom:8px; color:#e2e8f0;"></div>
+        <div id="dcScale" style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin:0 0 4px 4px; padding-left:min(220px,32%);"></div>
+        <div id="dcRows"></div>
+      </div>
     </div>
 
     <!-- TAB 2: STUNDENTABELLE -->
@@ -5508,6 +5522,7 @@
       setStatus('Vorhersage geladen.');
 
       renderTrendAnalysis(availableModels, times, lastHour);
+      renderDayCompare();
       updateCurrentWeatherPill(availableModels, times);
       updateSunMoon();
       populateH24Select();
@@ -5910,6 +5925,82 @@
     }
 
     function renderCharts() {
+      return renderChartsMain();
+    }
+
+    // PROTOTYP Modellvergleich pro Tag: Tages-Pills + sortierte Balken je Modell.
+    let dcDay = null, dcMetric = 'tmax';
+    function renderDayCompare() {
+      const card = $('#dayCompareCard'), daysEl = $('#dcDays'), rowsEl = $('#dcRows'),
+            sumEl = $('#dcSummary'), scaleEl = $('#dcScale');
+      if (!card || !daysEl || !rowsEl) return;
+      if (!forecast?.hourly?.time?.length) { card.style.display = 'none'; return; }
+      const times = forecast.hourly.time;
+      const dayKeys = [...new Set(times.map(t => (t || '').slice(0, 10)).filter(Boolean))].slice(0, 16);
+      if (!dayKeys.length) { card.style.display = 'none'; return; }
+      card.style.display = 'block';
+      if (!dcDay || !dayKeys.includes(dcDay)) dcDay = dayKeys[Math.min(1, dayKeys.length - 1)];
+      $$('#dcMetrics .chart-pill').forEach(b => b.classList.toggle('active', b.dataset.dcm === dcMetric));
+      daysEl.innerHTML = dayKeys.map(dk => {
+        const tp = getTimestampParts(dk + 'T12:00');
+        const lab = tp ? `${tp.weekday.slice(0, 2)} ${tp.shortDate}` : dk;
+        return `<button type="button" class="chart-pill${dk === dcDay ? ' active' : ''}" data-dcday="${dk}">${lab}</button>`;
+      }).join('');
+      $$('#dcDays .chart-pill').forEach(b => b.onclick = () => { dcDay = b.dataset.dcday; renderDayCompare(); });
+      $$('#dcMetrics .chart-pill').forEach(b => b.onclick = () => { dcMetric = b.dataset.dcm; renderDayCompare(); });
+      const models = getSelectedModels();
+      const idx = [];
+      for (let i = 0; i < times.length; i++) if ((times[i] || '').slice(0, 10) === dcDay) idx.push(i);
+      const rows = [];
+      for (const m of models) {
+        const T = m.temperature || [], P = m.precipitation || [];
+        const tv = idx.map(i => T[i]).filter(Number.isFinite);
+        const pv = idx.map(i => P[i]).filter(Number.isFinite);
+        if (tv.length < 12) continue;
+        rows.push({
+          id: m.id, label: m.label, color: m.color, members: !!m.members,
+          tmax: Math.max(...tv), tmin: Math.min(...tv),
+          precip: pv.length ? pv.reduce((a, b) => a + b, 0) : 0, hours: tv.length
+        });
+      }
+      const isP = dcMetric === 'precip';
+      const val = r => isP ? r.precip : (dcMetric === 'tmin' ? r.tmin : r.tmax);
+      rows.sort((a, b) => val(b) - val(a));
+      const unit = isP ? ' mm' : ' °C';
+      const de = v => v.toFixed(1).replace('.', ',') + unit;
+      if (!rows.length) {
+        sumEl.textContent = 'Keine Modelldaten für diesen Tag.';
+        rowsEl.innerHTML = ''; if (scaleEl) scaleEl.innerHTML = '';
+        return;
+      }
+      const vals = rows.map(val);
+      const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+      let lo = Math.min(...vals), hi = Math.max(...vals);
+      if (lo === hi) { lo -= 1; hi += 1; }
+      const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+      const pct = v => Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+      const meanPct = pct(mean).toFixed(1);
+      const tp0 = getTimestampParts(dcDay + 'T12:00');
+      sumEl.innerHTML = `<strong>${tp0 ? tp0.weekday + ', ' + tp0.date : dcDay}</strong> · Ø <strong style="color:#fde68a;">${de(mean)}</strong> · Spanne ${de(Math.min(...vals))} bis ${de(Math.max(...vals))} · ${rows.length} Modelle`;
+      if (scaleEl) scaleEl.innerHTML = `<span>${de(lo)}</span><span>Ø ${de(mean)}</span><span>${de(hi)}</span>`;
+      rowsEl.innerHTML = rows.map((r, i) => {
+        const v = val(r), w = pct(v).toFixed(1);
+        const tag = i === 0 ? '🔺 ' : (i === rows.length - 1 ? '🔻 ' : '');
+        const barColor = i === 0 ? '#f59e0b' : (i === rows.length - 1 ? '#38bdf8' : r.color);
+        return `<div style="display:flex; align-items:center; gap:8px; padding:3px 4px; border-radius:6px;${i === 0 || i === rows.length - 1 ? ' background:rgba(245,158,11,0.07);' : ''}" title="${r.label}: ${de(v)} (${r.hours} h)">`
+          + `<span style="width:26px; text-align:right; font-size:11px; color:var(--text-muted); flex:none;">${i + 1}.</span>`
+          + `<span style="width:11px; height:11px; border-radius:50%; background:${r.color}; flex:none;"></span>`
+          + `<span style="flex:none; width:min(200px,30%); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px;${r.members ? ' color:#4ade80; font-weight:700;' : ''}">${tag}${r.label}</span>`
+          + `<span style="flex:1; position:relative; height:16px; background:rgba(148,163,184,0.10); border-radius:4px; min-width:60px;">`
+          + `<span style="position:absolute; left:0; top:0; bottom:0; width:${w}%; background:${barColor}; opacity:${i === 0 || i === rows.length - 1 ? '0.95' : '0.65'}; border-radius:4px;"></span>`
+          + `<span style="position:absolute; left:${meanPct}%; top:-2px; bottom:-2px; width:2px; background:#fde68a;" title="Modellmittel ${de(mean)}"></span>`
+          + `</span>`
+          + `<span style="flex:none; width:76px; text-align:right; font-size:12px; font-weight:${i === 0 || i === rows.length - 1 ? '700' : '400'};">${de(v)}</span>`
+          + `</div>`;
+      }).join('');
+    }
+
+    function renderChartsMain() {
       if (!forecast?.hourly) return;
       const availableModels = getSelectedModels();
       if (!availableModels.length) return;
