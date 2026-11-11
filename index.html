@@ -1571,51 +1571,7 @@
         </div>
       </div>
 
-      <!-- 1b. TAUPUNKT ENSEMBLEBAND (gleiche Skala wie Temperatur) -->
-      <div class="chart-card" id="dewCard">
-        <div class="chart-hud" style="margin-bottom: 12px;"></div>
-        <div class="chart-card-header">
-          <div class="chart-card-title">
-            <span>💦 Taupunkt-Ensembleband (°C)</span>
-            <span class="chart-card-subtitle">(gleiche Skala wie Temperatur · Spreizung = Sättigungsdefizit)</span>
-          </div>
-          <div style="font-size: 10px; font-family: monospace;">
-            <span style="color: #34d399; margin-right: 8px;">— Max</span>
-            <span style="color: #a7f3d0; margin-right: 8px;">-- Ø Mittel</span>
-            <span style="color: #0d9488;">— Min</span>
-          </div>
-        </div>
-        <div class="chart-plot">
-          <div class="yaxis-frozen" data-for="dewSvg"></div>
-          <div class="svg-wrapper">
-          <svg id="dewSvg" viewBox="0 0 960 210"></svg>
-        </div>
-        </div>
-      </div>
-
-      <!-- 2. WIND ENSEMBLEBAND -->
-      <div class="chart-card" id="windCard">
-        <div class="chart-hud" style="margin-bottom: 12px;"></div>
-        <div class="chart-card-header">
-          <div class="chart-card-title">
-            <span>💨 Windgeschwindigkeit- &amp; Böen-Ensembleband (km/h)</span>
-            <span class="chart-card-subtitle">(Min / Max Spanne)</span>
-          </div>
-          <div style="font-size: 10px; font-family: monospace;">
-            <span style="color: #2dd4bf; margin-right: 8px;">— Max</span>
-            <span style="color: #99f6e4; margin-right: 8px;">-- Ø Mittel</span>
-            <span style="color: #64748b;">— Min</span>
-          </div>
-        </div>
-        <div class="chart-plot">
-          <div class="yaxis-frozen" data-for="windSvg"></div>
-          <div class="svg-wrapper">
-          <svg id="windSvg" viewBox="0 0 960 210"></svg>
-        </div>
-        </div>
-      </div>
-
-      <!-- 3. REGENWAHRSCHEINLICHKEIT ENSEMBLEBAND -->
+      <!-- 2. REGENWAHRSCHEINLICHKEIT ENSEMBLEBAND -->
       <div class="chart-card" id="rainCard">
         <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
@@ -1637,7 +1593,7 @@
         </div>
       </div>
 
-      <!-- 4. NIEDERSCHLAGSMENGE ENSEMBLEBAND -->
+      <!-- 3. NIEDERSCHLAGSMENGE ENSEMBLEBAND -->
       <div class="chart-card" id="precipCard">
         <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
@@ -1659,7 +1615,7 @@
         </div>
       </div>
 
-      <!-- 5. SCHNEE ENSEMBLEBAND -->
+      <!-- 4. SCHNEE ENSEMBLEBAND (gefrorener Niederschlag) -->
       <div class="chart-card" id="snowCard">
         <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
@@ -1681,7 +1637,51 @@
         </div>
       </div>
 
-      <!-- 6. SONNENSCHEINDAUER ENSEMBLEBAND -->
+      <!-- 5. TAUPUNKT ENSEMBLEBAND (gleiche Skala wie Temperatur) -->
+      <div class="chart-card" id="dewCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>💦 Taupunkt-Ensembleband (°C)</span>
+            <span class="chart-card-subtitle">(gleiche Skala wie Temperatur · Spreizung = Sättigungsdefizit)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #34d399; margin-right: 8px;">— Max</span>
+            <span style="color: #a7f3d0; margin-right: 8px;">-- Ø Mittel</span>
+            <span style="color: #0d9488;">— Min</span>
+          </div>
+        </div>
+        <div class="chart-plot">
+          <div class="yaxis-frozen" data-for="dewSvg"></div>
+          <div class="svg-wrapper">
+          <svg id="dewSvg" viewBox="0 0 960 210"></svg>
+        </div>
+        </div>
+      </div>
+
+      <!-- 6. WIND ENSEMBLEBAND -->
+      <div class="chart-card" id="windCard">
+        <div class="chart-hud" style="margin-bottom: 12px;"></div>
+        <div class="chart-card-header">
+          <div class="chart-card-title">
+            <span>💨 Windgeschwindigkeit- &amp; Böen-Ensembleband (km/h)</span>
+            <span class="chart-card-subtitle">(Min / Max Spanne)</span>
+          </div>
+          <div style="font-size: 10px; font-family: monospace;">
+            <span style="color: #2dd4bf; margin-right: 8px;">— Max</span>
+            <span style="color: #99f6e4; margin-right: 8px;">-- Ø Mittel</span>
+            <span style="color: #64748b;">— Min</span>
+          </div>
+        </div>
+        <div class="chart-plot">
+          <div class="yaxis-frozen" data-for="windSvg"></div>
+          <div class="svg-wrapper">
+          <svg id="windSvg" viewBox="0 0 960 210"></svg>
+        </div>
+        </div>
+      </div>
+
+      <!-- 7. SONNENSCHEINDAUER ENSEMBLEBAND -->
       <div class="chart-card" id="sunCard">
         <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
@@ -1703,7 +1703,7 @@
         </div>
       </div>
 
-      <!-- 7. WOLKENSTOCKWERKE ENSEMBLE (TIEFE · MITTLERE · HOHE WOLKEN & NEBEL) -->
+      <!-- 8. WOLKENSTOCKWERKE ENSEMBLE (TIEFE · MITTLERE · HOHE WOLKEN & NEBEL) -->
       <div class="chart-card" id="cloudCard">
         <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
@@ -1756,7 +1756,7 @@
         </div>
       </div>
 
-      <!-- 8. LUFTDRUCK ENSEMBLE (hPa auf Meereshöhe) MIT HOCHDRUCK / TIEFDRUCK TRENNLINIE -->
+      <!-- 9. LUFTDRUCK ENSEMBLE (hPa auf Meereshöhe) MIT HOCHDRUCK / TIEFDRUCK TRENNLINIE -->
       <div class="chart-card" id="pressureCard">
         <div class="chart-hud" style="margin-bottom: 12px;"></div>
         <div class="chart-card-header">
@@ -5348,7 +5348,7 @@
 
     function filterCards(metric) {
       const cardMap = {
-        all: ['tempCard', 'dewCard', 'windCard', 'rainCard', 'precipCard', 'snowCard', 'sunCard', 'cloudCard', 'pressureCard'],
+        all: ['tempCard', 'rainCard', 'precipCard', 'snowCard', 'dewCard', 'windCard', 'sunCard', 'cloudCard', 'pressureCard'],
         temp: ['tempCard'],
         dew: ['dewCard'],
         wind: ['windCard'],
@@ -5360,7 +5360,7 @@
         pressure: ['pressureCard']
       };
       const visibleSet = new Set(cardMap[metric] || cardMap.all);
-      ['tempCard', 'dewCard', 'windCard', 'rainCard', 'precipCard', 'snowCard', 'sunCard', 'cloudCard', 'pressureCard'].forEach((id) => {
+      ['tempCard', 'rainCard', 'precipCard', 'snowCard', 'dewCard', 'windCard', 'sunCard', 'cloudCard', 'pressureCard'].forEach((id) => {
         const el = $('#' + id);
         if (el) el.style.display = visibleSet.has(id) ? 'block' : 'none';
       });
