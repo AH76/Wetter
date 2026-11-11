@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Altenburg – Stündliche Wettermodelle</title>
+<title>Wetter Altenburg</title>
 </head>
 <body>
 <meta name="theme-color" content="#0d131a">
@@ -1395,7 +1395,7 @@
         <button type="button" class="quick-btn" id="qDwd" style="color: #5eead4; border-color: #0d9488;">DWD Fokus (4)</button>
         <button type="button" class="quick-btn" id="qAi" style="color: #c084fc; border-color: #9333ea;">KI-Modelle (3)</button>
         <button type="button" class="quick-btn" id="qGlobal">Global (12)</button>
-        <button type="button" class="quick-btn" id="qMajor">Kern (4)</button>
+        <button type="button" class="quick-btn" id="qMajor">Kern (5)</button>
         <button type="button" class="quick-btn" id="qNone">Keine</button>
       </div>
       <div class="model-grid" id="modelList"></div>
@@ -1798,7 +1798,7 @@
       </div>
       <div id="verifCard" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
         <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">🏆 Modell-Treffgenauigkeit — Prognose gegen Messung</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Täglich wird der erste Abruf je Modell gespeichert (tiefste/höchste Tagestemperatur &amp; Tagesniederschlag für +1 bis +16 Tage) und mit den echten Tagesmesswerten der nächsten DWD-Station verglichen. Treffer = Temperaturfehler ≤ 1,5 °C bzw. Niederschlagsfehler ≤ 1 mm. Läufe aller Geräte fließen in eine gemeinsame Datenbank-Auswertung. Rückwirkend geht das nicht — abgelaufene Prognosen werden nirgends archiviert, nur Messwerte. Die Sammlung startet daher mit dem ersten Abruf.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Täglich wird der erste Abruf je Modell gespeichert (tiefste/höchste Tagestemperatur &amp; Tagesniederschlag für +1 bis +46 Tage) und mit den echten Tagesmesswerten der nächsten DWD-Station verglichen. Treffer = Temperaturfehler ≤ 1,5 °C bzw. Niederschlagsfehler ≤ 1 mm. Stundenmodelle zählen gegen Tmin/Tmax, die Tagesmittel-Modelle EC46 (46 Tage) und SEAS5 gegen das gemessene Tagesmittel. Läufe aller Geräte fließen in eine gemeinsame Datenbank-Auswertung. Rückwirkend geht das nicht — abgelaufene Prognosen werden nirgends archiviert, nur Messwerte. Die Sammlung startet daher mit dem ersten Abruf.</p>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
           <button type="button" class="seas-pill" id="verifExportBtn">💾 Sammlung als JSON sichern</button>
           <button type="button" class="seas-pill" id="verifImportBtn">📂 JSON einlesen</button>
@@ -2031,10 +2031,11 @@
       <div style="font-size:11px; color:var(--text-muted); line-height:1.65;">
         <p style="margin-bottom:6px;"><strong style="color:#e2e8f0;">Stundenprognosen (16 Tage) &amp; 35-Tage-Ensemble:</strong>
           <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:#38bdf8;">Open-Meteo</a>
-          (freie Nutzung, Aggregation). Enthaltene Rechenzentren &amp; Modelle: ECMWF (IFS, AIFS), NOAA / NCEP (GFS, GEFS, AI-GFS),
-          DWD (ICON, ICON-D2, ICON-EU, A-ICON), UK Met Office, Météo-France (ARPEGE, AROME), ECCC Kanada (GEM, GEPS),
-          JMA Japan, CMA China, KMA Korea, BOM Australien, MET Norway, CHMI Tschechien, GeoSphere Austria, KNMI Niederlande,
-          DMI Dänemark, Google DeepMind (GraphCast). Tages-Messwerte (Reanalyse seit 1940): ERA5 via Open-Meteo Archive API.</p>
+          (freie Nutzung, Aggregation). Enthaltene Rechenzentren &amp; Modelle: ECMWF (IFS, IFS HRES 9 km, AIFS, IFS-/AIFS-Ensembles),
+          NOAA / NCEP (GFS, GEFS, HGEFS-Mittel, AI-GFS), DWD (ICON, ICON-D2, ICON-EU, native Gitter, A-ICON, ICON-EPS),
+          UK Met Office (inkl. MOGREPS-G), Météo-France (ARPEGE, AROME), ECCC Kanada (GEM, GEPS),
+          JMA Japan, CMA China, MET Norway, CHMI Tschechien (inkl. ALADIN CZ 1 km), GeoSphere Austria, KNMI Niederlande,
+          DMI Dänemark, Google DeepMind (WeatherNext 2). Tages-Messwerte (Reanalyse seit 1940): ERA5 via Open-Meteo Archive API.</p>
         <p style="margin-bottom:6px;"><strong style="color:#e2e8f0;">Langfrist (Tageswerte):</strong>
           ECMWF Seasonal-Systeme SEAS5 (51 Member, bis ~7 Monate) &amp; EC46 (51 Member, 46 Tage)
           via <a href="https://climate.copernicus.eu/" target="_blank" rel="noopener" style="color:#38bdf8;">Copernicus Climate Change Service (C3S)</a>
@@ -2073,7 +2074,7 @@
       </div>
     </div>
     <footer style="margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;">
-      <div><span id="footLocName">Altenburg</span> Wettermodelle · Basierend auf Open-Meteo Multi-Model API · 36 globale &amp; regionale Rechenmodelle · Die Seite wurde mit KI generiert</div>
+      <div><span id="footLocName">Altenburg</span> Wettermodelle · Basierend auf Open-Meteo Multi-Model API · <span id="footModelCount">–</span> globale &amp; regionale Rechenmodelle · Die Seite wurde mit KI generiert</div>
       <div style="display: flex; gap: 12px; align-items: center;">
         <button type="button" id="openCookieSettingsBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">🍪 Cookie-Einstellungen</button>
         <span>·</span>
@@ -2276,29 +2277,33 @@
       return `${year}-${month}-${day}T${hours}`;
     }
 
-    const ALL_WEATHER_MODELS = [
-      // 14 hochauflösende Regionalmodelle
-      { id: 'icon_d2', label: 'DWD ICON-D2 (2.2 km)', color: '#059669', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
-      { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2 km)', color: '#10b981', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
-      { id: 'icon_eu', label: 'DWD ICON-EU (7 km)', color: '#0d9488', isRegional: true, bounds: { minLat: 29.5, maxLat: 70.5, minLon: -25.0, maxLon: 45.0 } },
-      { id: 'chmi_aladin_seamless', label: 'CHMI ALADIN (Tschechien)', color: '#0284c7', isRegional: true, bounds: { minLat: 46.0, maxLat: 53.5, minLon: 10.0, maxLon: 21.0 } },
-      { id: 'chmi_aladin_central_europe_2km', label: 'CHMI ALADIN 2 km', color: '#38bdf8', isRegional: true, bounds: { minLat: 46.0, maxLat: 53.5, minLon: 10.0, maxLon: 21.0 } },
-      { id: 'geosphere_seamless', label: 'GeoSphere Austria', color: '#b45309', isRegional: true, bounds: { minLat: 43.5, maxLat: 51.5, minLon: 7.0, maxLon: 19.5 } },
-      { id: 'geosphere_arome_austria', label: 'GeoSphere AROME (2.5 km)', color: '#d97706', isRegional: true, bounds: { minLat: 44.5, maxLat: 50.0, minLon: 8.0, maxLon: 18.5 } },
+   const ALL_WEATHER_MODELS = [
+      // 16 hochauflösende Regionalmodelle
+     { id: 'icon_d2', label: 'DWD ICON-D2 (2.2 km)', color: '#059669', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
+     { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2 km)', color: '#10b981', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
+     { id: 'icon_eu', label: 'DWD ICON-EU (7 km)', color: '#0d9488', isRegional: true, bounds: { minLat: 29.5, maxLat: 70.5, minLon: -25.0, maxLon: 45.0 } },
+      { id: 'dwd_icon_d2_native', label: 'DWD ICON-D2 nativ (2.2 km)', color: '#6ee7b7', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
+      { id: 'dwd_icon_eu_native', label: 'DWD ICON-EU nativ (7 km)', color: '#5eead4', isRegional: true, bounds: { minLat: 29.5, maxLat: 70.5, minLon: -25.0, maxLon: 45.0 } },
+     { id: 'chmi_aladin_seamless', label: 'CHMI ALADIN (Tschechien)', color: '#0284c7', isRegional: true, bounds: { minLat: 46.0, maxLat: 53.5, minLon: 10.0, maxLon: 21.0 } },
+     { id: 'chmi_aladin_central_europe_2km', label: 'CHMI ALADIN 2 km', color: '#38bdf8', isRegional: true, bounds: { minLat: 46.0, maxLat: 53.5, minLon: 10.0, maxLon: 21.0 } },
+      { id: 'chmi_aladin_cz_1km', label: 'CHMI ALADIN CZ (1 km)', color: '#7dd3fc', isRegional: true, bounds: { minLat: 48.5, maxLat: 51.2, minLon: 12.0, maxLon: 18.9 } },
+     { id: 'geosphere_seamless', label: 'GeoSphere Austria', color: '#b45309', isRegional: true, bounds: { minLat: 43.5, maxLat: 51.5, minLon: 7.0, maxLon: 19.5 } },
       { id: 'meteofrance_arome_france_hd', label: 'AROME HD (1.5 km)', color: '#db2777', isRegional: true, bounds: { minLat: 40.5, maxLat: 53.5, minLon: -6.0, maxLon: 15.0 } },
       { id: 'meteofrance_arome_france', label: 'AROME France (2.5 km)', color: '#e11d48', isRegional: true, bounds: { minLat: 40.5, maxLat: 53.5, minLon: -6.0, maxLon: 15.0 } },
       { id: 'meteofrance_arpege_europe', label: 'ARPEGE Europe (11 km)', color: '#f43f5e', isRegional: true, bounds: { minLat: 30.0, maxLat: 72.0, minLon: -25.0, maxLon: 45.0 } },
       { id: 'knmi_harmonie_arome_europe', label: 'KNMI HARMONIE (2.5 km)', color: '#ea580c', isRegional: true, bounds: { minLat: 48.0, maxLat: 61.0, minLon: -8.0, maxLon: 14.0 } },
       { id: 'dmi_harmonie_arome_europe', label: 'DMI HARMONIE (2.5 km)', color: '#7c3aed', isRegional: true, bounds: { minLat: 50.0, maxLat: 72.0, minLon: 2.0, maxLon: 32.0 } },
       { id: 'metno_seamless', label: 'MET Norway (Yr.no)', color: '#047857', isRegional: true, bounds: { minLat: 50.0, maxLat: 75.0, minLon: -6.0, maxLon: 36.0 } },
-      { id: 'gem_regional', label: 'Kanada GEM Regional', color: '#fbbf24', isRegional: true, bounds: { minLat: 15.0, maxLat: 75.0, minLon: -170.0, maxLon: -40.0 } },
-      // 17 weltweite Großraummodelle
-      { id: 'ecmwf_ifs025', label: 'ECMWF IFS (0.25°)', color: '#2563eb', isRegional: false },
-      { id: 'ecmwf_ifs04', label: 'ECMWF IFS (0.4°)', color: '#3b82f6', isRegional: false },
-      { id: 'gfs_seamless', label: 'NOAA GFS (Seamless)', color: '#06b6d4', isRegional: false },
-      { id: 'gfs_global', label: 'NOAA GFS Global', color: '#22d3ee', isRegional: false },
-      { id: 'icon_seamless', label: 'DWD ICON (Global)', color: '#16a34a', isRegional: false },
-      { id: 'icon_global', label: 'DWD ICON Grid', color: '#22c55e', isRegional: false },
+     { id: 'gem_regional', label: 'Kanada GEM Regional', color: '#fbbf24', isRegional: true, bounds: { minLat: 15.0, maxLat: 75.0, minLon: -170.0, maxLon: -40.0 } },
+      // 18 weltweite Großraummodelle
+     { id: 'ecmwf_ifs025', label: 'ECMWF IFS (0.25°)', color: '#2563eb', isRegional: false },
+      { id: 'ecmwf_ifs', label: 'ECMWF IFS HRES (9 km)', color: '#1e40af', isRegional: false },
+     { id: 'gfs_seamless', label: 'NOAA GFS (Seamless)', color: '#06b6d4', isRegional: false },
+     { id: 'gfs_global', label: 'NOAA GFS Global', color: '#22d3ee', isRegional: false },
+      { id: 'ncep_hgefs025_ensemble_mean', label: 'NOAA HGEFS-Mittel (Ensemble)', color: '#0e7490', isRegional: false },
+     { id: 'icon_seamless', label: 'DWD ICON (Global)', color: '#16a34a', isRegional: false },
+     { id: 'icon_global', label: 'DWD ICON Grid', color: '#22c55e', isRegional: false },
+      { id: 'dwd_icon_global_native', label: 'DWD ICON global nativ', color: '#86efac', isRegional: false },
       { id: 'ukmo_seamless', label: 'UK Met Office Seamless', color: '#6366f1', isRegional: false },
       { id: 'ukmo_global_deterministic_10km', label: 'UK Met Office (10 km)', color: '#818cf8', isRegional: false },
       { id: 'gem_seamless', label: 'Kanada GEM Seamless', color: '#f59e0b', isRegional: false },
@@ -2308,19 +2313,25 @@
       { id: 'jma_seamless', label: 'Japan JMA GSM', color: '#14b8a6', isRegional: false },
       { id: 'jma_gsm', label: 'Japan JMA Global', color: '#0d9488', isRegional: false },
       { id: 'cma_grapes_global', label: 'China CMA GRAPES', color: '#ef4444', isRegional: false },
-      { id: 'kma_seamless', label: 'Korea KMA GDPS', color: '#f97316', isRegional: false },
-      { id: 'bom_access_global', label: 'Australien BOM ACCESS', color: '#84cc16', isRegional: false },
-      // 4 KI-Modelle
+      // 3 KI-Modelle
       { id: 'ecmwf_aifs025_single', label: 'ECMWF AIFS (KI 0.25°)', color: '#8b5cf6', isRegional: false, isAi: true },
       { id: 'ncep_aigfs025', label: 'NOAA AI-GFS (KI)', color: '#a855f7', isRegional: false, isAi: true },
       { id: 'dwd_aicon_global_native', label: 'DWD A-ICON (KI)', color: '#c084fc', isRegional: false, isAi: true },
-      { id: 'gfs_graphcast025', label: 'Google GraphCast (KI 0.25°)', color: '#d8b4fe', isRegional: false, isAi: true },
-      // 4 Ensemblesysteme (Member-Mittel aus der Ensemble-API, grüne Schrift)
-      { id: 'ens_ifs', label: 'IFS ENS (51 Member)', color: '#4ade80', isRegional: false, members: true, ensReq: 'ecmwf_ifs025' },
-      { id: 'ens_gefs', label: 'GEFS (31 Member)', color: '#22c55e', isRegional: false, members: true, ensReq: 'gfs_seamless' },
-      { id: 'ens_geps', label: 'GEPS (21 Member)', color: '#84cc16', isRegional: false, members: true, ensReq: 'gem_global' },
-      { id: 'ens_iconge', label: 'ICON-EPS (40 Member)', color: '#10b981', isRegional: false, members: true, ensReq: 'icon_seamless' },
-      { id: 'ens_gefs35', label: 'GEFS 35-Tage (31 Member)', color: '#a3e635', isRegional: false, members: true, ensReq: 'gfs_seamless', longRange: true }
+      // Hinweis: Google GraphCast (gfs_graphcast025) liefert keine Daten mehr –
+      // als KI-Nachfolger sind AIFS ENS und WeatherNext 2 als Ensembles dabei.
+     // 4 Ensemblesysteme (Member-Mittel aus der Ensemble-API, grüne Schrift)
+      // Hinweis: MOGREPS-G, AIFS-Ensembles und Google WeatherNext 2 liefert die
+      // Ensemble-API für Open-Meteo-Standorte seit 2026 – daher mit dabei.
+      { id: 'ens_ifs', label: 'IFS ENS (51 Member)', color: '#4ade80', isRegional: false, members: true, ensReq: 'ecmwf_ifs025_ensemble' },
+      { id: 'ens_ifseu', label: 'IFS-EU ENS (9 km, 51 Member)', color: '#60a5fa', isRegional: false, members: true, ensReq: 'ecmwf_ifs_europe_ensemble' },
+      { id: 'ens_aifs', label: 'AIFS ENS (KI, 51 Member)', color: '#c4b5fd', isRegional: false, members: true, ensReq: 'ecmwf_aifs025_ensemble' },
+      { id: 'ens_gefs', label: 'GEFS (31 Member)', color: '#22c55e', isRegional: false, members: true, ensReq: 'ncep_gefs_seamless' },
+      { id: 'ens_geps', label: 'GEPS (21 Member)', color: '#84cc16', isRegional: false, members: true, ensReq: 'gem_global_ensemble' },
+      { id: 'ens_iconge', label: 'ICON-EPS (40 Member)', color: '#10b981', isRegional: false, members: true, ensReq: 'dwd_icon_seamless_eps' },
+      { id: 'ens_icongeu', label: 'ICON-EPS EU (40 Member)', color: '#34d399', isRegional: false, members: true, ensReq: 'dwd_icon_eu_eps' },
+      { id: 'ens_mogreps', label: 'MOGREPS-G (18 Member)', color: '#a5b4fc', isRegional: false, members: true, ensReq: 'ukmo_global_ensemble_20km' },
+      { id: 'ens_wnext', label: 'WeatherNext 2 (KI, 63 Member)', color: '#f0abfc', isRegional: false, members: true, ensReq: 'google_weathernext2_ensemble' },
+      { id: 'ens_gefs35', label: 'GEFS 35-Tage (31 Member)', color: '#a3e635', isRegional: false, members: true, ensReq: 'ncep_gefs_seamless', longRange: true }
     ];
 
     const LOCATION_STORAGE_KEY = 'weather_current_location_v2';
@@ -2405,6 +2416,8 @@
       $('#headerModelCount').textContent = MODELS.length;
       $('#modelCountLabel').textContent = MODELS.length;
       $('#modelTotalLabel').textContent = MODELS.length;
+      const footModelCount = $('#footModelCount');
+      if (footModelCount) footModelCount.textContent = MODELS.length;
       const subParts = [CURRENT_LOCATION.name, CURRENT_LOCATION.state, CURRENT_LOCATION.country].filter(Boolean).join(', ');
       const coords = `(${CURRENT_LOCATION.latitude.toFixed(3)}° N, ${CURRENT_LOCATION.longitude.toFixed(3)}° O${CURRENT_LOCATION.elevation ? ' · ' + Math.round(CURRENT_LOCATION.elevation) + ' m' : ''})`;
       $('#headerLoc').textContent = `📍 ${subParts} ${coords}`;
@@ -3147,6 +3160,8 @@
       $('#modelCountLabel').textContent = MODELS.length;
       $('#headerModelCount').textContent = MODELS.length;
       $('#modelTotalLabel').textContent = MODELS.length;
+      const footModelCount2 = $('#footModelCount');
+      if (footModelCount2) footModelCount2.textContent = MODELS.length;
       $('#qAll').textContent = `Alle ${MODELS.length}`;
       $('#modelCardsTitle').textContent = `Die ${MODELS.length} meteorologischen Wettermodelle`;
       populateH24Select();
@@ -3422,12 +3437,12 @@
       onModelsChanged();
     });
     $('#qRegional').addEventListener('click', () => {
-      const set = new Set(['icon_d2', 'dwd_icon_d2_ruc_native', 'icon_eu', 'chmi_aladin_seamless', 'chmi_aladin_central_europe_2km', 'geosphere_seamless', 'geosphere_arome_austria', 'meteofrance_arome_france_hd', 'meteofrance_arpege_europe', 'knmi_harmonie_arome_europe', 'dmi_harmonie_arome_europe', 'metno_seamless']);
+      const set = new Set(['icon_d2', 'dwd_icon_d2_ruc_native', 'dwd_icon_d2_native', 'icon_eu', 'dwd_icon_eu_native', 'chmi_aladin_seamless', 'chmi_aladin_central_europe_2km', 'chmi_aladin_cz_1km', 'geosphere_seamless', 'meteofrance_arome_france_hd', 'meteofrance_arome_france', 'meteofrance_arpege_europe', 'knmi_harmonie_arome_europe', 'dmi_harmonie_arome_europe', 'metno_seamless']);
       $$('.model-check').forEach(i => i.checked = set.has(i.value));
       onModelsChanged();
     });
     $('#qDwd').addEventListener('click', () => {
-      const set = new Set(['icon_d2', 'dwd_icon_d2_ruc_native', 'icon_eu', 'icon_seamless']);
+      const set = new Set(['icon_d2', 'dwd_icon_d2_ruc_native', 'dwd_icon_d2_native', 'icon_eu', 'dwd_icon_eu_native', 'icon_seamless', 'dwd_icon_global_native']);
       $$('.model-check').forEach(i => i.checked = set.has(i.value));
       onModelsChanged();
     });
@@ -3437,12 +3452,12 @@
       onModelsChanged();
     });
     $('#qGlobal').addEventListener('click', () => {
-      const set = new Set(['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'ukmo_seamless', 'ukmo_global_deterministic_10km', 'gem_seamless', 'gem_regional', 'meteofrance_seamless', 'jma_seamless', 'cma_grapes_global', 'kma_seamless', 'bom_access_global']);
+      const set = new Set(['ecmwf_ifs025', 'ecmwf_ifs', 'gfs_seamless', 'icon_seamless', 'dwd_icon_global_native', 'ukmo_seamless', 'ukmo_global_deterministic_10km', 'gem_seamless', 'gem_regional', 'meteofrance_seamless', 'jma_seamless', 'cma_grapes_global', 'ncep_hgefs025_ensemble_mean']);
       $$('.model-check').forEach(i => i.checked = set.has(i.value));
       onModelsChanged();
     });
     $('#qMajor').addEventListener('click', () => {
-      const set = new Set(['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'ukmo_global_deterministic_10km']);
+      const set = new Set(['ecmwf_ifs025', 'ecmwf_ifs', 'gfs_seamless', 'icon_seamless', 'ukmo_global_deterministic_10km']);
       $$('.model-check').forEach(i => i.checked = set.has(i.value));
       onModelsChanged();
     });
@@ -3512,11 +3527,14 @@
 
     // --- MODELL-VERIFIKATION (Prognose gegen DWD-Messung) ---
     // Täglich speichert der erste erfolgreiche Abruf je Modell die prognostizierten
-    // Tageswerte (Tmin/Tmax/Niederschlagssumme für +1..+16 Tage). Geprüft wird gegen
-    // die echten Tagesmesswerte der nächsten DWD-Station (Bright Sky). Trefferquote:
+    // Tageswerte (Tmin/Tmax/Niederschlagssumme für +1..+46 Tage). Stundenmodelle werden
+    // gegen Tmin/Tmax geprüft, Tagesmittel-Modelle (ECMWF EC46 bis 46 Tage, SEAS5) gegen
+    // das gemessene Tagesmittel. Geprüft wird gegen die echten Tagesmesswerte der
+    // nächsten DWD-Station (Bright Sky). Trefferquote:
     // Temperaturfehler ≤ 1,5 °C bzw. Niederschlagsfehler ≤ 1 mm. Alte Prognosen
     // lassen sich nicht nachholen — kein Dienst archiviert abgelaufene Vorhersagen.
-    const VERIF_MAX_LEAD = 16, VERIF_TEMP_HIT = 1.5, VERIF_PRECIP_HIT = 1.0;
+    const VERIF_MAX_LEAD = 46, VERIF_TEMP_HIT = 1.5, VERIF_PRECIP_HIT = 1.0;
+    const VERIF_DAILY_MEAN_IDS = ['ec46', 'seas5'];
     // Geteilte Sammlung (Supabase, Free-Plan): ein Prognose-/Messwertsatz je Tag und
     // Standort, Doppelte werden per Primärschlüssel ignoriert. Der Key ist der
     // öffentliche anon-Key (darf im Code stehen); Schreiben ist zusätzlich durch
@@ -3527,6 +3545,33 @@
       const h = { apikey: VERIF_DB_KEY, Authorization: 'Bearer ' + VERIF_DB_KEY };
       if (json) h['Content-Type'] = 'application/json';
       return h;
+    }
+    async function verifDbPostRows(table, rows, conflict) {
+      for (let i = 0; i < rows.length; i += 200) {
+        const chunk = rows.slice(i, i + 200);
+        try {
+          const r = await fetch(VERIF_DB_URL + '/' + table + '?on_conflict=' + conflict, {
+            method: 'POST',
+            headers: Object.assign(verifDbHeaders(true), { Prefer: 'resolution=ignore-duplicates,return=minimal' }),
+            body: JSON.stringify(chunk)
+          });
+          if (!r.ok) {
+            // Alte DB mit 16-Tage-Grenze? Dann nur die passenden Zeilen erneut senden.
+            const small = chunk.filter(x => {
+              if (table !== 'verif_snapshots') return true;
+              const d = Math.round((Date.parse(x.target_date) - Date.parse(x.run_date)) / 86400000);
+              return d >= 1 && d <= 16;
+            });
+            if (small.length && small.length < chunk.length) {
+              await fetch(VERIF_DB_URL + '/' + table + '?on_conflict=' + conflict, {
+                method: 'POST',
+                headers: Object.assign(verifDbHeaders(true), { Prefer: 'resolution=ignore-duplicates,return=minimal' }),
+                body: JSON.stringify(small)
+              });
+            }
+          }
+        } catch (e) {}
+      }
     }
     function verifDbGet(url) {
       const opt = { headers: verifDbHeaders() };
@@ -3546,13 +3591,7 @@
             rows.push({ loc_key: lk, run_date: verifLocDate(0), model_id: mid, target_date: tgt, tmin: v[0], tmax: v[1], precip: v[2] });
           }
         }
-        for (let i = 0; i < rows.length; i += 500) {
-          await fetch(VERIF_DB_URL + '/verif_snapshots?on_conflict=loc_key,run_date,model_id,target_date', {
-            method: 'POST',
-            headers: Object.assign(verifDbHeaders(true), { Prefer: 'resolution=ignore-duplicates,return=minimal' }),
-            body: JSON.stringify(rows.slice(i, i + 500))
-          });
-        }
+        await verifDbPostRows('verif_snapshots', rows, 'loc_key,run_date,model_id,target_date');
       } catch (e) {}
     }
     async function verifDbPushTruth(cache, days) {
@@ -3565,13 +3604,7 @@
           station_name: cache.station ? cache.station.name : null,
           tmax: cache.days[d][0], tmin: cache.days[d][1], precip: cache.days[d][2]
         }));
-        for (let i = 0; i < rows.length; i += 500) {
-          await fetch(VERIF_DB_URL + '/verif_truth?on_conflict=loc_key,target_date', {
-            method: 'POST',
-            headers: Object.assign(verifDbHeaders(true), { Prefer: 'resolution=ignore-duplicates,return=minimal' }),
-            body: JSON.stringify(rows.slice(i, i + 500))
-          });
-        }
+        await verifDbPostRows('verif_truth', rows, 'loc_key,target_date');
       } catch (e) {}
     }
     async function verifDbPull(maxDays) {
@@ -3619,15 +3652,16 @@
         if (typeof forecast === 'undefined' || !forecast?.hourly?.time?.length) return;
         const run = verifLocDate(0);
         const store = verifRead('verifSnaps_v1_' + verifLocKey());
-        if (store[run]) return; // ein Lauf pro Tag genügt
+        const entry = store[run] = store[run] || {};
         const time = forecast.hourly.time;
         const dayIdx = {};
         for (let i = 0; i < time.length; i++) {
           const d = (time[i] || '').slice(0, 10);
           if (d) (dayIdx[d] = dayIdx[d] || []).push(i);
         }
-        const snaps = {};
+        let addedAny = false;
         for (const m of MODELS) {
+          if (entry[m.id]) continue; // dieses Modell heute schon gesichert
           const T = forecast.hourly['temperature_2m_' + m.id];
           const P = forecast.hourly['precipitation_' + m.id];
           if (!Array.isArray(T) || !Array.isArray(P)) continue;
@@ -3645,16 +3679,48 @@
             }
             per[tgt] = [Math.round(mn * 10) / 10, Math.round(mx * 10) / 10, hasP ? Math.round(ps * 10) / 10 : null];
           }
-          if (Object.keys(per).length) snaps[m.id] = per;
+          if (Object.keys(per).length) { entry[m.id] = per; addedAny = true; }
         }
-        if (!Object.keys(snaps).length) return;
-        store[run] = snaps;
+        if (!addedAny) return;
         const cut = verifLocDate(-120);
         for (const k of Object.keys(store)) if (k < cut) delete store[k];
         verifWrite('verifSnaps_v1_' + verifLocKey(), store);
       } catch (e) {}
     }
+    // Tagesmittel-Modelle (ECMWF EC46 bis 46 Tage, SEAS5) als Ergänzung zu den
+    // Stundenmodellen: Tagesmittel gegen gemessenes Tagesmittel. Wird bei jedem
+    // Langfrist-Abruf und beim Öffnen des Modelle-Tabs (aus dem Cache) gesichert.
+    function captureSeasonalSnapshot() {
+      try {
+        if (!seasonalCache || !seasonalCache.key || seasonalCache.key !== seasonalLocKey()) return;
+        const run = verifLocDate(0);
+        const store = verifRead('verifSnaps_v1_' + verifLocKey());
+        const entry = store[run] = store[run] || {};
+        let addedAny = false;
+        for (const mid of ['ec46', 'seas5']) {
+          const arr = seasonalCache[mid];
+          if (!Array.isArray(arr) || !arr.length) continue;
+          if (entry[mid]) continue;
+          const per = {};
+          for (let lead = 1; lead <= VERIF_MAX_LEAD; lead++) {
+            const tgt = verifLocDate(lead);
+            const row = arr.find(r => r.date === tgt);
+            if (!row || !Number.isFinite(row.tMean)) continue;
+            per[tgt] = [Math.round(row.tMean * 10) / 10, Math.round(row.tMean * 10) / 10,
+              Number.isFinite(row.pMean) ? Math.round(row.pMean * 10) / 10 : null];
+          }
+          if (Object.keys(per).length) { entry[mid] = per; addedAny = true; }
+        }
+        if (!addedAny) return;
+        const cut = verifLocDate(-120);
+        for (const k of Object.keys(store)) if (k < cut) delete store[k];
+        verifWrite('verifSnaps_v1_' + verifLocKey(), store);
+        try { verifDbPushSnaps(); } catch (e) {}
+      } catch (e) {}
+    }
     function verifModelLabel(mid) {
+      if (mid === 'ec46') return { label: 'ECMWF EC46 (Tagesmittel)', color: '#c084fc' };
+      if (mid === 'seas5') return { label: 'ECMWF SEAS5 (Tagesmittel)', color: '#4ade80' };
       try {
         const m = ALL_WEATHER_MODELS.find(x => x.id === mid);
         if (m) return { label: m.label, color: m.color };
@@ -3729,13 +3795,17 @@
             const a = agg[mid] = agg[mid] || {};
             const L = a[lead] = a[lead] || { n: 0, tmax: 0, tmin: 0, prec: 0, tmaxB: 0, tminB: 0, pB: 0, pN: 0, tmaxH: 0, tminH: 0, precH: 0 };
             L.n++; pairs++;
-            const eMax = Math.abs(vals[1] - obs[0]), eMin = Math.abs(vals[0] - obs[1]);
+            // Tagesmittel-Modelle (EC46/SEAS5) gegen das gemessene Tagesmittel prüfen
+            const oMean = (obs[0] + obs[1]) / 2;
+            const oMax = VERIF_DAILY_MEAN_IDS.includes(mid) ? oMean : obs[0];
+            const oMin = VERIF_DAILY_MEAN_IDS.includes(mid) ? oMean : obs[1];
+            const eMax = Math.abs(vals[1] - oMax), eMin = Math.abs(vals[0] - oMin);
             L.tmax += eMax;
             L.tmin += eMin;
             if (eMax <= VERIF_TEMP_HIT) L.tmaxH++;
             if (eMin <= VERIF_TEMP_HIT) L.tminH++;
-            L.tmaxB += vals[1] - obs[0];
-            L.tminB += vals[0] - obs[1];
+            L.tmaxB += vals[1] - oMax;
+            L.tminB += vals[0] - oMin;
             if (vals[2] != null) {
               const eP = Math.abs(vals[2] - obs[2]);
               L.prec += eP; L.pB += vals[2] - obs[2]; L.pN++;
@@ -3807,6 +3877,12 @@
       if (verifRunning) return;
       verifRunning = true;
       try {
+        // Tagesmittel aus vorhandenem Langfrist-Cache sichern; falls noch nichts
+        // geladen ist, im Hintergrund nachladen (wird beim nächsten Öffnen gewertet)
+        try {
+          if (seasonalCache && seasonalCache.key === seasonalLocKey() && (seasonalCache.seas5 || seasonalCache.ec46)) captureSeasonalSnapshot();
+          else if (!seasonalCache.loading) loadSeasonal();
+        } catch (e) {}
         const exB = $('#verifExportBtn');
         if (exB && !exB.onclick) {
           exB.onclick = verifExport;
@@ -3915,7 +3991,7 @@
           `<th style="padding:4px 6px;text-align:right;">Fehler Tmax</th><th style="padding:4px 6px;text-align:right;">Fehler Tmin</th>` +
           `<th style="padding:4px 6px;text-align:right;">Fehler Nieder.</th><th style="padding:4px 6px;text-align:right;">Treffer Temp.</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;">Tendenz Tmax</th></tr></thead>` +
           `<tbody>${rows2}</tbody></table>` +
-          `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Fehler = mittlerer absoluter Fehler der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(0)} mm. Tendenz: + = Modell zu warm, − = zu kalt. n = geprüfte Tage. Aussagekraft wächst mit jedem Sammeltag.</div>`;
+          `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Fehler = mittlerer absoluter Fehler der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(0)} mm. EC46/SEAS5 liefern Tagesmittel und werden gegen das gemessene Tagesmittel ((Tmin+Tmax)/2) geprüft. Tendenz: + = Modell zu warm, − = zu kalt. n = geprüfte Tage. Aussagekraft wächst mit jedem Sammeltag.</div>`;
       } finally {
         verifRunning = false;
       }
@@ -4304,7 +4380,7 @@
     }
     async function loadSeasonal() {
       const key = seasonalLocKey();
-      if (seasonalCache.key === key && (seasonalCache.seas5 || seasonalCache.ec46) && !seasonalCache.loading) { renderSeasonal(); return; }
+      if (seasonalCache.key === key && (seasonalCache.seas5 || seasonalCache.ec46) && !seasonalCache.loading) { captureSeasonalSnapshot(); renderSeasonal(); return; }
       if (seasonalCache.loading) return;
       seasonalCache = { key, seas5: seasonalCache.key === key ? seasonalCache.seas5 : null, ec46: seasonalCache.key === key ? seasonalCache.ec46 : null, cmip6: seasonalCache.key === key ? seasonalCache.cmip6 : null, cmip6days: seasonalCache.key === key ? (seasonalCache.cmip6days || 0) : 0, normals: seasonalCache.key === key ? seasonalCache.normals : null, error: null, loading: true };
       renderSeasonalLoading();
@@ -4323,6 +4399,7 @@
       }
       seasonalCache.loading = false;
       if (seasonalLocKey() !== key) return;
+      captureSeasonalSnapshot();
       renderSeasonal();
     }
     // CMIP6-Klimaprojektionen (7 Modelle, täglich, 1950–2050): echte Langfrist
@@ -7059,10 +7136,11 @@
       syncFrozenAxes();
     }
 
-    // Ensemble-Mittel je System: mittelt Basislauf + alle Member auf das
-    // Stundenraster der Hauptvorhersage (Zeitabgleich über ISO-Stempel).
-    // Systeme: IFS ENS, GEFS, GEPS, ICON-EPS. (MOGREPS-G liefert die
-    // Ensemble-API für Open-Meteo-Standorte nicht – daher nicht dabei.)
+   // Ensemble-Mittel je System: mittelt Basislauf + alle Member auf das
+   // Stundenraster der Hauptvorhersage (Zeitabgleich über ISO-Stempel).
+    // Systeme: IFS ENS, IFS-EU ENS, AIFS ENS, GEFS, GEPS, ICON-EPS, ICON-EPS EU,
+    // MOGREPS-G, WeatherNext 2. Zuordnung exakt über den Ensemble-Modellnamen
+    // (Suffix der API-Variablen = ensReq des Eintrags).
     function buildEnsembleUrl() {
       const ensModels = MODELS.filter(m => m.members && m.ensReq);
       if (!ensModels.length) return null;
@@ -7084,10 +7162,7 @@
       const mainIdx = new Map(mainTime.map((t, i) => [t, i]));
       const eTime = eData.hourly.time || [];
       const eVars = ['temperature_2m', 'dew_point_2m', 'precipitation', 'wind_speed_10m'];
-      const marks = { ens_ifs: 'ecmwf', ens_gefs: 'gefs', ens_geps: 'gem', ens_iconge: 'icon', ens_gefs35: 'gefs' };
       const meanOnto = (m, axisTime, axisIdx) => {
-        const mark = marks[m.id];
-        if (!mark) return;
         for (const v of eVars) {
           const acc = new Array(axisTime.length).fill(0);
           const cnt = new Array(axisTime.length).fill(0);
@@ -7095,7 +7170,7 @@
             if (k !== v && k.indexOf(v + '_') !== 0) continue;
             const rest = k === v ? '' : k.slice(v.length + 1);
             const suf = rest.replace(/^member\d+_/, '');
-            if (suf && suf.indexOf(mark) < 0) continue;
+            if (suf && suf !== m.ensReq) continue;
             if (!suf && ensModels.length !== 1) continue; // blanke Variable nur bei Einzelabfrage zuordenbar
             const arr = eData.hourly[k];
             if (!Array.isArray(arr)) continue;
