@@ -2,8 +2,6 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wetter Altenburg</title>
 </head>
 <body>
 <meta name="theme-color" content="#0d131a">
@@ -2300,7 +2298,7 @@
     }
 
    const ALL_WEATHER_MODELS = [
-      // 16 hochauflösende Regionalmodelle
+      // 17 hochauflösende Regionalmodelle
      { id: 'icon_d2', label: 'DWD ICON-D2 (2.2 km)', color: '#059669', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
      { id: 'dwd_icon_d2_ruc_native', label: 'DWD ICON-D2 RUC (2.2 km)', color: '#10b981', isRegional: true, bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
      { id: 'icon_eu', label: 'DWD ICON-EU (7 km)', color: '#0d9488', isRegional: true, bounds: { minLat: 29.5, maxLat: 70.5, minLon: -25.0, maxLon: 45.0 } },
@@ -2341,7 +2339,7 @@
       { id: 'dwd_aicon_global_native', label: 'DWD A-ICON (KI)', color: '#c084fc', isRegional: false, isAi: true },
       // Hinweis: Google GraphCast (gfs_graphcast025) liefert keine Daten mehr –
       // als KI-Nachfolger sind AIFS ENS und WeatherNext 2 als Ensembles dabei.
-     // 4 Ensemblesysteme (Member-Mittel aus der Ensemble-API, grüne Schrift)
+     // 14 Ensemblesysteme (Member-Mittel aus der Ensemble-API, grüne Schrift)
       // Hinweis: MOGREPS-G, AIFS-Ensembles und Google WeatherNext 2 liefert die
       // Ensemble-API für Open-Meteo-Standorte seit 2026 – daher mit dabei.
       { id: 'ens_ifs', label: 'IFS ENS (51 Member)', color: '#4ade80', isRegional: false, members: true, ensReq: 'ecmwf_ifs025_ensemble' },
@@ -2353,7 +2351,12 @@
       { id: 'ens_icongeu', label: 'ICON-EPS EU (40 Member)', color: '#34d399', isRegional: false, members: true, ensReq: 'dwd_icon_eu_eps' },
       { id: 'ens_mogreps', label: 'MOGREPS-G (18 Member)', color: '#a5b4fc', isRegional: false, members: true, ensReq: 'ukmo_global_ensemble_20km' },
       { id: 'ens_wnext', label: 'WeatherNext 2 (KI, 63 Member)', color: '#f0abfc', isRegional: false, members: true, ensReq: 'google_weathernext2_ensemble' },
-      { id: 'ens_gefs35', label: 'GEFS 35-Tage (31 Member)', color: '#a3e635', isRegional: false, members: true, ensReq: 'ncep_gefs_seamless', longRange: true }
+      { id: 'ens_gefs35', label: 'GEFS 35-Tage (31 Member)', color: '#a3e635', isRegional: false, members: true, ensReq: 'ncep_gefs_seamless', longRange: true },
+      // 2026-11: vier weitere Ensemble-Systeme (Open-Meteo-Katalog, alle mit Altenburg-Abdeckung)
+      { id: 'ens_d2eps', label: 'D2-EPS (20 Member)', color: '#2dd4bf', isRegional: true, members: true, ensReq: 'dwd_icon_d2_eps', bounds: { minLat: 43.0, maxLat: 56.0, minLon: 2.0, maxLon: 18.0 } },
+      { id: 'ens_aifseu', label: 'AIFS-EU ENS (KI, 51 Member)', color: '#a78bfa', isRegional: false, members: true, ensReq: 'ecmwf_aifs_europe_ensemble' },
+      { id: 'ens_aigefs', label: 'AIGEFS (KI, 31 Member)', color: '#e879f9', isRegional: false, members: true, ensReq: 'ncep_aigefs025' },
+      { id: 'ens_gefs025', label: 'GEFS 0,25° (31 Member)', color: '#bef264', isRegional: false, members: true, ensReq: 'ncep_gefs025' }
     ];
 
     const LOCATION_STORAGE_KEY = 'weather_current_location_v2';
