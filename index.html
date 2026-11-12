@@ -4115,9 +4115,9 @@
           const a = agg[mid] || {};
           for (const [ld, L] of Object.entries(a)) {
             if (!L.n) continue;
-            const o = leadOv[ld] = leadOv[ld] || { n: 0, hMin: 0, hMax: 0, eMin: 0, eMax: 0, hP: 0, pN: 0 };
+            const o = leadOv[ld] = leadOv[ld] || { n: 0, hMin: 0, hMax: 0, eMin: 0, eMax: 0, hP: 0, pN: 0, eP: 0 };
             o.n += L.n; o.hMin += L.tminH; o.hMax += L.tmaxH; o.eMin += L.tmin; o.eMax += L.tmax;
-            o.pN += L.pN; o.hP += L.precH;
+            o.pN += L.pN; o.hP += L.precH; o.eP += L.prec;
           }
         }
         const ovModelOpts = ['alle'].concat(Object.keys(agg).sort()).map(mid => {
@@ -4134,6 +4134,7 @@
           + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${barOv(o.hMin / o.n)}${verifPct(o.hMin / o.n)}</td>`
           + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${barOv(o.hMax / o.n)}${verifPct(o.hMax / o.n)}</td>`
           + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${o.pN ? barOv(o.hP / o.pN) + verifPct(o.hP / o.pN) : '—'}</td>`
+          + `<td style="padding:4px 6px;text-align:right;">${o.pN ? verifDe(o.eP / o.pN) + ' mm' : '—'}</td>`
           + `<td style="padding:4px 6px;text-align:right;">${verifDe((o.eMin + o.eMax) / (2 * o.n))} °C</td>`
           + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${o.n}</td></tr>`
         ).join('');
@@ -4167,7 +4168,7 @@
           (rowsOv ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Trefferquote je Vorlauftag (so fällt die Quote mit der Vorhersagedauer)</div>` +
           `<div style="display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;color:var(--text-muted);">Modell: <select id="verifOvModelSel" class="hist-select">${ovModelOpts}</select></div>` +
           `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
-          `<th style="padding:4px 6px;">Vorlauf</th><th style="padding:4px 6px;text-align:right;">Treffer Tmin</th><th style="padding:4px 6px;text-align:right;">Treffer Tmax</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;" title="Mittlerer absoluter Fehler Tmin+Tmax über alle Modelle">Ø-Fehler</th><th style="padding:4px 6px;text-align:right;" title="Geprüfte Modell-Tag-Paare">Paare</th></tr></thead>` +
+          `<th style="padding:4px 6px;">Vorlauf</th><th style="padding:4px 6px;text-align:right;">Treffer Tmin</th><th style="padding:4px 6px;text-align:right;">Treffer Tmax</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;" title="Mittlerer absoluter Fehler der Niederschlagssumme über alle Modelle">Fehler Nieder.</th><th style="padding:4px 6px;text-align:right;" title="Mittlerer absoluter Fehler Tmin+Tmax über alle Modelle">Ø-Fehler</th><th style="padding:4px 6px;text-align:right;" title="Geprüfte Modell-Tag-Paare">Paare</th></tr></thead>` +
           `<tbody>${rowsOv}</tbody></table>` : ``) +
           (rows3 ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Abweichung je Vorlauftag (Ø-Prognose vs. Ø-Messwert — kältester &amp; wärmster Tageswert)</div>` +
           `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px;">${leadPills3}</div>` +
