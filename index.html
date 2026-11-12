@@ -7569,9 +7569,18 @@
       } catch (e) { try { if (box) box.style.display = 'none'; } catch (e2) {} }
     }
 
+    // Abruf mit Zeitlimit — hängt sonst bei schlechtem Netz ewig fest
+    function fetchTimeout(url, ms) {
+      try {
+        if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return fetch(url, { signal: AbortSignal.timeout(ms || 25000) });
+      } catch (e) {}
+      return fetch(url);
+    }
+    let forecastRunId = 0;
     async function loadForecastMain() {
       if (loading) return;
       loading = true;
+      const myRun = ++forecastRunId;
       $('#refreshBtn').disabled = true;
       setStatus(`Lade 16-Tage-Modelle + 35-Tage-Ensemble für ${CURRENT_LOCATION.name} …`);
 
@@ -7598,38 +7607,50 @@
           url.searchParams.set('precipitation_unit', 'mm');
           url.searchParams.set('models', chunk.join(','));
 
-          const res = await fetch(url.toString());
+          const res = await fetchTimeout(url.toString(), 25000);
           if (!res.ok) throw new Error('API-Fehler HTTP ' + res.status);
           return res.json();
         };
+        // Ein automatischer Wiederholungsversuch je Paket (kurze Pause dazwischen)
+        const fetchChunkRetry = async (chunk) => {
+          try { return await fetchChunk(chunk); }
+          catch (e) { await new Promise(r => setTimeout(r, 900)); return fetchChunk(chunk); }
+        };
 
-        // Alle Modellpakete + Ensemble-API parallel statt nacheinander:
-        // Ladezeit ≈ langsamste Einzelanfrage statt Summe aller Anfragen.
+        // Vorhersage zuerst: Pakete laufen parallel, jedes wird SOFORT nach
+        // Ankunft in die Tabelle gemischt (statt auf das langsamste zu warten).
+        // Einzelne Fehlschläge kippen nicht mehr die ganze Seite (allSettled).
         const ensUrl = buildEnsembleUrl();
         const ensPromise = ensUrl
-          ? fetch(ensUrl).then(r => { if (!r.ok) throw new Error('Ensemble-API HTTP ' + r.status); return r.json(); }).catch(() => null)
+          ? fetchTimeout(ensUrl, 25000).then(r => { if (!r.ok) throw new Error('Ensemble-API HTTP ' + r.status); return r.json(); }).catch(() => null)
           : Promise.resolve(null);
-        const results = await Promise.all(chunks.map(fetchChunk));
-
-        if (results.length === 0) throw new Error('Keine Daten empfangen');
-        
+        const locKey = CURRENT_LOCATION.latitude.toFixed(2) + ',' + CURRENT_LOCATION.longitude.toFixed(2);
+        if (!forecast || forecast._loc !== locKey) forecast = null;
         let longestTime = [];
-        results.forEach(res => {
-          if (res.hourly && Array.isArray(res.hourly.time) && res.hourly.time.length > longestTime.length) {
-            longestTime = res.hourly.time;
-          }
-        });
-
-        forecast = {
-          ...results[0],
-          hourly: {}
-        };
-        results.forEach(res => {
+        let donePkgs = 0;
+        const mergeRes = (res) => {
+          if (!res || !res.hourly) return false;
+          if (!forecast) forecast = { ...res, _loc: locKey, hourly: {} };
           Object.assign(forecast.hourly, res.hourly);
-        });
-        if (longestTime.length) {
-          forecast.hourly.time = longestTime;
-        }
+          const t = res.hourly.time;
+          if (Array.isArray(t) && t.length > longestTime.length) { longestTime = t; forecast.hourly.time = t; }
+          return true;
+        };
+        const paint = () => {
+          try {
+            if (myRun !== forecastRunId) return;
+            if (forecast) { try { renderTable(); } catch (e) {} }
+            setStatus(`Lade 16-Tage-Modelle für ${CURRENT_LOCATION.name} … (${donePkgs}/${chunks.length} Pakete)`);
+          } catch (e) {}
+        };
+        const settled = await Promise.all(chunks.map(chunk => fetchChunkRetry(chunk).then(
+          res => { donePkgs++; const ok = mergeRes(res); paint(); return { ok, chunk }; },
+          err => { donePkgs++; paint(); return { ok: false, chunk, err }; }
+        )));
+        if (myRun !== forecastRunId) return;
+        const failed = settled.filter(s => !s.ok);
+
+        if (!forecast || !forecast.hourly || !Object.keys(forecast.hourly).length) throw new Error('Keine Daten empfangen');
 
         // --- Ensemble-Systeme (IFS ENS, GEFS, GEPS, ICON-EPS): Member-Mittel ---
         // Lief parallel zu den Modellpaketen; schlägt die Ensemble-API fehl,
@@ -7637,19 +7658,42 @@
         // fallen dann über lastIndex aus Tabelle/Charts/Auswahl).
         try {
           const eData = await ensPromise;
-          if (eData) mergeEnsembleMeans(forecast, eData);
+          if (eData && myRun === forecastRunId) { mergeEnsembleMeans(forecast, eData); try { renderTable(); } catch (e) {} }
         } catch (e) {}
 
         captureVerifSnapshot();
         try { verifDbPushSnaps(); } catch (e) {}
-        renderTable();
+        try { renderTable(); } catch (e) {}
         loadNowcast();
         loadDwdWarnings();
-        setStatus(`Vorhersage für ${CURRENT_LOCATION.name} erfolgreich aktualisiert.`);
+        if (!failed.length) {
+          setStatus(`Vorhersage für ${CURRENT_LOCATION.name} erfolgreich aktualisiert.`);
+        } else {
+          setStatus(`Vorhersage für ${CURRENT_LOCATION.name} aktualisiert — ${failed.length} Paket(e) fehlen noch. 🔄 für neuen Versuch.`);
+          // Fehlende Pakete einmalig im Hintergrund nachladen
+          setTimeout(async () => {
+            if (myRun !== forecastRunId || loading) return;
+            try {
+              let fixed = 0;
+              for (const f of failed) {
+                try {
+                  const res = await fetchChunk(f.chunk);
+                  if (myRun === forecastRunId && mergeRes(res)) fixed++;
+                } catch (e) {}
+              }
+              if (myRun === forecastRunId && forecast) {
+                try { renderTable(); } catch (e) {}
+                setStatus(fixed ? `Vorhersage für ${CURRENT_LOCATION.name} vervollständigt.` : `Vorhersage für ${CURRENT_LOCATION.name} aktualisiert — weiterhin Lücken (🔄 für neuen Versuch).`);
+              }
+            } catch (e) {}
+          }, 20000);
+        }
       } catch (err) {
+        if (myRun !== forecastRunId) return;
         setStatus('Fehler beim Laden: ' + err.message);
         $('#tableBody').innerHTML = '<tr><td colspan="10" style="color: #ff6b6b;">Verbindung zur Wetter-API fehlgeschlagen: ' + err.message + '</td></tr>';
       } finally {
+        if (myRun !== forecastRunId) return;
         loading = false;
         $('#refreshBtn').disabled = false;
         nextRefreshAt = Date.now() + AUTO_REFRESH_SEC * 1000;
