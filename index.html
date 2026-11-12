@@ -4108,6 +4108,31 @@
           if (L && L.n) t3rows.push({ mid, L });
         }
         t3rows.sort((x, y) => ((x.L.mTmax + x.L.mTmin) / 2) - ((y.L.mTmax + y.L.mTmin) / 2));
+        // ⌀-Zeile: Mittel aller Modelle dieses Vorlaufs (Tmin/Tmax/Niederschlag:
+        // Ø-Prognose, Ø-Messwert und mittlere Abweichung über alle Modell-Tag-Paare)
+        let rowMean3 = '';
+        if (t3rows.length) {
+          const S = { n: 0, fMin: 0, oMin: 0, tminB: 0, tmin: 0, tminH: 0, fMax: 0, oMax: 0, tmaxB: 0, tmax: 0, tmaxH: 0, fP: 0, oP: 0, pB: 0, prec: 0, precH: 0, pN: 0 };
+          for (const { L } of t3rows) {
+            S.n += L.n; S.fMin += L.fMin; S.oMin += L.oMin; S.tminB += L.tminB; S.tmin += L.tmin; S.tminH += L.tminH;
+            S.fMax += L.fMax; S.oMax += L.oMax; S.tmaxB += L.tmaxB; S.tmax += L.tmax; S.tmaxH += L.tmaxH;
+            S.fP += L.fP; S.oP += L.oP; S.pB += L.pB; S.prec += L.prec; S.precH += L.precH; S.pN += L.pN;
+          }
+          const pMissM = S.pN ? missCell3(S.pB / S.pN, S.prec / S.pN, S.oP / S.pN, S.pN, S.precH / S.pN, 'mm', 'mm')
+            : `<td style="padding:4px 6px;text-align:right;color:#475569;">—</td>`;
+          rowMean3 = `<tr style="background:#1e293b;border-bottom:2px solid var(--border);">`
+            + `<td style="padding:4px 6px;white-space:nowrap;font-weight:700;" title="Mittel über alle Modelle mit Daten für Vorlauf Tag ${verifLeadSel}">⌀ alle Modelle</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${S.n}</td>`
+            + `<td style="padding:4px 6px;text-align:right;">${verifDe(S.fMin / S.n)} °C</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${verifDe(S.oMin / S.n)} °C</td>`
+            + missCell3(S.tminB / S.n, S.tmin / S.n, S.oMin / S.n, S.n, S.tminH / S.n, '°C', 'K')
+            + `<td style="padding:4px 6px;text-align:right;">${verifDe(S.fMax / S.n)} °C</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${verifDe(S.oMax / S.n)} °C</td>`
+            + missCell3(S.tmaxB / S.n, S.tmax / S.n, S.oMax / S.n, S.n, S.tmaxH / S.n, '°C', 'K')
+            + `<td style="padding:4px 6px;text-align:right;">${S.pN ? verifDe(S.fP / S.pN) + ' mm' : '—'}</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${S.pN ? verifDe(S.oP / S.pN) + ' mm' : '—'}</td>`
+            + pMissM + `</tr>`;
+        }
         // Übersicht: Trefferquote je Vorlauftag — alle Modelle oder ein gewähltes
         // Modell. Jeder Tageslauf zählt Tag 1, 2, … neu und fließt in dieselbe
         // Statistik (n wächst mit der Zeit); kurze Modelle enden früher.
@@ -4175,13 +4200,13 @@
           `<tbody>${rowsOv}</tbody></table>` : ``) +
           (rows3 ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Abweichung je Vorlauftag (Ø-Prognose vs. Ø-Messwert — kältester &amp; wärmster Tageswert)</div>` +
           `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px;">${leadPills3}</div>` +
-          `<div style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Vorlauf Tag ${verifLeadSel} — sortiert nach mittlerem Fehler (Tmin+Tmax)</div>` +
+          `<div style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Vorlauf Tag ${verifLeadSel} — sortiert nach mittlerem Fehler (Tmin+Tmax) · ⌀-Zeile = Mittel aller Modelle</div>` +
           `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
           `<th style="padding:4px 6px;">Modell</th><th style="padding:4px 6px;text-align:right;" title="Anzahl geprüfter Tage für diesen Vorlauf">n</th>` +
           `<th style="padding:4px 6px;text-align:right;">Tmin Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Tmin gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung des kältesten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote">Tmin daneben</th>` +
           `<th style="padding:4px 6px;text-align:right;">Tmax Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Tmax gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung des wärmsten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote">Tmax daneben</th>` +
           `<th style="padding:4px 6px;text-align:right;">Nieder. Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Nieder. gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung der Niederschlagssumme — darunter Trefferquote">Nieder. daneben</th></tr></thead>` +
-          `<tbody>${rows3}</tbody></table>` : ``) +
+          `<tbody>${rowMean3}${rows3}</tbody></table>` : ``) +
           `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Fehler = mittlerer absoluter Fehler der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm. EC46/SEAS5 liefern Tagesmittel und werden gegen das gemessene Tagesmittel ((Tmin+Tmax)/2) geprüft. Tendenz: + = Modell zu warm, − = zu kalt. n = geprüfte Tage. Tabelle „Vorlauftag": Ø-Werte = Mittel über alle geprüften Tage dieses Vorlaufs; „daneben" = systematische Abweichung (°C bzw. mm) plus mittlerer |Fehler| in % plus Trefferquote (Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm). Temperatur-% auf Kelvin bezogen (Messwert + 273,15), weil °C keinen absoluten Nullpunkt hat; Niederschlag-% auf die gemessene Summe bezogen (— wenn nichts gemessen wurde). Aussagekraft wächst mit jedem Sammeltag.</div>`;
         tEl.querySelectorAll('[data-verif-lead]').forEach(b => {
           b.onclick = () => { const v = +b.dataset.verifLead; if (v !== verifLeadSel) { verifLeadSel = v; renderVerif(); } };
