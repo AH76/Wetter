@@ -3654,7 +3654,7 @@
         if (r.station_name) st.name = r.station_name;
         if (r.station_id != null) st.id = r.station_id;
       }
-      return { snaps, truthDays, station: st.name ? st : null };
+      return { snaps, truthDays, station: st.name ? st : null, sCount: sRows.length };
     }
     function verifLocKey() {
       return CURRENT_LOCATION.latitude.toFixed(2) + '_' + CURRENT_LOCATION.longitude.toFixed(2);
@@ -3754,6 +3754,38 @@
       if (!Number.isFinite(v)) return '—';
       return v.toFixed(digits === undefined ? 1 : digits).replace('.', ',');
     }
+    // Summen zweier Wertungen addieren (Rohdaten + Langzeit-Sicht).
+    function mergeVerifAgg(dst, src) {
+      const keys = ['n', 'tmax', 'tmin', 'prec', 'tmaxB', 'tminB', 'pB', 'pN', 'tmaxH', 'tminH', 'precH', 'fMax', 'oMax', 'fMin', 'oMin', 'fP', 'oP'];
+      for (const [mid, a] of Object.entries(src || {})) {
+        const d = dst[mid] = dst[mid] || {};
+        for (const [ld, L] of Object.entries(a)) {
+          const e = d[ld] = d[ld] || { n: 0, tmax: 0, tmin: 0, prec: 0, tmaxB: 0, tminB: 0, pB: 0, pN: 0, tmaxH: 0, tminH: 0, precH: 0, fMax: 0, oMax: 0, fMin: 0, oMin: 0, fP: 0, oP: 0 };
+          for (const k of keys) e[k] += L[k] || 0;
+        }
+      }
+    }
+    // Langzeit-Sicht lesen (alle Sammeltage, vorverdichtet). null bei
+    // fehlender Sicht / ohne Netz — dann gilt der bisherige Roh-Abruf.
+    async function verifDbPullStats() {
+      try {
+        if (!VERIF_DB_KEY) return null;
+        const r = await verifDbGet(VERIF_DB_URL + '/verif_lead_stats?loc_key=eq.' + encodeURIComponent(verifLocKey()) + '&select=model_id,lead,n,tmax,tmin,tmax_b,tmin_b,tmax_h,tmin_h,fmax,omax,fmin,omin,pn,prec,pb,prec_h,fp,op&limit=10000');
+        if (!r.ok) return null;
+        const agg = {};
+        for (const x of (await r.json())) {
+          if (!x || !x.model_id || !(+x.lead >= 1)) continue;
+          (agg[x.model_id] = agg[x.model_id] || {})[+x.lead] = {
+            n: +x.n || 0, tmax: +x.tmax || 0, tmin: +x.tmin || 0, prec: +x.prec || 0,
+            tmaxB: +x.tmax_b || 0, tminB: +x.tmin_b || 0, pB: +x.pb || 0, pN: +x.pn || 0,
+            tmaxH: +x.tmax_h || 0, tminH: +x.tmin_h || 0, precH: +x.prec_h || 0,
+            fMax: +x.fmax || 0, oMax: +x.omax || 0, fMin: +x.fmin || 0, oMin: +x.omin || 0,
+            fP: +x.fp || 0, oP: +x.op || 0
+          };
+        }
+        return agg;
+      } catch (e) { return null; }
+    }
     async function fetchVerifTruth(needDates) {
       const st = nearestDwdStation(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude);
       const key = 'verifTruth_v1_' + verifLocKey();
@@ -3805,6 +3837,27 @@
       try { verifDbPushTruth(cache, added); } catch (e) {}
       return cache;
     }
+    // Mittelwerte + Trefferquoten aus den Summen (idempotent, auch nach
+    // dem Dazu-Mischen der Langzeit-Sicht erneut aufrufbar).
+    function finalizeVerifAgg(agg) {
+      let pairs = 0;
+      for (const a of Object.values(agg)) {
+        for (const L of Object.values(a)) {
+          L.mTmax = L.tmax / L.n; L.mTmin = L.tmin / L.n;
+          L.mPrec = L.pN ? L.prec / L.pN : null;
+          L.bTmax = L.tmaxB / L.n; L.bTmin = L.tminB / L.n;
+          L.bPrec = L.pN ? L.pB / L.pN : null;
+          L.mTemp = (L.mTmax + L.mTmin) / 2;
+          L.aFMax = L.fMax / L.n; L.aOMax = L.oMax / L.n;
+          L.aFMin = L.fMin / L.n; L.aOMin = L.oMin / L.n;
+          L.aFP = L.pN ? L.fP / L.pN : null; L.aOP = L.pN ? L.oP / L.pN : null;
+          L.qTemp = (L.tmaxH + L.tminH) / (2 * L.n);
+          L.qPrec = L.pN ? L.precH / L.pN : null;
+          pairs += L.n;
+        }
+      }
+      return pairs;
+    }
     function scoreVerif(snaps, truthDays) {
       const agg = {};
       let pairs = 0;
@@ -3839,20 +3892,7 @@
           }
         }
       }
-      for (const a of Object.values(agg)) {
-        for (const L of Object.values(a)) {
-          L.mTmax = L.tmax / L.n; L.mTmin = L.tmin / L.n;
-          L.mPrec = L.pN ? L.prec / L.pN : null;
-          L.bTmax = L.tmaxB / L.n; L.bTmin = L.tminB / L.n;
-          L.bPrec = L.pN ? L.pB / L.pN : null;
-          L.mTemp = (L.mTmax + L.mTmin) / 2;
-          L.aFMax = L.fMax / L.n; L.aOMax = L.oMax / L.n;
-          L.aFMin = L.fMin / L.n; L.aOMin = L.oMin / L.n;
-          L.aFP = L.pN ? L.fP / L.pN : null; L.aOP = L.pN ? L.oP / L.pN : null;
-          L.qTemp = (L.tmaxH + L.tminH) / (2 * L.n);
-          L.qPrec = L.pN ? L.precH / L.pN : null;
-        }
-      }
+      pairs = finalizeVerifAgg(agg);
       return { agg, pairs };
     }
     function verifPct(v) {
@@ -3919,11 +3959,23 @@
           if (imF) imF.onchange = () => { if (imF.files && imF.files[0]) { verifImportFile(imF.files[0]); imF.value = ''; } };
         }
         const snaps = verifRead('verifSnaps_v1_' + verifLocKey());
-        // Geteilte Läufe aus der Datenbank dazu mischen (lokal gewinnt bei Gleichstand)
-        let sharedRuns = 0;
+        // Geteilte Läufe aus der Datenbank dazu mischen (lokal gewinnt bei Gleichstand).
+        // Mit Langzeit-Sicht: Roh-Läufe NICHT dazu mischen (stecken schon in der
+        // Sicht); nur die Wahrheit wird ergänzt. Ohne Sicht: bisheriges Verhalten.
+        let sharedRuns = 0, useView = false, viewAgg = null, remoteRuns = null, remoteCoverMin = null;
         try {
           const remote = await verifDbPull(90);
-          if (remote) {
+          let vd = null;
+          try { vd = await verifDbPullStats(); } catch (e2) {}
+          if (remote && vd && Object.keys(vd).length) {
+            useView = true; viewAgg = vd;
+            remoteRuns = remote.snaps;
+            const rk = Object.keys(remote.snaps).sort();
+            // Abruf-Limit erreicht? Dann sind nur die neuesten Läufe belegt;
+            // ältere lokale Läufe gelten als übertragen (Erfassung braucht Netz,
+            // der Push läuft beim Abruf automatisch).
+            remoteCoverMin = (remote.sCount >= 20000 && rk.length) ? rk[0] : null;
+          } else if (remote) {
             for (const [run, models] of Object.entries(remote.snaps)) {
               if (!snaps[run]) { snaps[run] = models; continue; }
               for (const [mid, per] of Object.entries(models)) {
@@ -3931,6 +3983,8 @@
               }
             }
             sharedRuns = Object.keys(remote.snaps).length;
+          }
+          if (remote) {
             const tk = 'verifTruth_v1_' + verifLocKey();
             const tc = verifRead(tk);
             tc.days = tc.days || {};
@@ -3942,7 +3996,7 @@
             if (wrote) verifWrite(tk, tc);
           }
         } catch (e) {}
-        const sharedTxt = sharedRuns ? ` · 🌐 ${sharedRuns} geteilte Läufe` : '';
+        const sharedTxt = useView ? ' · 📚 alle Sammeltage' : (sharedRuns ? ` · 🌐 ${sharedRuns} geteilte Läufe` : '');
         const runs = Object.keys(snaps).sort();
         // Prüftage = alle prognostizierten Zieltage bis einschließlich gestern
         const yesterday = verifLocDate(-1);
@@ -3953,22 +4007,36 @@
           }
         }
         const need = Object.keys(needSet).sort();
-        if (!runs.length) {
+        if (!runs.length && !useView) {
           stEl.textContent = 'Noch keine Prognosen gespeichert — der heutige Abruf wurde als erster Lauf gesichert. Komm morgen wieder: Dann gibt es die erste Prüfung.';
           tEl.innerHTML = '';
           return;
         }
         stEl.textContent = `Werte ${need.length} Messtage gegen ${runs.length} Prognoseläufe …`;
         const truth = await fetchVerifTruth(need);
-        const { agg, pairs } = scoreVerif(snaps, truth.days || {});
+        let scoringSnaps = snaps;
+        if (useView) {
+          // Bereits in der Sicht enthaltene lokale Läufe überspringen
+          // (stecken schon in der Langzeit-Wertung).
+          scoringSnaps = {};
+          for (const [run, models] of Object.entries(snaps)) {
+            if (remoteRuns && remoteRuns[run]) continue;
+            if (remoteCoverMin && run < remoteCoverMin) continue;
+            scoringSnaps[run] = models;
+          }
+        }
+        const sv = scoreVerif(scoringSnaps, truth.days || {});
+        const agg = sv.agg;
+        if (useView && viewAgg) mergeVerifAgg(agg, viewAgg);
+        const pairs = finalizeVerifAgg(agg);
         const stName = truth.station ? `${truth.station.name} (${String(truth.station.km).replace('.', ',')} km)` : 'DWD-Station';
-        const since = runs[0].split('-').reverse().join('.');
+        const since = runs.length ? runs[0].split('-').reverse().join('.') : '–';
         if (!pairs) {
           stEl.textContent = `Sammle seit ${since} · ${runs.length} ${runs.length === 1 ? 'Prognoselauf' : 'Prognoseläufe'}${sharedTxt} · Wahrheit: ${stName}. Sobald die ersten Zieltage von morgen an als Messung vorliegen, erscheint hier die Rangliste.`;
           tEl.innerHTML = '';
           return;
         }
-        stEl.textContent = `Sammle seit ${since} · ${runs.length} ${runs.length === 1 ? 'Prognoselauf' : 'Prognoseläufe'}${sharedTxt} · ${pairs} geprüfte Tagespaare · Wahrheit: DWD-Station ${stName} (Tmin/Tmax/Niederschlagssumme je Tag).`;
+        stEl.textContent = `Sammle seit ${since} · ` + (useView && !runs.length ? 'geteilte Sammlung' : `${runs.length} ${runs.length === 1 ? 'Prognoselauf' : 'Prognoseläufe'}`) + `${sharedTxt} · ${pairs} geprüfte Tagespaare · Wahrheit: DWD-Station ${stName} (Tmin/Tmax/Niederschlagssumme je Tag).`;
         // Tabelle 1: bestes Modell je Vorlaufzeit (Tag für Tag bis +16)
         let rows1 = '';
         for (let lead = 1; lead <= VERIF_MAX_LEAD; lead++) {
