@@ -1423,6 +1423,8 @@
             <select id="h24ModelSelect"></select>
           </div>
         </div>
+        <div id="dwdWarnBanner" style="display:none; margin:10px 0 0 0;"></div>
+        <div id="nowcastLine" style="display:none; font-size:11px; color:var(--text-muted); margin-top:8px;">··· <span style="color:#10b981; font-weight:700;">ICON-D2 RUC Nowcast (15-min, DWD)</span> als gepunktete Linie im Temperatur-Diagramm – stündlich aktualisiertes Kurzfristmodell.</div>
       </div>
       <div class="chart-hud" id="h24Hud">
         <div class="hud-left">
@@ -1812,7 +1814,7 @@
       </div>
       <div id="verifCard" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
         <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">🏆 Modell-Treffgenauigkeit — Prognose gegen Messung</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Täglich wird der erste Abruf je Modell gespeichert (tiefste/höchste Tagestemperatur &amp; Tagesniederschlag für +1 bis +46 Tage) und mit den echten Tagesmesswerten der nächsten DWD-Station verglichen. Treffer = Temperaturfehler ≤ 1,5 °C bzw. Niederschlagsfehler ≤ 1 mm. Stundenmodelle zählen gegen Tmin/Tmax, die Tagesmittel-Modelle EC46 (46 Tage) und SEAS5 gegen das gemessene Tagesmittel. Läufe aller Geräte fließen in eine gemeinsame Datenbank-Auswertung. Rückwirkend geht das nicht — abgelaufene Prognosen werden nirgends archiviert, nur Messwerte. Die Sammlung startet daher mit dem ersten Abruf.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Täglich wird der erste Abruf je Modell gespeichert (tiefste/höchste Tagestemperatur &amp; Tagesniederschlag für +1 bis +46 Tage) und mit den echten Tagesmesswerten der nächsten DWD-Station verglichen. Treffer = Temperaturfehler ≤ 0,5 °C bzw. Niederschlagsfehler ≤ 0,1 mm. Stundenmodelle zählen gegen Tmin/Tmax, die Tagesmittel-Modelle EC46 (46 Tage) und SEAS5 gegen das gemessene Tagesmittel. Läufe aller Geräte fließen in eine gemeinsame Datenbank-Auswertung. Rückwirkend geht das nicht — abgelaufene Prognosen werden nirgends archiviert, nur Messwerte. Die Sammlung startet daher mit dem ersten Abruf.</p>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
           <button type="button" class="seas-pill" id="verifExportBtn">💾 Sammlung als JSON sichern</button>
           <button type="button" class="seas-pill" id="verifImportBtn">📂 JSON einlesen</button>
@@ -2066,6 +2068,12 @@
           über die
           <a href="https://brightsky.dev/" target="_blank" rel="noopener" style="color:#38bdf8;">Bright Sky API</a>
           (CC-BY, Abruf am Standort der angezeigten Station). Im Orts-Modus zeigt die Aktuell-Pille dagegen das Modellmittel am Datenpunkt – daher können sich die Werte unterscheiden.</p>
+        <p style="margin-bottom:6px;"><strong style="color:#e2e8f0;">Kurzfrist (Nowcast) &amp; Warnungen:</strong>
+          15-min-Nowcast des stündlich aktualisierten
+          <a href="https://www.dwd.de/" target="_blank" rel="noopener" style="color:#38bdf8;">DWD</a>-Modells
+          ICON-D2 RUC über Open-Meteo sowie amtliche Warnungen aus der
+          <a href="https://www.dwd.de/DE/wetter/warnungen_gemeinden/warnWetter_node.html" target="_blank" rel="noopener" style="color:#38bdf8;">DWD-WarnWetter-App</a>
+          (JSON, u. a. NowCastMIX-Kurzfristwarnungen für den Landkreis). Ein direktes NowCastMIX-Datenprodukt bietet der DWD für Browser nicht offen an.</p>
         <p style="margin-bottom:6px;"><strong style="color:#e2e8f0;">Geteilte Trefferquoten-Sammlung:</strong>
           Prognose-Schnappschüsse und Tagesmesswerte (gerundete Koordinaten, keine Personendaten) werden zusätzlich in einer
           <a href="https://supabase.com/" target="_blank" rel="noopener" style="color:#38bdf8;">Supabase</a>-Datenbank
@@ -3545,9 +3553,10 @@
     // gegen Tmin/Tmax geprüft, Tagesmittel-Modelle (ECMWF EC46 bis 46 Tage, SEAS5) gegen
     // das gemessene Tagesmittel. Geprüft wird gegen die echten Tagesmesswerte der
     // nächsten DWD-Station (Bright Sky). Trefferquote:
-    // Temperaturfehler ≤ 1,5 °C bzw. Niederschlagsfehler ≤ 1 mm. Alte Prognosen
-    // lassen sich nicht nachholen — kein Dienst archiviert abgelaufene Vorhersagen.
-    const VERIF_MAX_LEAD = 46, VERIF_TEMP_HIT = 1.5, VERIF_PRECIP_HIT = 1.0;
+    // Temperaturfehler ≤ 0,5 °C bzw. Niederschlagsfehler ≤ 0,1 mm (streng, seit
+    // 2026-11-12). Alte Prognosen lassen sich nicht nachholen — kein Dienst
+    // archiviert abgelaufene Vorhersagen.
+    const VERIF_MAX_LEAD = 46, VERIF_TEMP_HIT = 0.5, VERIF_PRECIP_HIT = 0.1;
     const VERIF_DAILY_MEAN_IDS = ['ec46', 'seas5'];
     // Geteilte Sammlung (Supabase, Free-Plan): ein Prognose-/Messwertsatz je Tag und
     // Standort, Doppelte werden per Primärschlüssel ignoriert. Der Key ist der
@@ -3807,7 +3816,7 @@
             const lead = Math.round((new Date(tgt + 'T12:00:00Z') - new Date(run + 'T12:00:00Z')) / 86400000);
             if (!(lead >= 1 && lead <= VERIF_MAX_LEAD)) continue;
             const a = agg[mid] = agg[mid] || {};
-            const L = a[lead] = a[lead] || { n: 0, tmax: 0, tmin: 0, prec: 0, tmaxB: 0, tminB: 0, pB: 0, pN: 0, tmaxH: 0, tminH: 0, precH: 0 };
+            const L = a[lead] = a[lead] || { n: 0, tmax: 0, tmin: 0, prec: 0, tmaxB: 0, tminB: 0, pB: 0, pN: 0, tmaxH: 0, tminH: 0, precH: 0, fMax: 0, oMax: 0, fMin: 0, oMin: 0, fP: 0, oP: 0 };
             L.n++; pairs++;
             // Tagesmittel-Modelle (EC46/SEAS5) gegen das gemessene Tagesmittel prüfen
             const oMean = (obs[0] + obs[1]) / 2;
@@ -3820,9 +3829,11 @@
             if (eMin <= VERIF_TEMP_HIT) L.tminH++;
             L.tmaxB += vals[1] - oMax;
             L.tminB += vals[0] - oMin;
+            L.fMax += vals[1]; L.oMax += oMax; L.fMin += vals[0]; L.oMin += oMin;
             if (vals[2] != null) {
               const eP = Math.abs(vals[2] - obs[2]);
               L.prec += eP; L.pB += vals[2] - obs[2]; L.pN++;
+              L.fP += vals[2]; L.oP += Number.isFinite(obs[2]) ? obs[2] : 0;
               if (eP <= VERIF_PRECIP_HIT) L.precH++;
             }
           }
@@ -3835,6 +3846,9 @@
           L.bTmax = L.tmaxB / L.n; L.bTmin = L.tminB / L.n;
           L.bPrec = L.pN ? L.pB / L.pN : null;
           L.mTemp = (L.mTmax + L.mTmin) / 2;
+          L.aFMax = L.fMax / L.n; L.aOMax = L.oMax / L.n;
+          L.aFMin = L.fMin / L.n; L.aOMin = L.oMin / L.n;
+          L.aFP = L.pN ? L.fP / L.pN : null; L.aOP = L.pN ? L.oP / L.pN : null;
           L.qTemp = (L.tmaxH + L.tminH) / (2 * L.n);
           L.qPrec = L.pN ? L.precH / L.pN : null;
         }
@@ -3884,7 +3898,7 @@
       };
       try { rd.readAsText(file); } catch (e) {}
     }
-    let verifRunning = false;
+    let verifRunning = false, verifLeadSel = 1, verifOvModel = 'alle';
     async function renderVerif() {
       const stEl = $('#verifStatus'), tEl = $('#verifTables');
       if (!stEl || !tEl) return;
@@ -3992,7 +4006,84 @@
             `<td style="text-align:right;">${t.n}</td><td style="text-align:right;">${verifDe(t.mTmax)} °C</td>` +
             `<td style="text-align:right;">${verifDe(t.mTmin)} °C</td><td style="text-align:right;">${t.mPrec != null ? verifDe(t.mPrec) + ' mm' : '—'}</td>` +
             `<td style="text-align:right;color:#4ade80;font-weight:700;">${verifPct(t.qTemp)}</td><td style="text-align:right;color:#4ade80;font-weight:700;">${t.qPrec != null ? verifPct(t.qPrec) : '—'}</td>` +
-            `<td style="text-align:right;">${(t.bTmax > 0 ? '+' : '') + verifDe(t.bTmax)} °C</td></tr>`;
+          `<td style="text-align:right;">${(t.bTmax > 0 ? '+' : '') + verifDe(t.bTmax)} °C</td></tr>`;
+        }).join('');
+        // Tabelle 3: Abweichung je Vorlauftag — pro Modell zeigt der gewählte
+        // Vorlauftag (Tag 1, Tag 2, …): Ø-Prognose vs. Ø-Messwert für den
+        // kältesten (Tmin) und wärmsten (Tmax) Tageswert, dazu die mittlere
+        // Abweichung in °C (signed: + zu warm/rot, − zu kalt/blau) und in %
+        // (Betrag, auf Kelvin bezogen, da °C keinen absoluten Nullpunkt hat).
+        const leadSet3 = new Set();
+        for (const a of Object.values(agg)) for (const [ld, L] of Object.entries(a)) if (L.n > 0) leadSet3.add(+ld);
+        const leadList3 = [...leadSet3].sort((x, y) => x - y);
+        if (!leadList3.includes(verifLeadSel)) verifLeadSel = leadList3.length ? leadList3[0] : 1;
+        const leadPills3 = leadList3.map(ld =>
+          `<button type="button" class="seas-pill${ld === verifLeadSel ? ' active' : ''}" data-verif-lead="${ld}">Tag ${ld}</button>`
+        ).join('');
+        const sgnDe3 = v => (v > 0 ? '+' : '') + verifDe(v);
+        const missCell3 = (bias, errAbs, oC, n, hit, unit, pctKind) => {
+          const col = bias > 0.049 ? '#f87171' : bias < -0.049 ? '#7dd3fc' : 'var(--text-muted)';
+          let pct = '—';
+          if (Number.isFinite(errAbs) && Number.isFinite(oC)) {
+            if (pctKind === 'mm') { if (oC > 0) pct = (errAbs / oC * 100).toFixed(1).replace('.', ',') + ' %'; }
+            else pct = (errAbs / (oC + 273.15) * 100).toFixed(2).replace('.', ',') + ' %';
+          }
+          const hitTxt = Number.isFinite(hit) ? verifPct(hit) : '—';
+          return `<td style="padding:4px 6px;text-align:right;white-space:nowrap;" title="${n} geprüfte Tage (Vorlauf Tag ${verifLeadSel})"><strong style="color:${col};">${sgnDe3(bias)} ${unit}</strong><br><span style="font-size:11px;color:var(--text-muted);">${pct}</span><br><span style="font-size:11px;color:#4ade80;">Treffer ${hitTxt}</span></td>`;
+        };
+        const t3rows = [];
+        for (const [mid, a] of Object.entries(agg)) {
+          const L = a[verifLeadSel];
+          if (L && L.n) t3rows.push({ mid, L });
+        }
+        t3rows.sort((x, y) => ((x.L.mTmax + x.L.mTmin) / 2) - ((y.L.mTmax + y.L.mTmin) / 2));
+        // Übersicht: Trefferquote je Vorlauftag — alle Modelle oder ein gewähltes
+        // Modell. Jeder Tageslauf zählt Tag 1, 2, … neu und fließt in dieselbe
+        // Statistik (n wächst mit der Zeit); kurze Modelle enden früher.
+        if (verifOvModel !== 'alle' && !(agg[verifOvModel] && Object.keys(agg[verifOvModel]).length)) verifOvModel = 'alle';
+        const ovMids = verifOvModel === 'alle' ? Object.keys(agg) : [verifOvModel];
+        const leadOv = {};
+        for (const mid of ovMids) {
+          const a = agg[mid] || {};
+          for (const [ld, L] of Object.entries(a)) {
+            if (!L.n) continue;
+            const o = leadOv[ld] = leadOv[ld] || { n: 0, hMin: 0, hMax: 0, eMin: 0, eMax: 0, hP: 0, pN: 0 };
+            o.n += L.n; o.hMin += L.tminH; o.hMax += L.tmaxH; o.eMin += L.tmin; o.eMax += L.tmax;
+            o.pN += L.pN; o.hP += L.precH;
+          }
+        }
+        const ovModelOpts = ['alle'].concat(Object.keys(agg).sort()).map(mid => {
+          const lab = mid === 'alle' ? 'Alle Modelle (Ø)' : verifModelLabel(mid).label;
+          return `<option value="${mid}"${mid === verifOvModel ? ' selected' : ''}>${lab}</option>`;
+        }).join('');
+        const barOv = frac => {
+          const p = Math.max(0, Math.min(1, frac || 0));
+          const col = p >= 0.6 ? '#4ade80' : p >= 0.3 ? '#facc15' : '#f87171';
+          return `<span style="display:inline-block;width:70px;height:8px;background:#1e293b;border-radius:4px;vertical-align:middle;margin-right:6px;"><span style="display:block;height:100%;width:${(p * 100).toFixed(0)}%;background:${col};border-radius:4px;"></span></span>`;
+        };
+        const rowsOv = Object.entries(leadOv).map(([ld, o]) => ({ ld: +ld, o })).sort((a, b) => a.ld - b.ld).map(({ ld, o }) =>
+          `<tr><td style="padding:4px 6px;font-weight:700;white-space:nowrap;">Tag ${ld}</td>`
+          + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${barOv(o.hMin / o.n)}${verifPct(o.hMin / o.n)}</td>`
+          + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${barOv(o.hMax / o.n)}${verifPct(o.hMax / o.n)}</td>`
+          + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${o.pN ? barOv(o.hP / o.pN) + verifPct(o.hP / o.pN) : '—'}</td>`
+          + `<td style="padding:4px 6px;text-align:right;">${verifDe((o.eMin + o.eMax) / (2 * o.n))} °C</td>`
+          + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${o.n}</td></tr>`
+        ).join('');
+        const rows3 = t3rows.map(({ mid, L }) => {
+          const c = verifModelLabel(mid);
+          const pMiss = L.pN ? missCell3(L.bPrec, L.mPrec, L.aOP, L.pN, L.precH / L.pN, 'mm', 'mm')
+            : `<td style="padding:4px 6px;text-align:right;color:#475569;">—</td>`;
+          return `<tr><td style="padding:4px 6px;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.color};margin-right:5px;"></span>${c.label}</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${L.n}</td>`
+            + `<td style="padding:4px 6px;text-align:right;">${verifDe(L.aFMin)} °C</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${verifDe(L.aOMin)} °C</td>`
+            + missCell3(L.bTmin, L.mTmin, L.aOMin, L.n, L.tminH / L.n, '°C', 'K')
+            + `<td style="padding:4px 6px;text-align:right;">${verifDe(L.aFMax)} °C</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${verifDe(L.aOMax)} °C</td>`
+            + missCell3(L.bTmax, L.mTmax, L.aOMax, L.n, L.tmaxH / L.n, '°C', 'K')
+            + `<td style="padding:4px 6px;text-align:right;">${L.aFP != null ? verifDe(L.aFP) + ' mm' : '—'}</td>`
+            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${L.aOP != null ? verifDe(L.aOP) + ' mm' : '—'}</td>`
+            + pMiss + `</tr>`;
         }).join('');
         tEl.innerHTML =
           `<div style="font-size:13px;font-weight:700;color:#fff;margin:10px 0 4px;">Bestes Modell je Vorhersagezeitraum (mittlerer Fehler)</div>` +
@@ -4005,7 +4096,26 @@
           `<th style="padding:4px 6px;text-align:right;">Fehler Tmax</th><th style="padding:4px 6px;text-align:right;">Fehler Tmin</th>` +
           `<th style="padding:4px 6px;text-align:right;">Fehler Nieder.</th><th style="padding:4px 6px;text-align:right;">Treffer Temp.</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;">Tendenz Tmax</th></tr></thead>` +
           `<tbody>${rows2}</tbody></table>` +
-          `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Fehler = mittlerer absoluter Fehler der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(0)} mm. EC46/SEAS5 liefern Tagesmittel und werden gegen das gemessene Tagesmittel ((Tmin+Tmax)/2) geprüft. Tendenz: + = Modell zu warm, − = zu kalt. n = geprüfte Tage. Aussagekraft wächst mit jedem Sammeltag.</div>`;
+          (rowsOv ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Trefferquote je Vorlauftag (so fällt die Quote mit der Vorhersagedauer)</div>` +
+          `<div style="display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;color:var(--text-muted);">Modell: <select id="verifOvModelSel" class="hist-select">${ovModelOpts}</select></div>` +
+          `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
+          `<th style="padding:4px 6px;">Vorlauf</th><th style="padding:4px 6px;text-align:right;">Treffer Tmin</th><th style="padding:4px 6px;text-align:right;">Treffer Tmax</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;" title="Mittlerer absoluter Fehler Tmin+Tmax über alle Modelle">Ø-Fehler</th><th style="padding:4px 6px;text-align:right;" title="Geprüfte Modell-Tag-Paare">Paare</th></tr></thead>` +
+          `<tbody>${rowsOv}</tbody></table>` : ``) +
+          (rows3 ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Abweichung je Vorlauftag (Ø-Prognose vs. Ø-Messwert — kältester &amp; wärmster Tageswert)</div>` +
+          `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px;">${leadPills3}</div>` +
+          `<div style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Vorlauf Tag ${verifLeadSel} — sortiert nach mittlerem Fehler (Tmin+Tmax)</div>` +
+          `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
+          `<th style="padding:4px 6px;">Modell</th><th style="padding:4px 6px;text-align:right;" title="Anzahl geprüfter Tage für diesen Vorlauf">n</th>` +
+          `<th style="padding:4px 6px;text-align:right;">Tmin Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Tmin gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung des kältesten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote">Tmin daneben</th>` +
+          `<th style="padding:4px 6px;text-align:right;">Tmax Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Tmax gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung des wärmsten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote">Tmax daneben</th>` +
+          `<th style="padding:4px 6px;text-align:right;">Nieder. Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Nieder. gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung der Niederschlagssumme — darunter Trefferquote">Nieder. daneben</th></tr></thead>` +
+          `<tbody>${rows3}</tbody></table>` : ``) +
+          `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Fehler = mittlerer absoluter Fehler der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm. EC46/SEAS5 liefern Tagesmittel und werden gegen das gemessene Tagesmittel ((Tmin+Tmax)/2) geprüft. Tendenz: + = Modell zu warm, − = zu kalt. n = geprüfte Tage. Tabelle „Vorlauftag": Ø-Werte = Mittel über alle geprüften Tage dieses Vorlaufs; „daneben" = systematische Abweichung (°C bzw. mm) plus mittlerer |Fehler| in % plus Trefferquote (Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm). Temperatur-% auf Kelvin bezogen (Messwert + 273,15), weil °C keinen absoluten Nullpunkt hat; Niederschlag-% auf die gemessene Summe bezogen (— wenn nichts gemessen wurde). Aussagekraft wächst mit jedem Sammeltag.</div>`;
+        tEl.querySelectorAll('[data-verif-lead]').forEach(b => {
+          b.onclick = () => { const v = +b.dataset.verifLead; if (v !== verifLeadSel) { verifLeadSel = v; renderVerif(); } };
+        });
+        const ovSel = tEl.querySelector('#verifOvModelSel');
+        if (ovSel) ovSel.onchange = () => { verifOvModel = ovSel.value; renderVerif(); };
       } finally {
         verifRunning = false;
       }
@@ -5023,6 +5133,23 @@
       t += `<path d="${fillD}" fill="#34d399" fill-opacity="0.10"/>`;
       t += `<path d="${line(dews, TY)}" fill="none" stroke="#34d399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
       t += `<path d="${line(temps, TY)}" fill="none" stroke="#f59e0b" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+      // DWD-Nowcast (15-min RUC) auf die 24h-Achse projiziert, gepunktet
+      try {
+        let ncPts = [];
+        if (nowcastCache.time && nowcastCache.time.length && n > 1) {
+          const t0 = Date.parse(h24Data[0].time), t1 = Date.parse(h24Data[n - 1].time);
+          if (t1 > t0) {
+            for (let k = 0; k < nowcastCache.time.length; k++) {
+              const ms = Date.parse(nowcastCache.time[k]), v = nowcastCache.temp[k];
+              if (!Number.isFinite(ms) || !Number.isFinite(v) || ms < t0 || ms > t1) continue;
+              ncPts.push(`${(x0 + (ms - t0) / (t1 - t0) * (x1 - x0)).toFixed(1)},${Math.max(14, Math.min(118, TY(v))).toFixed(1)}`);
+            }
+          }
+        }
+        if (ncPts.length > 1) t += `<path d="M ${ncPts.join(' L ')}" fill="none" stroke="#10b981" stroke-width="1.6" stroke-dasharray="2 3" stroke-linecap="round" opacity="0.9"/>`;
+        const nl = $('#nowcastLine');
+        if (nl) nl.style.display = ncPts.length > 1 ? 'block' : 'none';
+      } catch (e) {}
       h24Data.forEach((h, i) => {
         if (Number.isFinite(h.temp)) t += `<circle cx="${X(i).toFixed(1)}" cy="${TY(temps[i]).toFixed(1)}" r="3.2" fill="#f59e0b" stroke="#0b1118" stroke-width="1.2"/>`;
         if (Number.isFinite(h.dew)) t += `<circle cx="${X(i).toFixed(1)}" cy="${TY(dews[i]).toFixed(1)}" r="2.4" fill="#34d399" stroke="#0b1118" stroke-width="1"/>`;
@@ -7291,6 +7418,89 @@
     }
 
     async function loadForecast() {
+      loadForecastMain();
+    }
+
+    // --- DWD-Nowcast (15-min, ICON-D2 RUC) + amtliche Warnungen (u. a. NowCastMIX) ---
+    // NowCastMIX selbst hat keine offene Browser-API (opendata.dwd.de ist vom
+    // Browser aus nicht erreichbar, CORS). Nächstliegende amtliche Umsetzung:
+    // stündlich aktualisiertes RUC-Kurzfristmodell in 15-min-Auflösung als Linie
+    // im 24h-Temperaturdiagramm + offizielle WarnWetter-Warnungen für den Landkreis.
+    let nowcastCache = { key: null, at: 0, time: [], temp: [], precip: [] };
+    async function loadNowcast() {
+      try {
+        const key = CURRENT_LOCATION.latitude.toFixed(3) + ',' + CURRENT_LOCATION.longitude.toFixed(3);
+        if (nowcastCache.key === key && Date.now() - nowcastCache.at < 30 * 60 * 1000 && nowcastCache.time.length) { renderHour24(); return; }
+        const u = new URL('https://api.open-meteo.com/v1/forecast');
+        u.searchParams.set('latitude', CURRENT_LOCATION.latitude);
+        u.searchParams.set('longitude', CURRENT_LOCATION.longitude);
+        u.searchParams.set('minutely_15', 'temperature_2m,precipitation');
+        u.searchParams.set('models', 'dwd_icon_d2_ruc_native');
+        u.searchParams.set('forecast_days', '2');
+        u.searchParams.set('timezone', 'auto');
+        const r = await fetch(u.toString());
+        if (!r.ok) throw new Error('nc ' + r.status);
+        const j = await r.json();
+        const M = j.minutely_15 || {};
+        // Bei nur einem Modell kommen die Werte ohne Modell-Endung (blanke Keys).
+        nowcastCache = { key, at: Date.now(), time: M.time || [],
+          temp: M.temperature_2m_dwd_icon_d2_ruc_native || M.temperature_2m || [],
+          precip: M.precipitation_dwd_icon_d2_ruc_native || M.precipitation || [] };
+        renderHour24();
+      } catch (e) {}
+    }
+    function dwdNorm(s) {
+      return (s || '').toLowerCase()
+        .replace(/freie und hansestadt|hansestadt|freie stadt|landkreis|kreis|stadt|gemeinde/g, '')
+        .replace(/[^a-zäöüß0-9]/g, '');
+    }
+    let dwdWarnCache = { key: null, at: 0, html: '' };
+    async function loadDwdWarnings() {
+      const box = $('#dwdWarnBanner');
+      try {
+        if (!box) return;
+        const key = CURRENT_LOCATION.latitude.toFixed(2) + ',' + CURRENT_LOCATION.longitude.toFixed(2);
+        if (dwdWarnCache.key === key && Date.now() - dwdWarnCache.at < 10 * 60 * 1000) {
+          box.innerHTML = dwdWarnCache.html; box.style.display = dwdWarnCache.html ? 'block' : 'none'; return;
+        }
+        const r = await fetch('https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json');
+        if (!r.ok) throw new Error('w ' + r.status);
+        const txt = await r.text();
+        const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
+        if (a < 0 || b <= a) throw new Error('format');
+        const data = JSON.parse(txt.slice(a, b + 1));
+        const cands = [CURRENT_LOCATION.name, CURRENT_LOCATION.state].map(dwdNorm).filter(s => s && s.length >= 4);
+        const seen = new Set(), hits = [];
+        const groups = (data && data.warnings) || {};
+        for (const gk of Object.keys(groups)) {
+          for (const w of (groups[gk] || [])) {
+            const rn = dwdNorm(w.regionName || '');
+            if (!rn || !cands.some(c => rn.includes(c) || c.includes(rn))) continue;
+            const dk = (w.headline || '') + '|' + (w.start || 0);
+            if (seen.has(dk)) continue;
+            seen.add(dk); hits.push(w);
+          }
+        }
+        hits.sort((x, y) => (y.level || 0) - (x.level || 0) || (x.start || 0) - (y.start || 0));
+        const lvlColor = l => l >= 4 ? '#c026d3' : l === 3 ? '#ef4444' : l === 2 ? '#f59e0b' : '#facc15';
+        const fmtT = ms => { try { return new Date(ms).toLocaleString('de-DE', { weekday: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+        let html = '';
+        if (hits.length) {
+          html = `<div style="border:1px solid var(--border); border-left:4px solid ${lvlColor(hits[0].level)}; border-radius:8px; padding:10px 12px; background:rgba(245,158,11,0.06);">`
+            + `<div style="font-size:12px; font-weight:700; margin-bottom:6px;">⚠️ Amtliche DWD-Warnung${hits.length > 1 ? 'en' : ''} <span style="font-weight:400; color:var(--text-muted);">(u. a. NowCastMIX-Kurzfrist)</span></div>`
+            + hits.slice(0, 4).map((w, i) =>
+              `<div style="font-size:12px;${i < Math.min(hits.length, 4) - 1 ? ' margin-bottom:6px;' : ''}">`
+              + `<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${lvlColor(w.level)}; margin-right:6px;"></span>`
+              + `<strong>${w.headline || w.event || 'Warnung'}</strong> <span style="color:var(--text-muted);">· ${w.regionName || ''} · ${fmtT(w.start)} → ${fmtT(w.end)}</span>`
+              + (w.description ? `<br><span style="color:var(--text-muted);">${w.description}</span>` : '')
+              + `</div>`).join('') + `</div>`;
+        }
+        dwdWarnCache = { key, at: Date.now(), html };
+        box.innerHTML = html; box.style.display = html ? 'block' : 'none';
+      } catch (e) { try { if (box) box.style.display = 'none'; } catch (e2) {} }
+    }
+
+    async function loadForecastMain() {
       if (loading) return;
       loading = true;
       $('#refreshBtn').disabled = true;
@@ -7364,6 +7574,8 @@
         captureVerifSnapshot();
         try { verifDbPushSnaps(); } catch (e) {}
         renderTable();
+        loadNowcast();
+        loadDwdWarnings();
         setStatus(`Vorhersage für ${CURRENT_LOCATION.name} erfolgreich aktualisiert.`);
       } catch (err) {
         setStatus('Fehler beim Laden: ' + err.message);
