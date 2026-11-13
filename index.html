@@ -1463,7 +1463,7 @@
           <div class="hud-time-pill" id="h24Time">—:—</div>
         </div>
         <div class="hud-3rows">
-          <div class="hud-row">🌡️ Temp. —</div>
+          <div class="hud-row">🌡️ Temp. — · 🌱 Boden —</div>
           <div class="hud-row">🌧️ Regen — · 💨 Wind —</div>
           <div class="hud-row">🌨️ Schnee —</div>
         </div>
@@ -5158,7 +5158,7 @@
       const times = forecast.hourly.time || [];
       if (!times.length || !h24Model) return;
       const H = forecast.hourly;
-      let T, D, P, MM, W, G, WD, WC, SN, SD;
+      let T, D, P, MM, W, G, WD, WC, SN, SD, SL;
       if (h24Model === H24_MEAN_ID) {
         // Mittel aller Modelle mit Daten für diesen Ort
         const ids = h24ModelsWithData().map(m => m.id);
@@ -5179,6 +5179,7 @@
         MM = meanArr('precipitation'); W = meanArr('wind_speed_10m'); G = meanArr('wind_gusts_10m');
         SN = meanArr('snowfall');
         SD = meanArr('snow_depth');
+        SL = meanArr('soil_temperature_0cm');
         WD = []; WC = [];
       } else {
         const col = (base) => H[`${base}_${h24Model}`] || [];
@@ -5186,6 +5187,7 @@
         MM = col('precipitation'); W = col('wind_speed_10m'); G = col('wind_gusts_10m');
         SN = col('snowfall');
         SD = col('snow_depth');
+        SL = col('soil_temperature_0cm');
         WD = col('wind_direction_10m'); WC = col('weather_code');
       }
       if (!T.some(Number.isFinite)) {
@@ -5209,7 +5211,7 @@
       h24Data = [];
       for (let k = 0; k < 24 && start + k < times.length; k++) {
         const j = start + k;
-        h24Data.push({ time: times[j], temp: T[j], dew: D[j], prob: P[j], mm: MM[j], wind: W[j], gust: G[j], dir: WD[j], code: WC[j], snow: SN[j], snowd: SD[j] });
+        h24Data.push({ time: times[j], temp: T[j], dew: D[j], prob: P[j], mm: MM[j], wind: W[j], gust: G[j], dir: WD[j], code: WC[j], snow: SN[j], snowd: SD[j], soil: SL[j] });
       }
       if (h24Sel >= h24Data.length) h24Sel = 0;
       const cur = MODELS.find(m => m.id === h24Model);
@@ -5415,8 +5417,10 @@
         const gust3 = Number.isFinite(h.gust) ? ` · Böen ${h.gust.toFixed(0)} km/h` : '';
         const snowMm = Number.isFinite(h.snow) ? (h.snow * 10).toFixed(1) + ' mm/h' : '—';
         const deckeMm = Number.isFinite(h.snowd) ? (h.snowd * 1000).toFixed(0) + ' mm' : '—';
+        const soil3 = Number.isFinite(h.soil) ? formatTemperature(h.soil) : '—';
+        const frost3 = Number.isFinite(h.soil) && h.soil <= 0 ? ' <span style="color:#7dd3fc; background:rgba(2,132,199,0.25); border:1px solid rgba(125,211,252,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">❄️ Bodenfrost</span>' : '';
         hud3.innerHTML =
-          `<div class="hud-row">🌡️ Temp. <strong style="color:#fbbf24;">${formatTemperature(h.temp)}</strong><span style="color:#64748b;"> · </span>💧 Taupunkt <strong style="color:#34d399;">${formatTemperature(h.dew)}</strong></div>`
+          `<div class="hud-row">🌡️ Temp. <strong style="color:#fbbf24;">${formatTemperature(h.temp)}</strong><span style="color:#64748b;"> · </span>💧 Taupunkt <strong style="color:#34d399;">${formatTemperature(h.dew)}</strong><span style="color:#64748b;"> · </span>🌱 Boden <strong style="color:#a3e635;">${soil3}</strong>${frost3}</div>`
           + `<div class="hud-row">🌧️ Regen <strong style="color:#38bdf8;">${Number.isFinite(h.prob) ? Math.round(h.prob) + ' %' : '—'}</strong><span style="color:#64748b;"> · </span><span>${Number.isFinite(h.mm) ? h.mm.toFixed(1) + ' mm/h' : '—'}</span><span style="color:#64748b;"> · </span>💨 Wind <strong style="color:#2dd4bf;">${Number.isFinite(h.wind) ? h.wind.toFixed(1) + ' km/h' : '—'}</strong><span style="color:#64748b;">${gust3}</span></div>`
           + `<div class="hud-row">🌨️ Schnee <strong style="color:#7dd3fc;">${snowMm}</strong><span style="color:#64748b;"> · </span>📏 Decke <strong style="color:#c4b5fd;">${deckeMm}</strong></div>`;
       }
@@ -7681,7 +7685,7 @@
           chunks.push(detModels.slice(i, i + BATCH_SIZE).map(m => m.id));
         }
 
-        const variables = 'temperature_2m,dew_point_2m,wind_gusts_10m,precipitation_probability,precipitation,snowfall,snow_depth,sunshine_duration,wind_speed_10m,wind_direction_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,pressure_msl';
+        const variables = 'temperature_2m,dew_point_2m,wind_gusts_10m,precipitation_probability,precipitation,snowfall,snow_depth,sunshine_duration,wind_speed_10m,wind_direction_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,pressure_msl,soil_temperature_0cm';
         const fetchChunk = async (chunk) => {
           const url = new URL('https://api.open-meteo.com/v1/forecast');
           url.searchParams.set('latitude', CURRENT_LOCATION.latitude);
