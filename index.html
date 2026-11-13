@@ -998,6 +998,35 @@
       border-radius: 4px;
       border: 1px solid #334155;
     }
+    /* Groß-Modus (nur installierte App automatisch, sonst per 🔠-Knopf):
+       größere Schrift & Felder für kleine Handydisplays. Vorschau bleibt Standard. */
+    body.gross { font-size: 15px; line-height: 1.6; }
+    body.gross .container { padding: 16px; }
+    body.gross .chart-hud { padding: 12px 16px; gap: 14px; }
+    body.gross .hud-date-block { font-size: 15px; }
+    body.gross .hud-date { font-size: 13px; }
+    body.gross .hud-time-pill { font-size: 14px; padding: 5px 11px; }
+    body.gross .hud-row { font-size: 13.5px; line-height: 1.5; gap: 8px; }
+    body.gross .hud-model { font-size: 12px; }
+    body.gross .hud-avg-badge { padding: 2px 7px; }
+    body.gross .h24sub .chart-hud.h24val .hud-row { font-size: 16px; }
+    body.gross table { font-size: 13.5px !important; }
+    body.gross .tab-btn, body.gross .quick-btn, body.gross .seas-pill { font-size: 13.5px; }
+    body.gross .hist-select, body.gross select { font-size: 13.5px; }
+    body.gross input.search-input { font-size: 15px; }
+    body.gross #refreshBtn, body.gross #grossBtn { font-size: 14px; padding: 10px 16px; }
+    body.gross #grossBtn.active { outline: 2px solid var(--accent); }
+    /* Handy: 24h-Kopfzeile grundsätzlich größer (auch ohne Groß-Modus) —
+       oben Datum/Uhrzeit, darunter die Wertereihen vollbreit + seitlich wischbar */
+    @media (max-width: 640px) {
+      #h24Hud { flex-direction: column; align-items: stretch; }
+      #h24Hud .hud-left { margin-bottom: 2px; }
+      #h24Hud .hud-3rows { width: 100%; }
+      #h24Hud .hud-3rows .hud-row { font-size: 13px; white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
+      body.gross #h24Hud .hud-3rows .hud-row { font-size: 14.5px; }
+      #h24Hud .hud-date-block { font-size: 14px; }
+      #h24Hud .hud-time-pill { font-size: 13px; padding: 4px 10px; }
+    }
 
     .mobile-tip {
       font-size: 10px;
@@ -1379,6 +1408,7 @@
           <button id="viewModelBtn" class="tab-btn" type="button">💻 Modelle</button>
         </div>
         <button id="refreshBtn" type="button">Aktualisieren</button>
+        <button id="grossBtn" type="button" title="Große Schrift & Felder an/aus (App: automatisch an)">🔠 Groß</button>
       </div>
     </div>
 
@@ -1433,7 +1463,9 @@
           <div class="hud-time-pill" id="h24Time">—:—</div>
         </div>
         <div class="hud-3rows">
-          <div class="hud-row">👆 Stunde antippen / wischen – alle 4 Diagramme folgen.</div>
+          <div class="hud-row">🌡️ Temp. —</div>
+          <div class="hud-row">🌧️ Regen — · 💨 Wind —</div>
+          <div class="hud-row">🌨️ Schnee —</div>
         </div>
       </div>
       <div class="chart-card h24sub" id="h24TempCard" style="margin-bottom:14px;">
@@ -3494,6 +3526,24 @@
       }
     }
 
+    // Groß-Modus (Schrift & Felder): in der installierten App automatisch an,
+    // sonst per 🔠-Knopf (z. B. Handy-Browser). Auswahl wird gespeichert.
+    try {
+      const gb = $('#grossBtn');
+      const applyGross = (on) => {
+        document.body.classList.toggle('gross', !!on);
+        if (gb) { gb.classList.toggle('active', !!on); gb.textContent = on ? '🔠 Klein' : '🔠 Groß'; }
+      };
+      let gPref = null;
+      try { gPref = storeGet('uiGross_v1'); } catch (e) {}
+      applyGross(gPref === '1' ? true : gPref === '0' ? false : !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+      if (gb) gb.onclick = () => {
+        const on = !document.body.classList.contains('gross');
+        try { storeSet('uiGross_v1', on ? '1' : '0'); } catch (e) {}
+        applyGross(on);
+      };
+    } catch (e) {}
+
     function setStatus(msg) { $('#status').textContent = msg; }
 
     // Tab Switching
@@ -5359,6 +5409,17 @@
       const gustTxt = Number.isFinite(h.gust) ? ` · Böen ${h.gust.toFixed(0)} km/h` : '';
       $('#h24WindRow').innerHTML = `💨 <strong style="color:#2dd4bf;">${Number.isFinite(h.wind) ? h.wind.toFixed(1) + ' km/h' : '—'}</strong><span style="color:#64748b;">${gustTxt} · ${h24Compass(h.dir)} (${Number.isFinite(h.dir) ? Math.round(h.dir) + '°' : '—'})</span>`;
       $('#h24SnowRow').innerHTML = `❄️ <strong style="color:#7dd3fc;">${Number.isFinite(h.snow) ? h.snow.toFixed(1) + ' cm/h' : '—'}</strong><span style="color:#64748b;"> · </span>🧊 Decke <strong style="color:#c4b5fd;">${Number.isFinite(h.snowd) ? (h.snowd * 100).toFixed(0) + ' cm' : '—'}</strong>`;
+      // Kopf-Leiste zeigt die Werte der gewählten Stunde (statt Hinweistext)
+      const hud3 = document.querySelector('#h24Hud .hud-3rows');
+      if (hud3) {
+        const gust3 = Number.isFinite(h.gust) ? ` · Böen ${h.gust.toFixed(0)} km/h` : '';
+        const snowMm = Number.isFinite(h.snow) ? (h.snow * 10).toFixed(1) + ' mm/h' : '—';
+        const deckeMm = Number.isFinite(h.snowd) ? (h.snowd * 1000).toFixed(0) + ' mm' : '—';
+        hud3.innerHTML =
+          `<div class="hud-row">🌡️ Temp. <strong style="color:#fbbf24;">${formatTemperature(h.temp)}</strong><span style="color:#64748b;"> · </span>💧 Taupunkt <strong style="color:#34d399;">${formatTemperature(h.dew)}</strong></div>`
+          + `<div class="hud-row">🌧️ Regen <strong style="color:#38bdf8;">${Number.isFinite(h.prob) ? Math.round(h.prob) + ' %' : '—'}</strong><span style="color:#64748b;"> · </span><span>${Number.isFinite(h.mm) ? h.mm.toFixed(1) + ' mm/h' : '—'}</span><span style="color:#64748b;"> · </span>💨 Wind <strong style="color:#2dd4bf;">${Number.isFinite(h.wind) ? h.wind.toFixed(1) + ' km/h' : '—'}</strong><span style="color:#64748b;">${gust3}</span></div>`
+          + `<div class="hud-row">🌨️ Schnee <strong style="color:#7dd3fc;">${snowMm}</strong><span style="color:#64748b;"> · </span>📏 Decke <strong style="color:#c4b5fd;">${deckeMm}</strong></div>`;
+      }
       const cross = (gid, lid) => {
         const gr = $(gid);
         if (!gr) return;
