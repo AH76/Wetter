@@ -705,6 +705,10 @@
       min-height: 34px;
       white-space: nowrap;
     }
+    #radarSlider { -webkit-appearance:none; appearance:none; height:6px; border-radius:3px; background:#1f2d3d; outline:none; cursor:pointer; }
+    #radarSlider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:#2563eb; border:2px solid #fff; cursor:pointer; }
+    #radarSlider::-moz-range-thumb { width:12px; height:12px; border-radius:50%; background:#2563eb; border:2px solid #fff; cursor:pointer; }
+    #radarSlider::-moz-range-track { height:6px; border-radius:3px; background:#1f2d3d; }
     .seas-pill.active {
       background: var(--accent);
       color: #fff;
@@ -1423,6 +1427,7 @@
           <button id="viewSeasonalBtn" class="tab-btn" type="button">🔭 Langfrist</button>
           <button id="viewHistoryBtn" class="tab-btn" type="button">📜 Messwerte</button>
           <button id="viewModelBtn" class="tab-btn" type="button">💻 Modelle</button>
+          <button id="viewRadarBtn" class="tab-btn" type="button">🌧️ Wetterradar</button>
         </div>
         <button id="refreshBtn" type="button">Aktualisieren</button>
         <button id="grossBtn" type="button" title="Große Schrift & Felder an/aus (App: automatisch an)">🔠 Groß</button>
@@ -1485,64 +1490,29 @@
           <div class="hud-row">🌨️ Schnee —</div>
         </div>
       </div>
-      <div class="chart-card h24sub" id="h24TempCard" style="margin-bottom:14px;">
+      <div class="chart-card h24sub" id="h24MetaCard" style="margin-bottom:14px;">
         <div class="chart-card-header">
-          <div class="chart-card-title">🌡️ Temperatur &amp; Taupunkt (°C)</div>
+          <div class="chart-card-title">🌤️ Meteogramm (24 h)</div>
           <div class="legend">
-            <span><i class="sw" style="background:#f59e0b;"></i> Temp °C</span>
-            <span><i class="sw" style="background:#34d399;"></i> Taupunkt °C</span>
+            <span><i class="sw" style="background:#ef4444;"></i> Temp °C</span>
+            <span><i class="sw-bar" style="background:#2563eb;"></i> Regen mm/h</span>
+            <span>💨 Pfeil = Windrichtung</span>
           </div>
         </div>
         <div class="chart-hud h24val">
           <div class="hud-row" id="h24TempRow">🌡️ —</div>
         </div>
-        <div class="svg-wrapper">
-          <svg id="h24TempSvg" viewBox="0 0 960 150" preserveAspectRatio="xMidYMid meet"></svg>
-        </div>
-      </div>
-      <div class="chart-card h24sub" id="h24RainCard" style="margin-bottom:14px;">
-        <div class="chart-card-header">
-          <div class="chart-card-title">🌧️ Niederschlag (mm/h &amp; Regen-%)</div>
-          <div class="legend">
-            <span><i class="sw-bar" style="background:#0284c7;"></i> mm/h</span>
-            <span><i class="sw" style="background:#38bdf8;"></i> Regen %</span>
-          </div>
-        </div>
         <div class="chart-hud h24val">
           <div class="hud-row" id="h24RainRow">🌧️ —</div>
         </div>
-        <div class="svg-wrapper">
-          <svg id="h24RainSvg" viewBox="0 0 960 116" preserveAspectRatio="xMidYMid meet"></svg>
-        </div>
-      </div>
-      <div class="chart-card h24sub" id="h24WindCard" style="margin-bottom:14px;">
-        <div class="chart-card-header">
-          <div class="chart-card-title">💨 Wind &amp; Böen (km/h)</div>
-          <div class="legend">
-            <span><i class="sw" style="background:#2dd4bf;"></i> Wind km/h</span>
-            <span><i class="sw" style="background:#99f6e4;"></i> Böen</span>
-          </div>
-        </div>
         <div class="chart-hud h24val">
           <div class="hud-row" id="h24WindRow">💨 —</div>
-        </div>
-        <div class="svg-wrapper">
-          <svg id="h24WindSvg" viewBox="0 0 960 116" preserveAspectRatio="xMidYMid meet"></svg>
-        </div>
-      </div>
-      <div class="chart-card h24sub" id="h24SnowCard" style="margin-bottom:14px;">
-        <div class="chart-card-header">
-          <div class="chart-card-title">❄️ Schneefall &amp; Schneedecke</div>
-          <div class="legend">
-            <span><i class="sw-bar" style="background:#7dd3fc;"></i> fallend cm/h</span>
-            <span><i class="sw" style="background:#c4b5fd;"></i> Decke cm</span>
-          </div>
         </div>
         <div class="chart-hud h24val">
           <div class="hud-row" id="h24SnowRow">❄️ —</div>
         </div>
         <div class="svg-wrapper">
-          <svg id="h24SnowSvg" viewBox="0 0 960 116" preserveAspectRatio="xMidYMid meet"></svg>
+          <svg id="h24MetaSvg" viewBox="0 0 960 258" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
         <div class="mobile-tip">👆 Finger auflegen &amp; wischen (oder Maus bewegen): zeigt alle Werte der jeweiligen Stunde.</div>
       </div>
@@ -2082,6 +2052,60 @@
           (Aufzeichnung seit 1940, für den jeweils gewählten Ort). Zum Gegenprüfen:
           <a href="https://www.wetterzentrale.de/" target="_blank" rel="noopener" style="color:#38bdf8;">Wetterzentrale Rückblick</a> ·
           <a href="https://www.dwd.de/" target="_blank" rel="noopener" style="color:#38bdf8;">DWD Klimadaten</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: WETTERRADAR (RainViewer: Regenradar + Satellit für Wolken/Nebel) -->
+    <div id="radarSection" style="display:none;">
+      <div class="chart-card" style="margin-bottom:10px;">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">🌧️ Wetterradar — Regen &amp; Wolken/Nebel live</div>
+            <div class="chart-card-sub" id="radarSub">Noch nicht geladen — Tab öffnen lädt das aktuellste Radar.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;">
+          <button type="button" class="seas-pill radar-layer-pill active" data-rlayer="radar">🌧️ Regenradar</button>
+          <button type="button" class="seas-pill radar-layer-pill" data-rlayer="sat">☁️ Wolken &amp; Nebel (Satellit)</button>
+          <button type="button" class="seas-pill" id="radarPlayBtn">▶ Abspielen</button>
+          <button type="button" class="seas-pill" id="radarZoomOut" title="Weiter rauszoomen">−</button>
+          <button type="button" class="seas-pill" id="radarZoomIn" title="Näher heranzoomen">＋</button>
+        </div>
+        <div id="radarMapWrap" style="position:relative; max-width:640px;">
+          <canvas id="radarCanvas" width="768" height="768" style="width:100%; height:auto; border-radius:10px; border:1px solid var(--border); display:block; background:#0b1220;"></canvas>
+          <div id="radarTime" style="position:absolute; left:10px; bottom:10px; background:rgba(2,6,16,0.78); border:1px solid #334155; border-radius:8px; padding:4px 10px; font-family:monospace; font-size:12px; font-weight:700; color:#fff;">—</div>
+        </div>
+        <input type="range" id="radarSlider" min="0" max="0" value="0" step="1" style="width:100%; max-width:640px; margin-top:8px; accent-color:#2563eb;" title="Animation vor/zurück schieben">
+        <div id="radarStatus" style="font-size:11px; color:var(--text-muted); margin-top:8px;">Noch nicht geladen — Tab öffnen lädt das aktuellste Radar (Regen alle 10 Min via DWD, Satellit ca. alle 30 Min).</div>
+      </div>
+      <div class="chart-card" style="margin-bottom:14px;">
+        <div class="chart-card-title" style="margin-bottom:6px;">🌍 Quelle des Wetterradars</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.6;">
+          Regenradar &amp; Satellitenbilder (Infrarot: Wolkenobergrenzen &amp; Nebel) via
+          <a href="https://www.rainviewer.com/" target="_blank" rel="noopener" style="color:#38bdf8;">RainViewer</a>
+          (<a href="https://www.rainviewer.com/api.html" target="_blank" rel="noopener" style="color:#38bdf8;">API</a>,
+          (Komposit u. a. aus DWD-Radardaten, frei nutzbar). Radar-Vorhersage bis ca. +2 h:
+          DWD-Layer „Niederschlagsradar" (Radar + Nowcast, 1 km, 5-min) via
+          <a href="https://maps.dwd.de/geoserver/" target="_blank" rel="noopener" style="color:#38bdf8;">DWD-Geoserver (WMS)</a>
+          (© DWD, offene Daten). Das Regenradar (DWD-Niederschlagsradar, RV-Produkt, 1 km —
+          liefert bis zu 5-Minuten-Schritten wie bei Kachelmannwetter, ebenfalls DWD-Verbunddaten,
+          hier als lizenzfreie Open Data direkt vom DWD) läuft bewusst im
+          <strong style="color:#e2e8f0;">10-Minuten-Takt</strong> (halb so viele Bilder, deutlich schnelleres Laden);
+          außerhalb der DWD-Abdeckung greift das RainViewer-Komposit (ca. alle 10 Minuten);
+          Satellitenbilder ca. alle 30 Minuten. Basiskarte: OpenStreetMap Deutschland
+          im Stil von openstreetmap.de (deutscher Kartenstil, Kacheln: tile.openstreetmap.de,
+          <a href="https://www.fossgis.de/" target="_blank" rel="noopener" style="color:#38bdf8;">FOSSGIS e.&nbsp;V.</a>
+          — © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:#38bdf8;">OpenStreetMap-Mitwirkende</a>,
+          ODbL, frei nutzbar mit Namensnennung; Ausfall-Fallback: Esri Dark Gray
+          (© <a href="https://www.esri.com/" target="_blank" rel="noopener" style="color:#38bdf8;">Esri</a>,
+          HERE, Garmin, OpenStreetMap-Mitwirkende u.&nbsp;a.));
+          Landkreisgrenzen via
+          <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener" style="color:#38bdf8;">Nominatim</a>
+          (© OpenStreetMap-Mitwirkende).
+          Zum Gegenprüfen:
+          <a href="https://www.dwd.de/DE/leistungen/radarbild/radarbild_node.html" target="_blank" rel="noopener" style="color:#38bdf8;">DWD Radarbild</a> ·
+          <a href="https://www.wetterzentrale.de/" target="_blank" rel="noopener" style="color:#38bdf8;">Wetterzentrale</a>
         </div>
       </div>
     </div>
@@ -3137,7 +3161,7 @@
       if (!pill) return;
       const w = obs.w;
       const emo = BS_COND_EMOJI[w.condition] || '🌡️';
-      pill.innerHTML = `<span>${emo} Gemessen: ${fmtSignedDe1(w.temperature)} °C</span> <span>·</span> <span>💦 Taupunkt: ${fmtSignedDe1(w.dew_point)} °C</span> <span>·</span> <span>☁️ Bedeckung: ${Number.isFinite(w.cloud_cover) ? Math.round(w.cloud_cover) + ' %' : '—'}</span> <span>·</span> <span>🌧️ letzte Std.: ${Number.isFinite(w.precipitation_60) ? fmtDe1(w.precipitation_60) + ' mm' : '—'}</span> <span>·</span> <span>💨 Wind: ${Number.isFinite(w.wind_speed_10) ? fmtDe1(w.wind_speed_10) + ' km/h' : '—'}</span> <span>·</span> <span title="Echte Messung der DWD-Station (kein Modellwert)">🕐 ${obsTimeDe(w.timestamp)} Uhr (${st.name})</span>`;
+      pill.innerHTML = `<span>${emo} Gemessen: ${fmtSignedDe1(w.temperature)} °C</span> <span>·</span> <span>💦 Taupunkt: ${fmtSignedDe1(w.dew_point)} °C</span> <span>·</span> <span>☁️ Bedeckung: ${Number.isFinite(w.cloud_cover) ? Math.round(w.cloud_cover) + ' %' : '—'}</span> <span>·</span> <span>🌧️ letzte Std.: ${Number.isFinite(w.precipitation_60) ? fmtDe1(w.precipitation_60) + ' mm' : '—'}</span> <span>·</span> <span>💨 Wind: ${Number.isFinite(w.wind_speed_10) ? fmtDe1(w.wind_speed_10) + ' km/h' : '—'}${Number.isFinite(w.wind_gust_speed_10) ? ' · Böen ' + fmtDe1(w.wind_gust_speed_10) + ' km/h' : ''}</span> <span>·</span> <span title="Echte Messung der DWD-Station (kein Modellwert)">🕐 ${obsTimeDe(w.timestamp)} Uhr (${st.name})</span>`;
     }
     async function fetchDwdObservation(st) {
       if (!st) return;
@@ -3250,8 +3274,10 @@
       renderModelList();
       seasonalCache.key = null;
       historyCache.key = null;
+      radarKey = null;
       if (currentView === 'seasonal') loadSeasonal();
       if (currentView === 'history') loadHistory();
+      if (currentView === 'radar') loadRadar();
       hideDropdown();
       $('#locSearchInput').value = '';
       $('#locSearchClear').style.display = 'none';
@@ -3564,15 +3590,18 @@
     if ($('#viewSeasonalBtn')) $('#viewSeasonalBtn').addEventListener('click', () => switchView('seasonal'));
     if ($('#viewHistoryBtn')) $('#viewHistoryBtn').addEventListener('click', () => switchView('history'));
     if ($('#viewModelBtn')) $('#viewModelBtn').addEventListener('click', () => switchView('models'));
+    if ($('#viewRadarBtn')) $('#viewRadarBtn').addEventListener('click', () => switchView('radar'));
 
     function switchView(view) {
       currentView = view;
+      if (view !== 'radar') radarStop();
       if ($('#viewForecastBtn')) $('#viewForecastBtn').classList.toggle('active', view === 'forecast');
       if ($('#viewTableBtn')) $('#viewTableBtn').classList.toggle('active', view === 'table');
       if ($('#viewChartBtn')) $('#viewChartBtn').classList.toggle('active', view === 'chart');
       if ($('#viewSeasonalBtn')) $('#viewSeasonalBtn').classList.toggle('active', view === 'seasonal');
       if ($('#viewHistoryBtn')) $('#viewHistoryBtn').classList.toggle('active', view === 'history');
       if ($('#viewModelBtn')) $('#viewModelBtn').classList.toggle('active', view === 'models');
+      if ($('#viewRadarBtn')) $('#viewRadarBtn').classList.toggle('active', view === 'radar');
 
       if ($('#forecastSection')) $('#forecastSection').style.display = view === 'forecast' ? 'block' : 'none';
       if ($('#tableSection')) $('#tableSection').style.display = view === 'table' ? 'block' : 'none';
@@ -3580,12 +3609,643 @@
       if ($('#seasonalSection')) $('#seasonalSection').style.display = view === 'seasonal' ? 'block' : 'none';
       if ($('#historySection')) $('#historySection').style.display = view === 'history' ? 'block' : 'none';
       if ($('#modelCardsSection')) $('#modelCardsSection').style.display = view === 'models' ? 'block' : 'none';
+      if ($('#radarSection')) $('#radarSection').style.display = view === 'radar' ? 'block' : 'none';
 
       if (view === 'chart') renderCharts();
       if (view === 'seasonal') (seasonalModel === 'cmip6' ? loadClimate() : loadSeasonal());
       if (view === 'history') loadHistory();
       if (view === 'models') { renderModelCards(); renderVerif(); }
+      if (view === 'radar') loadRadar({ snap: true });
     }
+
+    // --- WETTERRADAR (RainViewer: Regenradar + Satellit/Infrarot für Wolken & Nebel) ---
+    // Kürzester verfügbarer Takt: Regenradar-Bilder alle ~10 Min, Satellit ca.
+    // alle 30 Min. Basiskarte im openstreetmap.de-Look (deutscher Stil,
+    // Kacheln: tile.openstreetmap.de / FOSSGIS, frei mit Namensnennung;
+    // Esri-Fallback) + RainViewer-Overlay, eigene kleine Kachel-Engine
+    // (kein Framework), Vergangenheit + DWD-Vorhersage bis ca. +2 h. Der
+    // gewählte Ort bleibt in der Kartenmitte (roter Punkt); bei Ortswechsel
+    // wird neu zentriert (radarKey-Reset in selectLocation).
+    const RADAR_TILE = 256, RADAR_GRID = 3;
+    let radarMeta = null, radarMetaAt = 0;
+    let radarKey = null;              // Standort+Ebenen-Schlüssel des Bild-Caches
+    let radarLocKey = null;           // reiner Standort-Schlüssel (Zoom-Passform)
+    let radarLayer = 'radar';         // 'radar' | 'sat'
+    let radarFrames = [];             // {time, path, kind} der aktiven Ebene
+    let radarImgCache = {};           // url -> Image (geladen)
+    let radarIdx = 0, radarTimer = null, radarZoom = 7, radarBusy = false;
+    let radarLoadToken = 0;      // jede neue loadRadar-Intent (Tab, Pille, Zoom, Ort) entwertet eine laufende Stage-2
+
+    function radarStop() {
+      if (radarTimer) { clearInterval(radarTimer); radarTimer = null; }
+      const b = $('#radarPlayBtn');
+      if (b) b.textContent = '▶ Abspielen';
+    }
+    function radarTileXY(lat, lon, z) {
+      const n = Math.pow(2, z);
+      const x = n * (lon + 180) / 360;
+      const lr = lat * Math.PI / 180;
+      const y = n * (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2;
+      return { x, y };
+    }
+    // Höchster Zoom (5–9), bei dem der 100-km-Radius noch ganz im 768-px-Bild
+    // liegt (Kreisradius ≤ 360 px, kleiner Rand). Für Altenburg (51° N) ist das
+    // Zoom 8 (100 km ≈ 260 px); Zoom 9 (≈ 520 px) würde den Kreis beschneiden.
+    function radarZoomFor100km() {
+      const lat = CURRENT_LOCATION.latitude;
+      for (let z = 9; z >= 5; z--) {
+        const tz = Math.min(z, 7), sc = z <= 7 ? 1 : Math.pow(2, z - 7);
+        const mPerPx = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, tz) / sc;
+        if (100000 / mPerPx <= 360) return z;
+      }
+      return 5;
+    }
+    function radarLoadImg(url) {
+      const hit = radarImgCache[url];
+      if (hit) return hit.complete && hit.naturalWidth ? Promise.resolve(hit) : hit.promise;
+      let resolveFn;
+      const promise = new Promise(res => { resolveFn = res; });
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolveFn(img);
+      img.onerror = () => resolveFn(null);
+      img.src = url;
+      radarImgCache[url] = img;
+      img.promise = promise;
+      return promise;
+    }
+    function radarOverlayUrl(frame, z, x, y) {
+      // Radar: Farbschema 2 (Universal) + Glättung/Schnee 1_1; Satellit: 0/0_0.
+      // Das Sat-Format ist nicht öffentlich dokumentiert — vor dem Umschalten
+      // wird eine Kachel probegeladen, bei Fehlschlag gibt es ehrlichen Fallback.
+      const tail = frame.kind === 'sat' ? '/0/0_0.png' : '/2/1_1.png';
+      return radarMeta.host + frame.path + '/256/' + z + '/' + x + '/' + y + tail;
+    }
+    function radarProbe(url) {
+      return new Promise(res => {
+        let settled = false;
+        const done = ok => { if (!settled) { settled = true; res(ok); } };
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => done(img.naturalWidth > 0);
+        img.onerror = () => done(false);
+        img.src = url;
+        setTimeout(() => done(false), 12000);
+      });
+    }
+    let radarNotice = '';
+    let radarHasFuture = false, radarFutureLead = 0, radarDwd5 = false;
+    const radarDwdCache = {};
+    // DWD-Abdeckung (RV-Produkt-BBOX): nur hier gibt es den 5-Min-Takt.
+    function radarDwdCovered(lat, lon) { return lat >= 45.7 && lat <= 56.2 && lon >= 1.5 && lon <= 18.7; }
+    function dwdRange(a, b) { const o = []; for (let m = a; m <= b; m += 10) o.push(m); return o; }
+    function radarFetchTimeout(url, ms) {
+      try {
+        if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return fetch(url, { signal: AbortSignal.timeout(ms) });
+      } catch (e) {}
+      return fetch(url);
+    }
+    // DWD-Niederschlagsradar (RV-Produkt: Radar + Nowcast bis ca. +2 h, 1 km,
+    // 5-min) via DWD-Geoserver (WMS, CORS-fähig). Ein Bild je Frame über das
+    // gesamte Kachelraster (BBOX in EPSG:3857 aus den Rasterkacheln).
+    function radarGridBbox3857(tz) {
+      const tiles = radarTilesFor(tz);
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      for (const t of tiles) {
+        if (t.x < x0) x0 = t.x; if (t.x > x1) x1 = t.x;
+        if (t.y < y0) y0 = t.y; if (t.y > y1) y1 = t.y;
+      }
+      const n = Math.pow(2, tz), W = 40075016.68557849;
+      return [x0 / n * W - W / 2, W / 2 - (y1 + 1) / n * W, (x1 + 1) / n * W - W / 2, W / 2 - y0 / n * W].join(',');
+    }
+    function radarDwdUrl(iso, w, h, bbox) {
+      return 'https://maps.dwd.de/geoserver/dwd/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=Niederschlagsradar&STYLES=&CRS=EPSG:3857' +
+        '&BBOX=' + bbox + '&WIDTH=' + w + '&HEIGHT=' + h + '&FORMAT=image/png&TRANSPARENT=TRUE&TIME=' + encodeURIComponent(iso);
+    }
+    async function radarDwdEntry(frame, tz, bbox) {
+      bbox = bbox || radarGridBbox3857(tz);
+      // 640 px reichen: DWD-Auflösung ≈ 1 km (≈ 2,7 Tile-px bei Zoom 8), 1024 wäre Oversampling.
+      const url = radarDwdUrl(frame.iso, 640, 640, bbox);
+      if (!radarDwdCache[url]) {
+        if (Object.keys(radarDwdCache).length > 600) { for (const k in radarDwdCache) delete radarDwdCache[k]; }
+        radarDwdCache[url] = (async () => {
+          try {
+            const r = await radarFetchTimeout(url, 15000);
+            const ct = (r.headers.get('content-type') || '');
+            // Fehler liefert der Server als XML (kein Bild) → Frame entfällt.
+            if (!r.ok || ct.indexOf('image/') !== 0) return null;
+            const blob = await r.blob();
+            if (!blob.size) return null;
+            const oUrl = URL.createObjectURL(blob);
+            const img = await radarLoadImg(oUrl);
+            if (!img) { try { URL.revokeObjectURL(oUrl); } catch (e) {} return null; }
+            return { img, size: blob.size };
+          } catch (e) { return null; }
+        })();
+      }
+      return radarDwdCache[url];
+    }
+    async function radarDwdImg(frame, tz) {
+      const e = await radarDwdEntry(frame, tz);
+      return e && e.img;
+    }
+    // Radar-Cache vorwärmen: nach der Vorhersage (idle) die Timeline im Hintergrund
+    // laden, damit der Tab beim Öffnen sofort das aktuelle Bild zeigt (Warmstart
+    // < 1 s statt ~1 Min Kaltstart). Respektiert Datensparmodus + Hintergrund-Tabs.
+    let radarWarmedKey = null, radarWarmTimer = null;
+    function scheduleRadarWarmup() {
+      try {
+        if (typeof radarDwdCovered !== 'function' || radarLayer !== 'radar') return;
+        if (!CURRENT_LOCATION || !radarDwdCovered(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude)) return;
+        const key = CURRENT_LOCATION.latitude.toFixed(2) + ',' + CURRENT_LOCATION.longitude.toFixed(2) + '|' + radarLayer;
+        if (radarWarmedKey === key || radarFrames.length) return;
+        radarWarmedKey = key;
+        if (navigator.connection && navigator.connection.saveData) return;
+        if (radarWarmTimer) clearTimeout(radarWarmTimer);
+        radarWarmTimer = setTimeout(() => {
+          radarWarmTimer = null;
+          try {
+            if (radarFrames.length || radarBusy || document.hidden) return;
+            const cur = CURRENT_LOCATION.latitude.toFixed(2) + ',' + CURRENT_LOCATION.longitude.toFixed(2) + '|' + radarLayer;
+            if (cur !== key) return;
+            loadRadar();
+          } catch (e) {}
+        }, 8000);
+      } catch (e) {}
+    }
+    async function loadRadarDwdChunks(jobs, tz, token) {
+      // 8er-Portionen (der Server drosselt bei Vollparallel); false bei Ablösung.
+      for (let s = 0; s < jobs.length; s += 8) {
+        if (token !== radarLoadToken) return false;
+        const chunk = jobs.slice(s, s + 8);
+        await Promise.all(chunk.map(async f => { f.entry = await radarDwdEntry({ iso: f.iso }, tz); }));
+      }
+      return token === radarLoadToken;
+    }
+    function newestPastFrame() {
+      let f = null;
+      for (const x of radarFrames) if (x.past) f = x;
+      return f || radarFrames[radarFrames.length - 1];
+    }
+    function mergeRadarDwdJobs(pastJobs, futJobs) {
+      // Baut radarFrames aus allen fertigen Jobs (zeitlich sortiert, Dubletten
+      // raus — neuester bleibt) und erhält die aktuelle Zeitposition.
+      const curT = (radarFrames[radarIdx] && radarFrames[radarIdx].time) || 0;
+      const ok = pastJobs.concat(futJobs).filter(f => f.entry && f.entry.img);
+      ok.sort((a, b) => a.time - b.time);
+      const ded = [];
+      for (let i = 0; i < ok.length; i++) {
+        const nxt = ok[i + 1];
+        if (nxt && nxt.entry.size === ok[i].entry.size) continue;
+        ded.push(ok[i]);
+      }
+      if (!ded.length) return;
+      radarFrames = ded;
+      let ix = ded.findIndex(f => f.time === curT);
+      if (ix < 0) { ix = 0; for (let i = 0; i < ded.length; i++) if (ded[i].time <= curT) ix = i; }
+      radarIdx = ix;
+    }
+    function radarSubDwd(mode) {
+      const locName = CURRENT_LOCATION.name || 'den Ort';
+      const countyTag = (radarCounty && radarCounty.name && radarCounty.name.toLowerCase() !== locName.toLowerCase()) ? ' · ' + radarCounty.name : '';
+      const sub = $('#radarSub');
+      if (!sub) return;
+      if (mode === 'lädt') {
+        sub.textContent = '🌧️ Regenradar für ' + locName + countyTag + ' lädt … (aktuellstes Bild zuerst)';
+        return;
+      }
+      let past = 0, fut = 0, lead = 0;
+      for (const f of radarFrames) { if (f.past) past++; else { fut++; lead = Math.max(5, Math.round((f.time - Date.now() / 1000) / 60)); } }
+      const np = newestPastFrame();
+      sub.textContent = '🌧️ Regenradar für ' + locName + countyTag + ' — Stand: ' + radarFmtTime(np.time) +
+        ' · ' + past + ' Bilder' + (fut ? ' + ' + fut + ' Vorhersage (bis +' + lead + ' Min)' : '') + ' · DWD, alle 10 Min neu';
+    }
+    async function loadRadarDwdFast(lat, lon, key, token) {
+      // Progressives Laden: Stufe 1 rendert das neueste Bild sofort (kleine
+      // 640-px-Frames, Landkreis parallel), Stufe 2 füllt Vergangenheit und
+      // Zukunft im Hintergrund auf. Rückgabe: true = fertig, false = DWD leer
+      // (klassischer Fallback), 'retry' = abgelöst (Aufrufer startet neu).
+      if (radarLocKey !== key) { radarLocKey = key; radarZoom = radarZoomFor100km(); }
+      const locKey = key + '|' + radarLayer;
+      if (radarKey !== locKey) radarKey = locKey;
+      const tz = Math.min(radarZoom, 7);
+      // 10-Min-Raster (bewusst: halb so viele Frames wie 5-min → deutlich schnelleres Laden).
+      const base = Math.floor(Date.now() / 600000) * 600000;
+      const mk = m => ({ time: Math.round((base + m * 60000) / 1000), path: null, kind: 'dwd', iso: new Date(base + m * 60000).toISOString(), past: m < 0, entry: null });
+      const pastJobs = dwdRange(-120, -10).map(mk);
+      const futJobs = dwdRange(10, 120).map(mk);
+      const newest = pastJobs[pastJobs.length - 1];
+      const countyP = loadRadarCounty(lat, lon);
+      const first = await radarDwdEntry({ iso: newest.iso }, tz);
+      await countyP;
+      if (token !== radarLoadToken) return 'retry';
+      if (!first || !first.img) return false;
+      newest.entry = first;
+      radarDwd5 = true; radarHasFuture = false; radarFutureLead = 0;
+      radarFrames = [newest];
+      radarIdx = 0;
+      const sl0 = $('#radarSlider');
+      if (sl0) { sl0.max = 0; sl0.value = 0; sl0.disabled = true; }
+      const pb = $('#radarPlayBtn');
+      if (pb) pb.disabled = true;
+      radarSubDwd('lädt');
+      await renderRadar();
+      // Stufe 2: erst Vergangenheit (danach ist der Slider schon nutzbar),
+      // dann Zukunft; zum Schluss 1× Retry für Fehlende.
+      const total = pastJobs.length + futJobs.length;
+      const prog = done => { const st = $('#radarStatus'); if (st) st.textContent = '⏳ Weitere Bilder laden … (' + done + ' von ' + total + ') — die aktuelle Ansicht ist schon da'; };
+      prog(1);
+      if (!await loadRadarDwdChunks(pastJobs.slice(0, -1), tz, token)) return 'retry';
+      mergeRadarDwdJobs(pastJobs, futJobs);
+      const sl1 = $('#radarSlider');
+      if (sl1) { sl1.max = Math.max(0, radarFrames.length - 1); sl1.value = radarIdx; sl1.disabled = false; }
+      await renderRadar();
+      prog(radarFrames.length);
+      if (!await loadRadarDwdChunks(futJobs, tz, token)) return 'retry';
+      const bbox = radarGridBbox3857(tz);
+      const missing = pastJobs.concat(futJobs).filter(f => !f.entry || !f.entry.img);
+      if (missing.length) {
+        await new Promise(r => setTimeout(r, 1200));
+        if (token !== radarLoadToken) return 'retry';
+        for (const f of missing) delete radarDwdCache[radarDwdUrl(f.iso, 640, 640, bbox)];
+        if (!await loadRadarDwdChunks(missing, tz, token)) return 'retry';
+      }
+      if (token !== radarLoadToken) return 'retry';
+      mergeRadarDwdJobs(pastJobs, futJobs);
+      const futOk = futJobs.filter(f => f.entry && f.entry.img);
+      radarHasFuture = futOk.length > 0;
+      if (radarHasFuture) radarFutureLead = Math.max(5, Math.round((futOk[futOk.length - 1].time - Date.now() / 1000) / 60));
+      const sl2 = $('#radarSlider');
+      if (sl2) { sl2.max = Math.max(0, radarFrames.length - 1); sl2.value = radarIdx; sl2.disabled = false; }
+      if (pb) pb.disabled = false;
+      radarSubDwd('fertig');
+      await renderRadar();
+      return true;
+    }
+    async function loadRadarFutureDwd() {
+      // +10 bis +120 Min in 10-Min-Schritten; nur lieferbare Frames behalten.
+      const out = [];
+      const base = Math.floor(Date.now() / 600000) * 600000;
+      const tz = Math.min(radarZoom, 7);
+      const jobs = [];
+      for (let m = 10; m <= 120; m += 10) {
+        const iso = new Date(base + m * 60000).toISOString();
+        jobs.push({ time: Math.round((base + m * 60000) / 1000), path: null, kind: 'dwd', iso });
+      }
+      const results = await Promise.all(jobs.map(async f => ({ f, img: await radarDwdImg(f, tz) })));
+      for (const { f, img } of results) if (img) out.push(f);
+      return out;
+    }
+    function radarLayerFrames(kind) {
+      if (!radarMeta) return [];
+      if (kind === 'sat') return (radarMeta.satellite && radarMeta.satellite.infrared || []).map(f => ({ time: f.time, path: f.path, kind: 'sat' }));
+      const r = radarMeta.radar || {};
+      return (r.past || []).concat(r.nowcast || []).map(f => ({ time: f.time, path: f.path, kind: 'radar' }));
+    }
+    function radarFmtTime(t) {
+      const d = new Date(t * 1000);
+      const hhmm = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      const diffMin = Math.round((Date.now() / 1000 - t) / 60);
+      if (diffMin < -1) return hhmm + ' Uhr (Prognose +' + Math.round(-diffMin) + ' Min)';
+      if (diffMin <= 1) return hhmm + ' Uhr (gerade jetzt)';
+      if (diffMin < 60) return hhmm + ' Uhr (vor ' + diffMin + ' Min)';
+      return hhmm + ' Uhr (vor ' + Math.floor(diffMin / 60) + ' Std ' + (diffMin % 60) + ' Min)';
+    }
+    async function loadRadar(opts) {
+      radarLoadToken++;
+      if (radarBusy) return;
+      radarBusy = true;
+      try {
+        const lat = CURRENT_LOCATION.latitude, lon = CURRENT_LOCATION.longitude;
+        const key = lat.toFixed(2) + ',' + lon.toFixed(2);
+        // Meta nur alle 5 Min neu holen (766 Byte) — sonst Bild-Cache weiter nutzen.
+        if (!radarMeta || Date.now() - radarMetaAt > 5 * 60 * 1000) {
+          const r = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          radarMeta = await r.json();
+          radarMetaAt = Date.now();
+          radarImgCache = {};
+          radarKey = null;
+        }
+        let frames = radarLayerFrames(radarLayer);
+        if (!frames.length && radarLayer === 'sat') {
+          // Kein Satellitenbild verfügbar → auf Regenradar zurückfallen.
+          radarLayer = 'radar';
+          document.querySelectorAll('.radar-layer-pill').forEach(p => p.classList.toggle('active', p.dataset.rlayer === 'radar'));
+          frames = radarLayerFrames('radar');
+          const sp = document.querySelector('.radar-layer-pill[data-rlayer="sat"]');
+          if (sp) { sp.style.opacity = '0.4'; sp.title = 'Satellitenbilder derzeit nicht verfügbar'; }
+        }
+        if (!frames.length) throw new Error('leer');
+        radarNotice = '';
+        if (radarLayer === 'sat' && frames.length) {
+          // Format-Probe mit echter Kachel — bei Fehlschlag ehrlich zurückfallen.
+          const cc = radarTileXY(lat, lon, 7);
+          const probeOk = await radarProbe(radarOverlayUrl(frames[frames.length - 1], 7, Math.floor(cc.x), Math.floor(cc.y)));
+          if (!probeOk) {
+            radarLayer = 'radar';
+            document.querySelectorAll('.radar-layer-pill').forEach(p => p.classList.toggle('active', p.dataset.rlayer === 'radar'));
+            frames = radarLayerFrames('radar');
+            radarNotice = 'Satellitenbild derzeit nicht darstellbar';
+          }
+        }
+        // DWD im 5-Min-Takt (lizenzfreie Open Data, selbe Quelle wie Kachelmann):
+        // in DE-Abdeckung Vergangenheit + Zukunft direkt vom DWD (RV-Produkt),
+        // sonst RainViewer-Vergangenheit + DWD-Zukunft im 10-Min-Takt.
+        const rvPast = frames.length;
+        let pastLen = rvPast, futCount = 0;
+        radarHasFuture = false; radarFutureLead = 0; radarDwd5 = false;
+        if (radarLayer === 'radar' && radarDwdCovered(lat, lon)) {
+          try {
+            // Progressiv: neuestes Bild sofort, Rest im Hintergrund (lädt ~5× schneller zur ersten Ansicht).
+            const fr = await loadRadarDwdFast(lat, lon, key, radarLoadToken);
+            if (fr === 'retry') { radarBusy = false; return loadRadar({ snap: true }); }
+            if (fr) { radarBusy = false; return; }
+            // fr === false → DWD liefert nichts → klassischer Fallback unten (radarKey zurücksetzen).
+            radarKey = null;
+          } catch (e) {}
+        }
+        if (!radarDwd5 && radarLayer === 'radar') {
+          try {
+            const fut = await loadRadarFutureDwd();
+            if (fut.length) {
+              frames = frames.concat(fut); futCount = fut.length;
+              radarHasFuture = true;
+              radarFutureLead = Math.max(5, Math.round((fut[fut.length - 1].time - Date.now() / 1000) / 60));
+            }
+          } catch (e) {}
+        }
+        radarFrames = frames;
+        // Slider-Start = aktuelle Zeit (neueste Messung): bei neuem Ort /
+        // neuer Ebene, bei frischen Daten (Meta-Refresh setzt radarKey zurück)
+        // sowie bei jedem Tab-Öffnen (snap) — danach bleibt die Nutzer-Wahl.
+        if (radarKey !== key + '|' + radarLayer) { radarKey = key + '|' + radarLayer; radarIdx = pastLen - 1; }
+        if (opts && opts.snap) radarIdx = pastLen - 1;
+        // Zoom-Passform: höchster Zoom, bei dem der 100-km-Kreis noch ganz im
+        // Bild liegt (Desktop wie Handy — der Canvas wird per CSS nur skaliert).
+        // Nur bei Ortswechsel neu setzen, danach bleibt der manuelle Zoom.
+        if (radarLocKey !== key) { radarLocKey = key; radarZoom = radarZoomFor100km(); }
+        if (radarIdx >= frames.length) radarIdx = frames.length - 1;
+        const sl0 = $('#radarSlider');
+        if (sl0) { sl0.max = Math.max(0, frames.length - 1); sl0.value = radarIdx; sl0.disabled = false; }
+        const rpb = $('#radarPlayBtn');
+        if (rpb) rpb.disabled = false;
+        const newest = frames[Math.min(pastLen, frames.length) - 1];
+        await loadRadarCounty(lat, lon);
+        const locName = CURRENT_LOCATION.name || 'den Ort';
+        const countyTag = (radarCounty && radarCounty.name && radarCounty.name.toLowerCase() !== locName.toLowerCase()) ? ' · ' + radarCounty.name : '';
+        const sub = $('#radarSub');
+        if (sub) sub.textContent = (radarLayer === 'sat' ? '☁️ Satellit (Infrarot: Wolken & Nebel)' : '🌧️ Regenradar') +
+          ' für ' + locName + countyTag + ' — Stand: ' + radarFmtTime(newest.time) +
+          ' · ' + pastLen + ' Bilder' + (futCount ? ' + ' + futCount + ' Vorhersage (bis +' + radarFutureLead + ' Min)' : '') + (radarLayer === 'radar' ? (radarDwd5 ? ' · DWD, alle 5 Min neu' : ' · alle ~10 Min neu') : ' · ca. alle 30 Min neu');
+        await renderRadar();
+        // Restliche Ebenen-Bilder im Hintergrund vorladen (flüssige Animation).
+        frames.forEach(f => { if (f !== frames[radarIdx]) radarPreloadFrame(f); });
+      } catch (e) {
+        const st = $('#radarStatus');
+        if (st) st.textContent = '⚠️ Radar konnte nicht geladen werden (Netzwerk/API). Bitte später erneut versuchen.';
+      }
+      radarBusy = false;
+    }
+    function radarTilesFor(z) {
+      const c = radarTileXY(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude, z);
+      // 4×4-Raster, Ort exakt in der Canvas-Mitte (384,384): Gitterstart so wählen,
+      // dass G ∈ [−256, 0] liegt — dann deckt das 1024-px-Raster den 768-px-Canvas
+      // immer lückenlos ab (3×3 wäre bei Verschiebung an einer Seite offen).
+      const N = 4;
+      const fx = Math.floor(c.x), fy = Math.floor(c.y);
+      const frx = c.x - fx, fry = c.y - fy;
+      const sx = frx >= 0.5 ? fx - 1 : fx - 2;
+      const sy = fry >= 0.5 ? fy - 1 : fy - 2;
+      const offX = Math.round(384 - (c.x - sx) * RADAR_TILE);
+      const offY = Math.round(384 - (c.y - sy) * RADAR_TILE);
+      const list = [];
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++)
+        list.push({ x: sx + i, y: sy + j, dx: offX + i * RADAR_TILE, dy: offY + j * RADAR_TILE });
+      return list;
+    }
+    // Landkreis-Grenze für den gewählten Ort (Nominatim Reverse, County-Ebene
+    // mit Polygon, je Standort einmal geladen/gecacht, 1 Anfrage pro Wechsel).
+    let radarCounty = null; // {key, name, polys:[[[lon,lat]...]]}
+    async function loadRadarCounty(lat, lon) {
+      const key = lat.toFixed(2) + ',' + lon.toFixed(2);
+      if (radarCounty && radarCounty.key === key) return radarCounty;
+      radarCounty = null;
+      try {
+        const r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat.toFixed(5) +
+          '&lon=' + lon.toFixed(5) + '&zoom=8&format=jsonv2&polygon_geojson=1&accept-language=de');
+        if (!r.ok) return null;
+        const j = await r.json();
+        const gj = j.geojson;
+        if (!gj) return null;
+        const addr = j.address || {};
+        const name = addr.county || addr.state_district || (j.display_name || '').split(',')[0] || '';
+        let polys = [];
+        if (gj.type === 'Polygon') polys = [gj.coordinates[0]];
+        else if (gj.type === 'MultiPolygon') polys = gj.coordinates.map(p => p[0]);
+        // Punkte ausdünnen (max ~600 je Ring) — reicht fürs Display, bleibt flott.
+        polys = polys.map(ring => {
+          if (!ring || ring.length <= 600) return ring;
+          const step = Math.ceil(ring.length / 600);
+          return ring.filter((_, i) => i % step === 0 || i === ring.length - 1);
+        }).filter(r => r && r.length > 2);
+        if (polys.length) radarCounty = { key, name, polys };
+      } catch (e) { radarCounty = null; }
+      return radarCounty;
+    }
+    function radarProject(lon, lat, tz, S, cx, cy) {
+      const n = Math.pow(2, tz);
+      const tx = n * (lon + 180) / 360;
+      const lr = lat * Math.PI / 180;
+      const ty = n * (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2;
+      // Gleiche Abbildung wie die Kacheln: Ort (cx,cy) landet auf 384,384.
+      return {
+        x: (tx - cx + RADAR_GRID / 2) * RADAR_TILE * S - 384 * (S - 1),
+        y: (ty - cy + RADAR_GRID / 2) * RADAR_TILE * S - 384 * (S - 1)
+      };
+    }
+    async function radarPreloadFrame(frame) {
+      const tz = Math.min(radarZoom, 7);
+      if (frame.kind === 'dwd') { await radarDwdImg(frame, tz); return; }
+      const tiles = radarTilesFor(tz);
+      await Promise.all(tiles.map(t => radarLoadImg(radarOverlayUrl(frame, tz, t.x, t.y))));
+    }
+    async function renderRadar() {
+      const cv = $('#radarCanvas');
+      if (!cv || !radarFrames.length) return;
+      const ctx = cv.getContext('2d');
+      const frame = radarFrames[radarIdx];
+      // RainViewer liefert max. Zoom 7 — darüber wird hochskaliert (Ausschnitt).
+      const tz = Math.min(radarZoom, 7), sc = radarZoom <= 7 ? 1 : Math.pow(2, radarZoom - 7);
+      const tSize = RADAR_TILE * sc, tOff = 384 * (sc - 1);
+      const tiles = radarTilesFor(tz);
+      const st = $('#radarStatus');
+      if (st) st.textContent = '⏳ Radar wird geladen …';
+      // Basiskarte zuerst: OpenStreetMap Deutschland (deutscher Stil wie auf
+      // openstreetmap.de, Kacheln tile.openstreetmap.de / FOSSGIS — frei nutzbar
+      // mit Namensnennung, CORS-ok). URL-Reihenfolge z/x/y. Fällt eine Kachel
+      // aus, greift pro Kachel der Esri-Dark-Gray-Fallback (z/y/x).
+      const baseImgs = await Promise.all(tiles.map(async t => {
+        const osm = await radarLoadImg('https://tile.openstreetmap.de/' + tz + '/' + t.x + '/' + t.y + '.png');
+        if (osm) return osm;
+        return radarLoadImg('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/' + tz + '/' + t.y + '/' + t.x);
+      }));
+      ctx.fillStyle = '#0b1220';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      tiles.forEach((t, k) => { const im = baseImgs[k]; if (im) { try { ctx.drawImage(im, t.dx * sc - tOff, t.dy * sc - tOff, tSize, tSize); } catch (e) {} } });
+      // Overlay-Ebene (Regen bzw. Satellit; DWD-Vorhersage als Einzelbild übers Raster).
+      if (frame.kind === 'dwd') {
+        const dImg = await radarDwdImg(frame, tz);
+        if (dImg) {
+          try {
+            let gx1 = tiles[0].dx, gy1 = tiles[0].dy;
+            for (const t of tiles) { if (t.dx > gx1) gx1 = t.dx; if (t.dy > gy1) gy1 = t.dy; }
+            ctx.drawImage(dImg, tiles[0].dx * sc - tOff, tiles[0].dy * sc - tOff, (gx1 - tiles[0].dx + RADAR_TILE) * sc, (gy1 - tiles[0].dy + RADAR_TILE) * sc);
+          } catch (e) {}
+        }
+      } else {
+        const ovImgs = await Promise.all(tiles.map(t => radarLoadImg(radarOverlayUrl(frame, tz, t.x, t.y))));
+        tiles.forEach((t, k) => { const im = ovImgs[k]; if (im) { try { ctx.drawImage(im, t.dx * sc - tOff, t.dy * sc - tOff, tSize, tSize); } catch (e) {} } });
+      }
+      // Landkreis-Grenze (gelb mit dunkler Kontur, leicht gefüllt) + Name.
+      if (radarCounty && radarCounty.polys.length) {
+        try {
+          const cc0 = radarTileXY(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude, tz);
+          const cfx = cc0.x, cfy = cc0.y;
+          ctx.save();
+          ctx.beginPath();
+          let bb = null;
+          for (const ring of radarCounty.polys) {
+            ring.forEach((pt, i) => {
+              const p = radarProject(pt[0], pt[1], tz, sc, cfx, cfy);
+              if (!bb) bb = { x0: p.x, x1: p.x, y0: p.y, y1: p.y };
+              else { if (p.x < bb.x0) bb.x0 = p.x; if (p.x > bb.x1) bb.x1 = p.x; if (p.y < bb.y0) bb.y0 = p.y; if (p.y > bb.y1) bb.y1 = p.y; }
+              if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
+            });
+            ctx.closePath();
+          }
+          ctx.fillStyle = 'rgba(250,204,21,0.06)';
+          ctx.fill();
+          ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+          ctx.strokeStyle = 'rgba(2,6,23,0.9)'; ctx.lineWidth = 5;
+          ctx.stroke();
+          ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.5;
+          ctx.stroke();
+          if (bb && radarCounty.name) {
+            const nx = Math.min(Math.max((bb.x0 + bb.x1) / 2, 60), cv.width - 60);
+            let ny = Math.min(Math.max(bb.y0 - 10, 20), cv.height - 12);
+            // Nicht mit dem Orts-Label (Mitte −16) kollidieren: darüber stapeln bzw. darunter.
+            const cyy = cv.height / 2;
+            if (Math.abs(ny - (cyy - 16)) < 30) ny = cyy - 48;
+            if (ny < 14) ny = cyy + 34;
+            if (bb.x1 >= 0 && bb.x0 <= cv.width && bb.y1 >= 0 && bb.y0 <= cv.height) {
+              ctx.font = 'bold 13px system-ui, sans-serif'; ctx.textAlign = 'center';
+              ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(2,6,23,0.9)';
+              ctx.strokeText(radarCounty.name, nx, ny);
+              ctx.fillStyle = '#facc15';
+              ctx.fillText(radarCounty.name, nx, ny);
+            }
+          }
+          ctx.restore();
+        } catch (e) {}
+      }
+      // Standort-Marker in der Kartenmitte.
+      const mx = cv.width / 2, my = cv.height / 2;
+      ctx.beginPath(); ctx.arc(mx, my, 9, 0, 7); ctx.fillStyle = 'rgba(239,68,68,0.35)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(mx, my, 5, 0, 7); ctx.fillStyle = '#ef4444'; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+      const label = CURRENT_LOCATION.name || '';
+      if (label) {
+        ctx.font = 'bold 15px system-ui, sans-serif'; ctx.textAlign = 'center';
+        ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(2,6,16,0.9)'; ctx.strokeText(label, mx, my - 16);
+        ctx.fillStyle = '#fff'; ctx.fillText(label, mx, my - 16);
+      }
+      // Fadenkreuz (mit Lücke in der Mitte) + dünne Entfernungskreise alle 10 km.
+      try {
+        const mPerPx = 156543.03392 * Math.cos(CURRENT_LOCATION.latitude * Math.PI / 180) / Math.pow(2, tz) / sc;
+        ctx.save();
+        const maxR = Math.hypot(cv.width, cv.height) / 2;
+        const ringR = [];
+        for (let km = 10; km <= 100; km += 10) {
+          const r = km * 1000 / mPerPx;
+          if (r > maxR) break;
+          ringR.push([km, r]);
+        }
+        const traceGrid = () => {
+          ctx.beginPath();
+          ctx.moveTo(0, my + 0.5); ctx.lineTo(mx - 14, my + 0.5); ctx.moveTo(mx + 14, my + 0.5); ctx.lineTo(cv.width, my + 0.5);
+          ctx.moveTo(mx + 0.5, 0); ctx.lineTo(mx + 0.5, my - 14); ctx.moveTo(mx + 0.5, my + 14); ctx.lineTo(mx + 0.5, cv.height);
+          for (const [, r] of ringR) { ctx.moveTo(mx + r, my); ctx.arc(mx, my, r, 0, 7); }
+        };
+        // Dunkle Unterlegung + helle Oberlinie: auf heller (OSM) wie dunkler
+        // Karte lesbar.
+        ctx.strokeStyle = 'rgba(15,23,42,0.55)';
+        ctx.lineWidth = 3;
+        traceGrid(); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = 1;
+        traceGrid(); ctx.stroke();
+        ctx.font = 'bold 11px ui-monospace, monospace'; ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        // Labels nur so dicht, dass sie sich nicht überlagern (mind. ~38 px Abstand).
+        const labStep = Math.max(1, Math.ceil(38 / (10000 / mPerPx)));
+        ringR.forEach(([km, r], idx) => {
+          if (idx % labStep !== 0) return;
+          let lx, ly, align = 'left';
+          if (r < 40) {
+            // Kleine Ringe: Label links (West), sonst Kollision mit dem Orts-Label.
+            align = 'right';
+            lx = mx - r - 6; ly = my;
+          } else {
+            lx = mx + 0.7071 * r + 4;
+            ly = my - 0.7071 * r - 6;
+          }
+          ctx.textAlign = align;
+          if (lx >= 40 && lx <= cv.width - 4 && ly >= 10 && ly <= cv.height - 10) {
+            ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.strokeText(km + ' km', lx, ly);
+            ctx.fillStyle = '#000';
+            ctx.fillText(km + ' km', lx, ly);
+          }
+        });
+        ctx.restore();
+      } catch (e) {}
+      const slv = $('#radarSlider');
+      if (slv && document.activeElement !== slv) slv.value = radarIdx;
+      const tl = $('#radarTime');
+      if (tl) { tl.textContent = (frame.kind === 'sat' ? '☁️ ' : '🌧️ ') + radarFmtTime(frame.time); tl.style.color = '#fff'; }
+      if (st) st.textContent = 'Bild ' + (radarIdx + 1) + ' von ' + radarFrames.length +
+        ' · Zoom ' + radarZoom + ' · Standort zentriert · Daten: ' + (radarDwd5 ? 'DWD-Niederschlagsradar (10-Min-Takt' + (radarHasFuture ? ', Vorhersage bis +' + radarFutureLead + ' Min' : '') + ')' : (radarHasFuture ? 'RainViewer + DWD-Vorhersage bis +' + radarFutureLead + ' Min' : 'RainViewer (Regen ~10-Min-Takt, Satellit ~30-Min-Takt)')) +
+        (radarNotice ? ' · ' + radarNotice : '');
+    }
+    function radarStep(dir) {
+      if (!radarFrames.length) return;
+      radarIdx = (radarIdx + (dir || 1) + radarFrames.length) % radarFrames.length;
+      renderRadar();
+      const nxt = radarFrames[(radarIdx + 1) % radarFrames.length];
+      if (nxt) radarPreloadFrame(nxt);
+    }
+    if ($('#radarPlayBtn')) $('#radarPlayBtn').addEventListener('click', () => {
+      if (radarTimer) { radarStop(); return; }
+      if (!radarFrames.length) { loadRadar(); return; }
+      $('#radarPlayBtn').textContent = '⏸ Pause';
+      radarTimer = setInterval(() => radarStep(1), 900);
+    });
+    if ($('#radarSlider')) $('#radarSlider').addEventListener('input', e => {
+      radarStop();
+      if (!radarFrames.length) return;
+      radarIdx = Math.max(0, Math.min(radarFrames.length - 1, Number(e.target.value) || 0));
+      renderRadar();
+    });
+    document.querySelectorAll('.radar-layer-pill').forEach(p => p.addEventListener('click', () => {
+      if (p.dataset.rlayer === radarLayer) return;
+      radarLayer = p.dataset.rlayer;
+      document.querySelectorAll('.radar-layer-pill').forEach(q => q.classList.toggle('active', q === p));
+      radarStop();
+      loadRadar();
+    }));
+    if ($('#radarZoomIn')) $('#radarZoomIn').addEventListener('click', () => { if (radarZoom < 9) { radarZoom++; radarStop(); radarLoadToken++; renderRadar(); } });
+    if ($('#radarZoomOut')) $('#radarZoomOut').addEventListener('click', () => { if (radarZoom > 5) { radarZoom--; radarStop(); radarLoadToken++; renderRadar(); } });
 
     function renderModelCards() {
       const grid = $('#modelCardsGrid');
@@ -4132,7 +4792,7 @@
         }
         totals.sort((x, y) => x.mTemp - y.mTemp);
         // Treffsicherstes Modell merken (für die Tagesvorhersage-Badge).
-        try { verifBestOverall = totals.length ? { label: verifModelLabel(totals[0].mid).label, mTemp: totals[0].mTemp, n: totals[0].n } : null; } catch (e) {}
+        try { verifBestOverall = totals.length ? { label: verifModelLabel(totals[0].mid).label, mTemp: totals[0].mTemp, n: totals[0].n, mid: totals[0].mid } : null; } catch (e) {}
         try { if (verifBestOverall) verifWrite('verifBest_v1_' + verifLocKey(), verifBestOverall); } catch (e) {}
         const rows2 = totals.map((t, i) => {
           const c = verifModelLabel(t.mid);
@@ -5143,7 +5803,7 @@
       if (!Number.isFinite(lo)) { lo = 0; hi = 20; }
       if (hi - lo < 2) { hi += 1; lo -= 1; }
       const pad = Math.max(1, (hi - lo) * 0.15); lo -= pad; hi += pad;
-      const pT = { y0: 14, y1: 118 };
+      const pT = { y0: 74, y1: 210 };
       let wMax = 0;
       h24Data.forEach(h => {
         if (Number.isFinite(h.wind)) wMax = Math.max(wMax, h.wind);
@@ -5173,8 +5833,8 @@
     }
 
     function renderHour24() {
-      const svgT = $('#h24TempSvg'), svgR = $('#h24RainSvg'), svgW = $('#h24WindSvg'), svgS = $('#h24SnowSvg');
-      if ((!svgT && !svgR && !svgW && !svgS) || !forecast?.hourly) return;
+      const svgM = $('#h24MetaSvg');
+      if (!svgM || !forecast?.hourly) return;
       const times = forecast.hourly.time || [];
       if (!times.length || !h24Model) return;
       const H = forecast.hourly;
@@ -5225,6 +5885,23 @@
           THi[j] = a.length ? Math.max(...a) : null;
         }
         WD = []; WC = [];
+        // Konsens-Richtung (Kreismittel) + Konsens-Wetterlage (häufigster Code) für Symbole/Pfeile
+        for (let j = 0; j < L; j++) {
+          const da = valsAt('wind_direction_10m', j).filter(Number.isFinite);
+          if (da.length) {
+            const sx = da.reduce((a, v) => a + Math.sin(v * Math.PI / 180), 0) / da.length;
+            const cx = da.reduce((a, v) => a + Math.cos(v * Math.PI / 180), 0) / da.length;
+            WD[j] = ((Math.round(Math.atan2(sx, cx) * 180 / Math.PI) % 360) + 360) % 360;
+          } else WD[j] = null;
+          const ca = {};
+          let bk = null, bn = 0;
+          for (const v of valsAt('weather_code', j)) {
+            if (!Number.isFinite(v)) continue;
+            ca[v] = (ca[v] || 0) + 1;
+            if (ca[v] > bn) { bn = ca[v]; bk = v; }
+          }
+          WC[j] = bk;
+        }
       } else {
         const col = (base) => H[`${base}_${h24Model}`] || [];
         T = col('temperature_2m'); D = col('dew_point_2m'); P = col('precipitation_probability');
@@ -5236,7 +5913,7 @@
         TLo = []; THi = [];
       }
       if (!T.some(Number.isFinite)) {
-        [svgT, svgR, svgW, svgS].forEach(s => { if (s) s.innerHTML = ''; });
+        svgM.innerHTML = '';
         h24Data = [];
         const sub = $('#h24Range');
         if (sub) sub.textContent = 'Keine Daten für dieses Modell verfügbar.';
@@ -5319,27 +5996,34 @@
         return out;
       };
 
-      // --- Panel 1: Temperatur & Taupunkt (Plot y 14..118) ---
-      let t = grid(14, 118);
-      t += ylab(14, hi.toFixed(0) + '°', '', '');
-      t += ylab(66, ((lo + hi) / 2).toFixed(0) + '°', '', '');
-      t += ylab(118, lo.toFixed(0) + '°', '', '');
-      t += dayLines(12, 118, 26);
-      const fillD = 'M ' + temps.map((v, i) => `${X(i).toFixed(1)},${TY(v).toFixed(1)}`).join(' L ')
-        + ' L ' + dews.map((d, i) => `${X(n - 1 - i).toFixed(1)},${TY(dews[n - 1 - i]).toFixed(1)}`).join(' L ') + ' Z';
-      t += `<path d="${fillD}" fill="#34d399" fill-opacity="0.10"/>`;
-      // Konsens-Streuband (Min–Max aller Modelle) hinter den Linien
+      // --- Meteogramm: Stunden-Symbole + Temperaturlinie + Regenbalken + Windpfeile in einem Bild ---
+      const PT = 74, PB = 210;
+      const PY2 = (v) => PB - (Math.max(0, Math.min(mmMax, v || 0)) / mmMax) * (PB - PT);
+      let m = grid(PT, PB);
+      m += ylab(PT, hi.toFixed(0) + '°', mmMax.toFixed(1) + ' mm', '#0284c7');
+      m += ylab(Math.round((PT + PB) / 2), ((lo + hi) / 2).toFixed(0) + '°', '', '');
+      m += ylab(PB, lo.toFixed(0) + '°', '0', '#0284c7');
+      m += dayLines(8, 246, 18);
+      m += xlabels(32);
+      // Regenbalken (hinter der Linie)
+      const bw2 = Math.max(5, (x1 - x0) / n - 7);
+      h24Data.forEach((h, i) => {
+        if (Number.isFinite(h.mm) && h.mm > 0.049) {
+          const y = PY2(h.mm);
+          m += `<rect x="${(X(i) - bw2 / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw2.toFixed(1)}" height="${(PB - y).toFixed(1)}" rx="2" fill="#2563eb" fill-opacity="0.85"/>`;
+        }
+      });
+      // Konsens-Streuband (Min–Max aller Modelle) hinter der Linie
       if (h24Model === H24_MEAN_ID) {
         const loA = h24Ffill(h24Data.map(h => h.tlo)), hiA = h24Ffill(h24Data.map(h => h.thi));
         if (loA.some(Number.isFinite) && hiA.some(Number.isFinite)) {
           const bandD = 'M ' + hiA.map((v, i) => `${X(i).toFixed(1)},${TY(v).toFixed(1)}`).join(' L ')
             + ' L ' + loA.map((d, i) => `${X(n - 1 - i).toFixed(1)},${TY(loA[n - 1 - i]).toFixed(1)}`).join(' L ') + ' Z';
-          t += `<path d="${bandD}" fill="#f59e0b" fill-opacity="0.16"/>`;
+          m += `<path d="${bandD}" fill="#f59e0b" fill-opacity="0.16"/>`;
         }
       }
-      t += `<path d="${line(dews, TY)}" fill="none" stroke="#34d399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
-      t += `<path d="${line(temps, TY)}" fill="none" stroke="#f59e0b" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
-      // DWD-Nowcast (15-min RUC) auf die 24h-Achse projiziert, gepunktet
+      m += `<path d="${line(temps, TY)}" fill="none" stroke="#ef4444" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+      // DWD-Nowcast (15-min RUC) auf die Achse projiziert, gepunktet
       try {
         let ncPts = [];
         if (nowcastCache.time && nowcastCache.time.length && n > 1) {
@@ -5348,82 +6032,97 @@
             for (let k = 0; k < nowcastCache.time.length; k++) {
               const ms = Date.parse(nowcastCache.time[k]), v = nowcastCache.temp[k];
               if (!Number.isFinite(ms) || !Number.isFinite(v) || ms < t0 || ms > t1) continue;
-              ncPts.push(`${(x0 + (ms - t0) / (t1 - t0) * (x1 - x0)).toFixed(1)},${Math.max(14, Math.min(118, TY(v))).toFixed(1)}`);
+              ncPts.push(`${(x0 + (ms - t0) / (t1 - t0) * (x1 - x0)).toFixed(1)},${Math.max(PT, Math.min(PB, TY(v))).toFixed(1)}`);
             }
           }
         }
-        if (ncPts.length > 1) t += `<path d="M ${ncPts.join(' L ')}" fill="none" stroke="#10b981" stroke-width="1.6" stroke-dasharray="2 3" stroke-linecap="round" opacity="0.9"/>`;
+        if (ncPts.length > 1) m += `<path d="M ${ncPts.join(' L ')}" fill="none" stroke="#10b981" stroke-width="1.6" stroke-dasharray="2 3" stroke-linecap="round" opacity="0.9"/>`;
         const nl = $('#nowcastLine');
         if (nl) nl.style.display = ncPts.length > 1 ? 'block' : 'none';
       } catch (e) {}
+      // Sonnenstand je Kalendertag (für Sonne/Mond-Symbole)
+      const sunCache = {};
+      const isDayHour = (h) => {
+        try {
+          const tp = getTimestampParts(h.time);
+          if (!tp) return true;
+          const dk = h.time.slice(0, 10);
+          if (!sunCache[dk]) {
+            const dt = new Date(dk + 'T12:00:00');
+            const N = Math.floor((dt - new Date(dt.getFullYear(), 0, 0)) / 864e5);
+            const lat = CURRENT_LOCATION.latitude * Math.PI / 180;
+            const decl = -23.44 * Math.PI / 180 * Math.cos(2 * Math.PI * (N + 10) / 365);
+            let c = -Math.tan(lat) * Math.tan(decl);
+            c = Math.max(-1, Math.min(1, c));
+            const dl = 24 * Math.acos(c) / Math.PI;
+            const offH = (forecast.utc_offset_seconds || 3600) / 3600;
+            const noon = 12 - CURRENT_LOCATION.longitude / 15 + offH;
+            sunCache[dk] = { rise: noon - dl / 2, set: noon + dl / 2 };
+          }
+          const parts = tp.time.split(':');
+          const hh = parseInt(parts[0], 10) + parseInt(parts[1] || '0', 10) / 60;
+          return hh >= sunCache[dk].rise && hh < sunCache[dk].set;
+        } catch (e) { return true; }
+      };
+      // Wettersymbol je Stunde (Sonne/Mond, Wolken, Regen, Schnee, Nebel, Gewitter)
+      const sunRays = (cx, cy, r1, r2, wdt) => {
+        let o = '';
+        for (let k = 0; k < 8; k++) {
+          const a = k * Math.PI / 4 + Math.PI / 8;
+          o += `<line x1="${(cx + r1 * Math.cos(a)).toFixed(1)}" y1="${(cy + r1 * Math.sin(a)).toFixed(1)}" x2="${(cx + r2 * Math.cos(a)).toFixed(1)}" y2="${(cy + r2 * Math.sin(a)).toFixed(1)}" stroke="#fbbf24" stroke-width="${wdt}" stroke-linecap="round"/>`;
+        }
+        return o;
+      };
+      const moonPath = `<path fill-rule="evenodd" fill="#fde68a" d="M -6.5 0 A 6.5 6.5 0 1 0 6.5 0 A 6.5 6.5 0 1 0 -6.5 0 M -2.8 -1.5 A 5.6 5.6 0 1 1 8.4 -1.5 A 5.6 5.6 0 1 1 -2.8 -1.5"/>`;
+      const cloudG = (col) => `<g fill="${col}"><ellipse cx="2" cy="3" rx="8.5" ry="5"/><circle cx="-3.5" cy="1" r="4"/><circle cx="6" cy="0" r="5"/></g>`;
+      const wxIcon = (h, x, y) => {
+        const code = h.code, mm = h.mm || 0, prob = h.prob || 0, t = h.temp;
+        const day = isDayHour(h);
+        const snow = (code >= 71 && code <= 77) || code === 85 || code === 86 || (mm > 0.049 && Number.isFinite(t) && t <= 0.5);
+        const storm = !snow && code >= 95 && code <= 99;
+        const rain = !snow && !storm && (mm > 0.049 || (code >= 51 && code <= 67) || (code >= 80 && code <= 82));
+        const fog = !snow && !storm && !rain && (code === 45 || code === 48);
+        const cloudy = !snow && !storm && !rain && !fog && (code === 3 || prob >= 50);
+        const partly = !snow && !storm && !rain && !fog && !cloudy && (code === 1 || code === 2 || prob >= 20);
+        let s = `<g transform="translate(${x.toFixed(1)},${y})">`;
+        if (snow) {
+          s += cloudG('#cbd5e1');
+          s += `<g fill="#e0f2fe"><circle cx="-4" cy="10" r="1.3"/><circle cx="1" cy="12" r="1.3"/><circle cx="6" cy="10" r="1.3"/></g>`;
+        } else if (storm) {
+          s += cloudG('#64748b');
+          s += `<path d="M1 5 L-2.5 11 L0 11 L-1.5 15.5 L3.5 8.5 L1 8.5 Z" fill="#fde047"/>`;
+        } else if (rain) {
+          s += cloudG('#94a3b8');
+          const drops = mm >= 2.5 ? [-5, 0, 5] : [-2.5, 2.5];
+          for (const dx of drops) s += `<line x1="${dx}" y1="8.5" x2="${dx}" y2="${mm >= 2.5 ? 13 : 12}" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>`;
+        } else if (fog) {
+          s += cloudG('#cbd5e1');
+          s += `<g stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"><line x1="-8" y1="10" x2="8" y2="10"/><line x1="-6" y1="13" x2="6" y2="13"/></g>`;
+        } else if (cloudy) {
+          s += cloudG('#94a3b8');
+        } else if (partly) {
+          s += day
+            ? `<circle cx="-5" cy="-4" r="3.6" fill="#fbbf24"/>${sunRays(-5, -4, 5, 6.8, 1.3)}`
+            : `<g transform="translate(-5,-4) scale(0.8)">${moonPath}</g>`;
+          s += cloudG(day ? '#e2e8f0' : '#7d8ea3');
+        } else {
+          s += day ? `<circle cx="0" cy="0" r="5.2" fill="#fbbf24"/>${sunRays(0, 0, 7.2, 9.4, 1.6)}` : moonPath;
+        }
+        return s + '</g>';
+      };
+      h24Data.forEach((h, i) => { m += wxIcon(h, X(i), 54); });
+      // Windpfeile unten (zeigen in Strömungsrichtung, wie im Vorbild)
+      m += `<line x1="${x0}" y1="218" x2="${x1}" y2="218" stroke="#1e2c3d" stroke-width="1"/>`;
       h24Data.forEach((h, i) => {
-        if (Number.isFinite(h.temp)) t += `<circle cx="${X(i).toFixed(1)}" cy="${TY(temps[i]).toFixed(1)}" r="3.2" fill="#f59e0b" stroke="#0b1118" stroke-width="1.2"/>`;
-        if (Number.isFinite(h.dew)) t += `<circle cx="${X(i).toFixed(1)}" cy="${TY(dews[i]).toFixed(1)}" r="2.4" fill="#34d399" stroke="#0b1118" stroke-width="1"/>`;
-      });
-      t += xlabels(138);
-      t += '<g id="h24CrossT" style="display:none"><line id="h24LnT" y1="12" y2="118" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 2"/><circle id="h24CTT" r="5.5" fill="#f59e0b" stroke="#0b1118" stroke-width="2"/><circle id="h24CTD" r="5" fill="#34d399" stroke="#0b1118" stroke-width="2"/></g>';
-      if (svgT) svgT.innerHTML = t;
-
-      // --- Panel 2: Niederschlag (Plot y 10..84) ---
-      let r = grid(10, 84);
-      r += ylab(10, '100%', mmMax.toFixed(1) + ' mm', '#0284c7');
-      r += ylab(84, '0%', '0', '#0284c7');
-      r += dayLines(8, 84, 22);
-      const bw = Math.max(5, (x1 - x0) / n - 7);
-      h24Data.forEach((h, i) => {
-        if (Number.isFinite(h.mm) && h.mm > 0.049) {
-          const y = PY(h.mm);
-          r += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(84 - y).toFixed(1)}" rx="2" fill="#0284c7" fill-opacity="0.8"/>`;
+        const flow = Number.isFinite(h.dir) ? ((h.dir + 180) % 360) : null;
+        if (flow === null) {
+          m += `<circle cx="${X(i).toFixed(1)}" cy="232" r="2" fill="#475569"/>`;
+        } else {
+          m += `<g transform="translate(${X(i).toFixed(1)},232) rotate(${flow})"><line x1="0" y1="7" x2="0" y2="-7" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/><path d="M-4.5 -1.5 L0 -8 L4.5 -1.5" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>`;
         }
       });
-      r += `<path d="${line(probs, RY)}" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="5 3" stroke-linecap="round"/>`;
-      r += xlabels(104);
-      r += '<g id="h24CrossR" style="display:none"><line id="h24LnR" y1="8" y2="84" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 2"/><circle id="h24CTR" r="4.5" fill="#38bdf8" stroke="#0b1118" stroke-width="2"/></g>';
-      if (svgR) svgR.innerHTML = r;
-
-      // --- Panel 3: Wind & Böen (Plot y 10..84) ---
-      const wTop = h24Data.reduce((m, h) => Math.max(m, Number.isFinite(h.wind) ? h.wind : 0, Number.isFinite(h.gust) ? h.gust : 0), 0);
-      const wTopR = Math.max(15, Math.ceil((wTop + 3) / 5) * 5);
-      let w = grid(10, 84);
-      w += ylab(10, wTopR.toFixed(0), '', '');
-      w += ylab(84, '0 km/h', '', '');
-      w += dayLines(8, 84, 22);
-      w += `<path d="${line(gusts, WY)}" fill="none" stroke="#99f6e4" stroke-width="1.6" stroke-dasharray="4 2" stroke-linecap="round"/>`;
-      w += `<path d="${line(winds, WY)}" fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
-      h24Data.forEach((h, i) => {
-        if (Number.isFinite(h.wind)) w += `<circle cx="${X(i).toFixed(1)}" cy="${WY(winds[i]).toFixed(1)}" r="2.4" fill="#2dd4bf" stroke="#0b1118" stroke-width="1"/>`;
-      });
-      w += xlabels(104);
-      w += '<g id="h24CrossW" style="display:none"><line id="h24LnW" y1="8" y2="84" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 2"/><circle id="h24CTW" r="5" fill="#2dd4bf" stroke="#0b1118" stroke-width="2"/></g>';
-      if (svgW) svgW.innerHTML = w;
-
-      // --- Panel 4: Schneefall (Balken, cm/h) & Schneedecke (Linie, cm, rechte Achse) ---
-      let snMax = 0;
-      h24Data.forEach(h => { if (Number.isFinite(h.snow)) snMax = Math.max(snMax, h.snow); });
-      snMax = Math.max(1, Math.ceil(snMax * 2) / 2);
-      const SY = (v) => 84 - (Math.max(0, Math.min(snMax, v || 0)) / snMax) * (84 - 10);
-      const snowdCm = h24Ffill(h24Data.map(h => Number.isFinite(h.snowd) ? h.snowd * 100 : null));
-      let sdMax = 1;
-      snowdCm.forEach(v => { if (Number.isFinite(v)) sdMax = Math.max(sdMax, v); });
-      sdMax = Math.max(5, Math.ceil(sdMax));
-      const DY = (v) => 84 - (Math.max(0, Math.min(sdMax, v || 0)) / sdMax) * (84 - 10);
-      let s = grid(10, 84);
-      s += ylab(10, snMax.toFixed(1) + ' cm/h', sdMax.toFixed(0) + ' cm', '#c4b5fd');
-      s += ylab(84, '0', '0', '#c4b5fd');
-      s += dayLines(8, 84, 22);
-      h24Data.forEach((h, i) => {
-        if (Number.isFinite(h.snow) && h.snow > 0.049) {
-          const y = SY(h.snow);
-          s += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(84 - y).toFixed(1)}" rx="2" fill="#7dd3fc" fill-opacity="0.85"/>`;
-        }
-      });
-      s += `<path d="${line(snowdCm, DY)}" fill="none" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
-      h24Data.forEach((h, i) => {
-        if (Number.isFinite(snowdCm[i])) s += `<circle cx="${X(i).toFixed(1)}" cy="${DY(snowdCm[i]).toFixed(1)}" r="2" fill="#c4b5fd" stroke="#0b1118" stroke-width="1"/>`;
-      });
-      s += xlabels(104);
-      s += '<g id="h24CrossS" style="display:none"><line id="h24LnS" y1="8" y2="84" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 2"/><circle id="h24CTS" r="4.5" fill="#7dd3fc" stroke="#0b1118" stroke-width="2"/><circle id="h24CTSD" r="4.5" fill="#c4b5fd" stroke="#0b1118" stroke-width="2"/></g>';
-      if (svgS) svgS.innerHTML = s;
+      m += '<g id="h24CrossM" style="display:none"><line id="h24LnM" y1="70" y2="212" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 2"/><circle id="h24CTM" r="5" fill="#ef4444" stroke="#0b1118" stroke-width="2"/></g>';
+      if (svgM) svgM.innerHTML = m;
 
       const hook = (svg) => {
         if (!svg) return;
@@ -5436,13 +6135,13 @@
           if (e.touches && e.touches[0]) selectHourH24(h24IdxFromEvent(e.touches[0].clientX, svg));
         };
       };
-      hook(svgT); hook(svgR); hook(svgW); hook(svgS);
+      hook(svgM);
       selectHourH24(h24Sel);
     }
 
 
     function h24IdxFromEvent(clientX, svg) {
-      const el = svg || $('#h24TempSvg');
+      const el = svg || $('#h24MetaSvg');
       if (!el || !h24Data.length) return 0;
       const rect = el.getBoundingClientRect();
       const vx = ((clientX - rect.left) / rect.width) * 960;
@@ -5494,28 +6193,8 @@
         if (Number.isFinite(cx) && Number.isFinite(cy)) { e.setAttribute('cx', cx); e.setAttribute('cy', cy); }
         else e.setAttribute('cy', -20);
       };
-      let mmM = 0;
-      h24Data.forEach(hh => { if (Number.isFinite(hh.mm)) mmM = Math.max(mmM, hh.mm); });
-      mmM = Math.max(2.5, Math.ceil(mmM * 2) / 2);
-      const RYp = (v) => 84 - (Math.max(0, Math.min(100, v || 0)) / 100) * (84 - 10);
-      cross('#h24CrossT', '#h24LnT');
-      dot('#h24CTT', x, Number.isFinite(h.temp) ? TY(h.temp) : NaN);
-      dot('#h24CTD', x, Number.isFinite(h.dew) ? TY(h.dew) : NaN);
-      cross('#h24CrossR', '#h24LnR');
-      dot('#h24CTR', x, Number.isFinite(h.prob) ? RYp(h.prob) : NaN);
-      cross('#h24CrossW', '#h24LnW');
-      dot('#h24CTW', x, Number.isFinite(h.wind) ? WY(h.wind) : NaN);
-      let snM = 0;
-      h24Data.forEach(hh => { if (Number.isFinite(hh.snow)) snM = Math.max(snM, hh.snow); });
-      snM = Math.max(1, Math.ceil(snM * 2) / 2);
-      const SYp = (v) => 84 - (Math.max(0, Math.min(snM, v || 0)) / snM) * (84 - 10);
-      cross('#h24CrossS', '#h24LnS');
-      dot('#h24CTS', x, Number.isFinite(h.snow) ? SYp(h.snow) : NaN);
-      let sdM = 1;
-      h24Data.forEach(hh => { if (Number.isFinite(hh.snowd)) sdM = Math.max(sdM, hh.snowd * 100); });
-      sdM = Math.max(5, Math.ceil(sdM));
-      const DYp = (v) => 84 - (Math.max(0, Math.min(sdM, v || 0)) / sdM) * (84 - 10);
-      dot('#h24CTSD', x, Number.isFinite(h.snowd) ? DYp(h.snowd * 100) : NaN);
+      cross('#h24CrossM', '#h24LnM');
+      dot('#h24CTM', x, Number.isFinite(h.temp) ? TY(h.temp) : NaN);
     }
 
     const h24SelEl = $('#h24ModelSelect');
@@ -5676,6 +6355,7 @@
           const snowfall = forecast.hourly[`snowfall_${model.id}`] || [];
           const sunshine = forecast.hourly[`sunshine_duration_${model.id}`] || [];
           const windSpeed = forecast.hourly[`wind_speed_10m_${model.id}`] || [];
+          const windGust = forecast.hourly[`wind_gusts_10m_${model.id}`] || [];
           const windDirection = forecast.hourly[`wind_direction_10m_${model.id}`] || [];
           const cloudCover = forecast.hourly[`cloud_cover_${model.id}`] || [];
           const cloudCoverLow = forecast.hourly[`cloud_cover_low_${model.id}`] || [];
@@ -5701,6 +6381,7 @@
             snowfall,
             sunshine,
             windSpeed,
+            windGust,
             windDirection,
             cloudCover,
             cloudCoverLow,
@@ -5970,6 +6651,8 @@
         let precipMaxTotal = 0, sunMinutesTotal = 0, maxWind = 0;
         const allDayTemps = [];
         const allDayDews = [];
+        const allDayGusts = [];
+        const allDayDirX = [], allDayDirY = [];
         let minSpread = 999, spreadHour = null;
         let spreadSum = 0, spreadN = 0;
         const allDayClouds = [];
@@ -5997,6 +6680,9 @@
           const precips = targetModels.map(m => m.precipitation[idx]).filter(Number.isFinite);
           const suns = targetModels.map(m => m.sunshine[idx]).filter(Number.isFinite).map(s => s / 60);
           const winds = targetModels.map(m => m.windSpeed[idx]).filter(Number.isFinite);
+          const gusts = targetModels.map(m => m.windGust ? m.windGust[idx] : null).filter(Number.isFinite);
+          if (gusts.length) allDayGusts.push(...gusts);
+          for (const dr of targetModels.map(m => m.windDirection ? m.windDirection[idx] : null).filter(Number.isFinite)) { const _r = dr * Math.PI / 180; allDayDirX.push(Math.sin(_r)); allDayDirY.push(Math.cos(_r)); }
           const dews = targetModels.map(m => m.dewPoint ? m.dewPoint[idx] : null).filter(Number.isFinite);
 
           if (temps.length) {
@@ -6272,6 +6958,37 @@
           dayLen = Math.round(24 * Math.acos(_c) / Math.PI * 10) / 10;
         } catch (e) {}
 
+        // Wind aus dem besten Modell (Verifikation) statt Konsens-Maximum:
+        // stärkster Wind + stärkste Böe des Tages + Hauptwindrichtung (Kreismittel).
+        // Fallback ohne Verifikationsstand: Konsens-Maximum + Konsens-Richtung.
+        const dirMean = (xs, ys) => xs.length ? ((Math.round(Math.atan2(xs.reduce((a, b) => a + b, 0) / xs.length, ys.reduce((a, b) => a + b, 0) / ys.length) * 180 / Math.PI) % 360) + 360) % 360 : null;
+        let windSrc = 'Konsens', windMax = maxWind;
+        let gustMax = allDayGusts.length ? Math.max(...allDayGusts) : null;
+        let windFrom = dirMean(allDayDirX, allDayDirY);
+        try {
+          let bestMid = (verifBestOverall && verifBestOverall.mid) || null;
+          if (!bestMid) { try { const _s = verifRead('verifBest_v1_' + verifLocKey()); if (_s && _s.mid) bestMid = _s.mid; } catch (e2) {} }
+          const _bm = bestMid ? targetModels.find(m => m.id === bestMid) : null;
+          if (_bm) {
+            const _bW = [], _bG = [], _bX = [], _bY = [];
+            for (const _ix of dayObj.indices) {
+              const _w = _bm.windSpeed ? _bm.windSpeed[_ix] : null;
+              if (Number.isFinite(_w)) _bW.push(_w);
+              const _g = _bm.windGust ? _bm.windGust[_ix] : null;
+              if (Number.isFinite(_g)) _bG.push(_g);
+              const _dr = _bm.windDirection ? _bm.windDirection[_ix] : null;
+              if (Number.isFinite(_dr)) { const _r = _dr * Math.PI / 180; _bX.push(Math.sin(_r)); _bY.push(Math.cos(_r)); }
+            }
+            if (_bW.length) {
+              windMax = Math.max(..._bW);
+              gustMax = _bG.length ? Math.max(..._bG) : null;
+              const _dm = dirMean(_bX, _bY);
+              if (_dm !== null) windFrom = _dm;
+              windSrc = verifModelLabel(bestMid).label;
+            }
+          }
+        } catch (e) {}
+
         return {
           weekday: dayObj.weekday,
           shortDate: dayObj.shortDate,
@@ -6289,6 +7006,10 @@
           sunHours,
           sunText,
           maxWind: Math.round(maxWind),
+          windMax: Math.round(windMax),
+          gustMax: gustMax !== null ? Math.round(gustMax) : null,
+          windFrom,
+          windSrc,
           dayLen,
           avgCover,
           lowAvg,
@@ -6313,13 +7034,13 @@
       function renderCardHtml(d, badgeClass, badgeLabel) {
         // Helfer für Chip-Grafiken: normiert einen Wert auf 0–100 %
         const cgPct = (v, lo, hi) => Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
-        const tP = v => cgPct(v, -15, 35); // Temperatur-Skala −15…+35 °C
-        const tMinP = tP(d.minTemp).toFixed(1), tAvgP = tP(d.avgTemp).toFixed(1), tMaxP = tP(d.maxTemp).toFixed(1);
         const dewP = d.avgDew !== null ? cgPct(d.avgDew, -10, 20) : 0; // Taupunkt-Skala −10…+20 °C
         const dewY = (24 - dewP * 0.2).toFixed(1); // Füllstand im Tropfen (Box 0–24)
-        const sunH = parseFloat(d.sunHours) || 0;
-        const sunFrac = Math.max(0, Math.min(1, sunH / (d.dayLen || 12)));
-        const windP = cgPct(d.maxWind, 0, 75).toFixed(1); // Wind-Skala 0–75 km/h
+        const wFlow = (d.windFrom !== null && d.windFrom !== undefined) ? (d.windFrom + 180) % 360 : null; // Pfeil zeigt in Strömungsrichtung
+        const wArrow = wFlow !== null
+          ? `<svg width="30" height="30" viewBox="0 0 30 30" style="flex:none;"><circle cx="15" cy="15" r="12" fill="none" stroke="#334155" stroke-width="1.5"/><text x="15" y="8.4" text-anchor="middle" font-size="7" fill="#94a3b8" font-family="monospace">N</text><g transform="rotate(${wFlow} 15 15)"><line x1="15" y1="21" x2="15" y2="8" stroke="#2dd4bf" stroke-width="2.5" stroke-linecap="round"/><path d="M11.5 12 L15 7 L18.5 12" fill="none" stroke="#2dd4bf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`
+          : `<svg width="30" height="30" viewBox="0 0 30 30" style="flex:none;"><circle cx="15" cy="15" r="12" fill="none" stroke="#334155" stroke-width="1.5"/><text x="15" y="19.5" text-anchor="middle" font-size="10" fill="#475569" font-family="monospace">?</text></svg>`;
+        const wCompass = wFlow !== null ? `aus ${h24Compass(d.windFrom)} · ${d.windFrom}°` : 'keine Richtungsdaten';
         const fogCol = d.hasFog ? '#c084fc' : '#2b3a4f';
         const dewId = 'dewclip-' + badgeLabel;
         return `
@@ -6345,19 +7066,14 @@
                 <div class="trend-stat-chip">
                   <span>🌡️ Temperatur (Min / Ø / Max)</span>
                   <span>${Math.round(d.minTemp)}° · <span style="color:#fde68a;">Ø ${d.avgTemp.toFixed(1)}°</span> · ${Math.round(d.maxTemp)}°</span>
-                  <div title="Tagesspanne auf der Skala −15…+35 °C (Striche = Min/Max, Punkt = Ø)" style="position:relative; height:6px; margin-top:4px; background:linear-gradient(90deg,#60a5fa,#fde68a 55%,#f87171); border-radius:3px;">
-                    <div style="position:absolute; left:${tMinP}%; top:-2px; width:2px; height:10px; background:#fff; border-radius:1px;"></div>
-                    <div style="position:absolute; left:${tMaxP}%; top:-2px; width:2px; height:10px; background:#fff; border-radius:1px;"></div>
-                    <div title="Ø ${d.avgTemp.toFixed(1)} °C" style="position:absolute; left:calc(${tAvgP}% - 4px); top:-1px; width:8px; height:8px; background:#fde047; border:1px solid #713f12; border-radius:50%;"></div>
-                  </div>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>☁️ Wolken (Ø / T·M·H)</span>
+                  <span>☁️ Wolken (Ø / H·M·T)</span>
                   <span title="Tiefe: ${d.lowAvg}% · Mittlere: ${d.midAvg}% · Hohe: ${d.highAvg}%">Ø ${d.avgCover}%</span>
                   <div style="display:flex; flex-direction:column; gap:2px; margin-top:3px; font-family:monospace; font-size:9px; color:#cbd5e1;">
-                    <div style="display:flex; align-items:center; gap:4px;" title="Tiefe Wolken: ${d.lowAvg}%"><span style="width:8px; color:#c084fc; font-weight:700;">T</span><div style="flex:1; height:5px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.lowAvg}%; background:#a855f7; border-radius:3px;"></div></div><span style="width:26px; text-align:right;">${d.lowAvg}%</span></div>
-                    <div style="display:flex; align-items:center; gap:4px;" title="Mittlere Wolken: ${d.midAvg}%"><span style="width:8px; color:#f9a8d4; font-weight:700;">M</span><div style="flex:1; height:5px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.midAvg}%; background:#ec4899; border-radius:3px;"></div></div><span style="width:26px; text-align:right;">${d.midAvg}%</span></div>
-                    <div style="display:flex; align-items:center; gap:4px;" title="Hohe Wolken: ${d.highAvg}%"><span style="width:8px; color:#fde68a; font-weight:700;">H</span><div style="flex:1; height:5px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.highAvg}%; background:#fbbf24; border-radius:3px;"></div></div><span style="width:26px; text-align:right;">${d.highAvg}%</span></div>
+                    <div style="display:flex; align-items:center; gap:4px;" title="Hohe Wolken: ${d.highAvg}%"><svg width="26" height="14" viewBox="0 0 28 14" style="flex:none;" aria-hidden="true"><g stroke="#fbbf24" stroke-width="1.7" fill="none" stroke-linecap="round"><path d="M2 4.5 Q8 2 14 4.5 T26 3.5"/><path d="M4 8.5 Q10 6 16 8.5 T25 7.5"/><path d="M8 12.5 Q14 10.5 20 12"/></g></svg><span>${d.highAvg}%</span></div>
+                    <div style="display:flex; align-items:center; gap:4px;" title="Mittlere Wolken: ${d.midAvg}%"><svg width="26" height="14" viewBox="0 0 28 14" style="flex:none;" aria-hidden="true"><g fill="#ec4899"><circle cx="8" cy="8.5" r="3.6"/><circle cx="14" cy="6" r="4.4"/><circle cx="20" cy="8.5" r="3.6"/><rect x="4.5" y="8" width="19" height="4" rx="2"/></g></svg><span>${d.midAvg}%</span></div>
+                    <div style="display:flex; align-items:center; gap:4px;" title="Tiefe Wolken: ${d.lowAvg}%"><svg width="26" height="14" viewBox="0 0 28 14" style="flex:none;" aria-hidden="true"><rect x="3" y="7" width="22" height="5" rx="2.5" fill="#a855f7"/><ellipse cx="14" cy="7.5" rx="8" ry="3.5" fill="#a855f7"/></svg><span>${d.lowAvg}%</span></div>
                   </div>
                 </div>
                 <div class="trend-stat-chip" style="${d.hasFog ? 'background:rgba(88,28,135,0.4); border-color:rgba(168,85,247,0.4);' : ''}">
@@ -6378,24 +7094,17 @@
                 <div class="trend-stat-chip">
                   <span>🌧️ Regenrisiko</span>
                   <span>max. ${d.maxRain}%</span>
-                  <div title="Maximale Regenwahrscheinlichkeit des Tages" style="display:flex; align-items:center; gap:4px; margin-top:4px; font-family:monospace; font-size:9px; color:#7dd3fc;">
-                    <span>💧</span>
-                    <div style="flex:1; height:6px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.maxRain}%; background:linear-gradient(90deg,#38bdf8,#2563eb); border-radius:3px;"></div></div>
-                  </div>
                 </div>
                 <div class="trend-stat-chip">
                   <span>☀️ Sonnenschein</span>
                   <span>~${d.sunHours} Std.</span>
-                  <div title="~${d.sunHours} von ${d.dayLen} Std. Tageslicht" style="display:flex; align-items:center; gap:4px; margin-top:4px; font-family:monospace; font-size:9px; color:#fcd34d;">
-                    <span style="opacity:${(0.35 + 0.65 * sunFrac).toFixed(2)};">☀️</span>
-                    <div style="flex:1; height:6px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(sunFrac * 100).toFixed(0)}%; background:linear-gradient(90deg,#fde68a,#f59e0b); border-radius:3px;"></div></div>
-                  </div>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>💨 Spitzenwind</span>
-                  <span>${d.maxWind} km/h</span>
-                  <div title="Spitzenwind auf der Skala 0–75 km/h" style="position:relative; height:6px; margin-top:4px; background:linear-gradient(90deg,#34d399,#fbbf24 60%,#f87171); border-radius:3px;">
-                    <div style="position:absolute; left:calc(${windP}% - 1px); top:-2px; width:2px; height:10px; background:#fff; border-radius:1px;"></div>
+                  <span>💨 Wind · ${d.windSrc}</span>
+                  <span>${Math.round(d.windMax)} km/h${d.gustMax !== null ? ' · Böen ' + Math.round(d.gustMax) : ''}</span>
+                  <div style="display:flex; align-items:center; gap:6px; margin-top:3px;" title="Hauptwindrichtung ${wCompass} · ${d.windSrc}">
+                    ${wArrow}
+                    <span style="font-family:monospace; font-size:9px; color:#5eead4;">${wCompass}</span>
                   </div>
                 </div>
               </div>
@@ -6430,7 +7139,7 @@
                 </div>
                 <div class="trend-bullet-item">
                   <span>💨</span>
-                  <div><strong>Wind:</strong> Bis zu ${d.maxWind} km/h</div>
+                  <div><strong>Wind:</strong> Bis zu ${Math.round(d.windMax)} km/h${d.gustMax !== null ? ', Böen bis ' + Math.round(d.gustMax) + ' km/h' : ''} (${d.windSrc})</div>
                 </div>
                 ${d.bestBullet}
               </div>
@@ -8085,6 +8794,7 @@
         $('#refreshBtn').disabled = false;
         nextRefreshAt = Date.now() + AUTO_REFRESH_SEC * 1000;
         try { tickRefreshCountdown(); } catch (e) {}
+        try { scheduleRadarWarmup(); } catch (e) {}
       }
     }
 
@@ -8236,5 +8946,6 @@
     // Initial load (läuft auch bei blockiertem Speicher / Cookie-Fehlern)
     loadForecast();
   </script>
+
 
 </html>
