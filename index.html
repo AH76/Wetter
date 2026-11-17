@@ -1,9 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-<meta charset="utf-8">
-</head>
-<body>
 <meta name="theme-color" content="#0d131a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -533,7 +529,7 @@
       color: var(--text-muted);
       font-size: 9px;
     }
-    .trend-stat-chip span:last-child {
+    .trend-stat-chip > span:nth-child(2) {
       font-weight: 700;
       font-family: monospace;
       color: #e2e8f0;
@@ -549,9 +545,30 @@
     .trend-bullet-item {
       display: flex;
       align-items: flex-start;
-      gap: 6px;
+      gap: 8px;
       line-height: 1.4;
     }
+    /* Motiv-Kacheln: großes Symbol auf farbiger Kachel je Thema */
+    .trend-bullet-item > span:first-child {
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(56,189,248,0.12);
+      border: 1px solid rgba(56,189,248,0.28);
+      border-radius: 9px;
+    }
+    .trend-bullet-item:nth-child(1) > span:first-child { background: rgba(245,158,11,0.14); border-color: rgba(245,158,11,0.4); }
+    .trend-bullet-item:nth-child(2) > span:first-child { background: rgba(52,211,153,0.14); border-color: rgba(52,211,153,0.4); }
+    .trend-bullet-item:nth-child(3) > span:first-child { background: rgba(148,163,184,0.16); border-color: rgba(148,163,184,0.42); }
+    .trend-bullet-item:nth-child(4) > span:first-child { background: rgba(168,85,247,0.16); border-color: rgba(168,85,247,0.45); }
+    .trend-bullet-item:nth-child(5) > span:first-child { background: rgba(56,189,248,0.16); border-color: rgba(56,189,248,0.45); }
+    .trend-bullet-item:nth-child(6) > span:first-child { background: rgba(253,224,71,0.13); border-color: rgba(253,224,71,0.38); }
+    .trend-bullet-item:nth-child(7) > span:first-child { background: rgba(45,212,191,0.14); border-color: rgba(45,212,191,0.4); }
+    .trend-bullet-item.best > span:first-child { background: rgba(234,179,8,0.16); border-color: rgba(234,179,8,0.5); }
     .trend-footer-consensus {
       margin-top: 10px;
       padding-top: 8px;
@@ -1441,7 +1458,7 @@
       <div class="chart-card" id="h24Card" style="margin-bottom:10px;">
         <div class="chart-card-header">
           <div>
-            <div class="chart-card-title">🕐 24-Stunden-Verlauf — Modell-Einzelansicht</div>
+            <div class="chart-card-title" id="h24Title">🕐 24-Stunden-Verlauf — Konsens aller Modelle</div>
             <div class="chart-card-sub" id="h24Range">—</div>
           </div>
         </div>
@@ -2120,7 +2137,7 @@
           <a href="https://www.dwd.de/DE/wetter/warnungen_gemeinden/warnWetter_node.html" target="_blank" rel="noopener" style="color:#38bdf8;">DWD-WarnWetter</a>).
           Alle Abrufe erfolgen direkt in Ihrem Browser an api.open-meteo.com, ensemble-api.open-meteo.com,
           seasonal-api.open-meteo.com, geocoding-api.open-meteo.com, power.larc.nasa.gov, nominatim.openstreetmap.org
-          und www.imcounter.com (Besucherzähler) –
+          und www.besucherzaehler-kostenlos.de (Besucherzähler) –
           dabei werden die abgefragten Koordinaten übertragen. Keine Nutzerkonten, keine Profile; Einstellungen nur lokal
           (siehe Datenschutz &amp; Impressum).</p>
       </div>
@@ -2131,23 +2148,10 @@
         <button type="button" id="openCookieSettingsBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">🍪 Cookie-Einstellungen</button>
         <span>·</span>
         <button type="button" id="openPrivacyBtn" class="cookie-footer-link" style="background: none; border: none; padding: 0;">Datenschutz &amp; Impressum</button>
-        <span>·</span>
-        <span id="visitCountWrap" title="Seitenaufrufe seit Einführung des Zählers">👁 <span id="visitCount">…</span> Besucher</span>
       </div>
     </footer>
     <div style="margin-top:10px; text-align:center;">
-      <span id="fc-46761"></span>
-      <script>
-      var fcr = Math.floor(Math.random()*99999999999);
-      var _fcc = _fcc || []; _fcc.push(["46761"]); _fcc.push(["trans"]);(function(){
-      var fc = document.createElement("script");fc.async = true;
-      fc.src = "https://www.imcounter.com/fcount.php?rnd=" + fcr;
-      var sc = document.getElementById("fc-46761");
-      sc.appendChild(fc);
-      })();</script>
-      <noscript>
-      <a href="https://www.imcounter.com/stats/46761/dashboard" rel="nofollow" style="display: none;" target="_blank" title="Gratis Counter"><img src="https://www.imcounter.com/fcounter.php?id=46761;" alt="Gratis Counter" title="Gratis Counter"></a>
-      </noscript>
+      <script language="JavaScript" src="https://www.besucherzaehler-kostenlos.de/js/counter.js.php?count=1&id=wetter-online.de&start=0&design=3b"></script>
     </div>
   </div>
 
@@ -2208,11 +2212,13 @@
         <h4 style="color:#fff; margin-bottom:4px;">1. Lokale Speicherung nach § 25 TDDDG</h4>
         <p style="margin-bottom:8px;">Diese Anwendung speichert Benutzereinstellungen (Wettermodelle, Tabs) lokal im LocalStorage Ihres Browsers. Keine Weitergabe an Dritte zu Werbezwecken.</p>
         <h4 style="color:#fff; margin-bottom:4px;">2. Wetterdaten-Abfrage</h4>
-        <p style="margin-bottom:8px;">Wetterdaten werden direkt in Ihrem Browser von den Anbietern abgerufen: Open-Meteo (api.open-meteo.com, ensemble-api.open-meteo.com, seasonal-api.open-meteo.com, climate-api.open-meteo.com, geocoding-api.open-meteo.com), NASA POWER (power.larc.nasa.gov) für Klimanormale sowie OpenStreetMap Nominatim (nominatim.openstreetmap.org) für die GPS-Rückwärtssuche und für die Anzeige des nächstgelegenen Orts am Datenpunkt. Dabei werden die abgefragten Standortkoordinaten an den jeweiligen Anbieter übertragen. Zusätzlich wird beim Seitenaufruf der Besucherzähler ImCounter (www.imcounter.com) geladen (Details siehe Abschnitt 4). Es werden keine Nutzerprofile angelegt. Vollständige Quellenliste siehe „Datenquellen &amp; Lizenzen" am Seitenende.</p>
+        <p style="margin-bottom:8px;">Wetterdaten werden direkt in Ihrem Browser von den Anbietern abgerufen: Open-Meteo (api.open-meteo.com, ensemble-api.open-meteo.com, seasonal-api.open-meteo.com, climate-api.open-meteo.com, geocoding-api.open-meteo.com), NASA POWER (power.larc.nasa.gov) für Klimanormale sowie OpenStreetMap Nominatim (nominatim.openstreetmap.org) für die GPS-Rückwärtssuche und für die Anzeige des nächstgelegenen Orts am Datenpunkt. Dabei werden die abgefragten Standortkoordinaten an den jeweiligen Anbieter übertragen. Zusätzlich wird am Seitenende der Besucherzähler von besucherzaehler-kostenlos.de geladen (Details siehe Abschnitt 4). Es werden keine Nutzerprofile angelegt. Vollständige Quellenliste siehe „Datenquellen &amp; Lizenzen" am Seitenende.</p>
         <h4 style="color:#fff; margin-bottom:4px;">3. Widerrufsrecht (Art. 7 Abs. 3 DSGVO)</h4>
         <p style="margin-bottom:8px;">Sie können die Cookie- und Speichereinstellungen jederzeit über die Fußzeile aufrufen und anpassen.</p>
-        <h4 style="color:#fff; margin-bottom:4px;">4. Besucherzähler ImCounter</h4>
-        <p style="margin-bottom:8px;">Unsere Website verwendet den Besucherzähler ImCounter. ImCounter ist ein kostenloser Besucherzähler, welcher die Besucher und Seitenaufrufe auf dieser Internetseite analysiert und auswertet. Dabei werden IP-Adresse, Datum und Uhrzeit der Anfrage, Browsertyp, Browsersprache, Bildschirmauflösung, Referrer und Gerätetyp ausgelesen und an den Betreiber von ImCounter übertragen. Alle Daten werden SSL-verschlüsselt übertragen und selbstverständlich nach den Richtlinien der DSVGO vollständig anonymisiert und ausgewertet. Die IP-Adresse wird während der Übertragung pseudonymisiert, sodass keine personenbezogenen Daten an den Betreiber von ImCounter übermittelt werden.</p><p style="margin-bottom:8px;">Der Datenerhebung und -speicherung können Sie jederzeit mit Wirkung für die Zukunft widersprechen. Um einer Datenerhebung und -speicherung Ihrer Besucherdaten für die Zukunft zu widersprechen, können Sie unter nachfolgendem Link ein Opt-Out-Cookie von ImCounter beziehen, dieser bewirkt, dass zukünftig keine Besucherdaten Ihres Browsers bei ImCounter erhoben und gespeichert werden:  <a href="https://www.imcounter.com/de/privacy/46761.htm" target="_blank" rel="noopener" style="color:#38bdf8;">https://www.imcounter.com/de/privacy/46761.htm</a>. Dadurch wird ein Opt-Out-Cookie mit dem Namen "privcookie" von ImCounter gesetzt. Bitte löschen Sie diesen Cookie nicht, solange Sie Ihren Widerspruch aufrecht erhalten möchten.</p><p style="margin-bottom:8px;">Weitere Informationen finden Sie in den Datenschutzbestimmungen von ImCounter: <a href="https://www.imcounter.com/datenschutz.html" target="_blank" rel="noopener" style="color:#38bdf8;">https://www.imcounter.com/datenschutz.html</a>.</p>
+        <h4 style="color:#fff; margin-bottom:4px;">4. Besucherzähler von besucherzaehler-kostenlos.de</h4>
+        <p style="margin-bottom:8px;">Diese Webseite verwendet einen externen Zähler, um die Anzahl der Webseitenaufrufe zu erfassen. Dafür wird ein Java-Script von einer externe Webseite geladen. Der Server von <a href="https://www.besucherzaehler-kostenlos.de" target="_blank" rel="noopener" style="color:#38bdf8;">besucherzaehler-kostenlos.de</a> speichert die IP-Adresse des Zugriffs anonymisiert und zeitlich begrenzt in einer LOG-Datei ab. Diese wird regelmäßig unwiderruflich gelöscht.</p>
+        <p style="margin-bottom:8px;">Um die korrekte Funktionsweise des Zählers zu gewährleisten, speichert der Besucherzähler zudem einen sogenannten Session-Cookie auf dem Computer des Besuchers ab. Dieser wird in der Regel vom Browser gelöscht, sobald er geschlossen wird. In diesem Cookie werden keine persönlichen Informationen gespeichert. Er enthält lediglich die Information der aufgerufenen Domain, sowie einen boolschen Tag (true/false), um den Besucher als bereits gezählt zu markieren.</p>
+        <p style="margin-bottom:8px;">Es werden auch darüberhinaus keine persönlichen oder personenbezogenen Daten vom Besucherzähler erhoben. Eine Nachverfolgung oder Zuordnung der Zugriffe ist zu keiner Zeit möglich. Ein besonderer Dank geht an <a href="https://www.internetanbieter-experte.de" target="_blank" rel="noopener" style="color:#38bdf8;">internetanbieter-experte.de</a>, durch dessen Unterstützung dieser kostenlose Service erst möglich gemacht wird.</p>
         <h4 style="color:#fff; margin-bottom:6px; font-size:13px; margin-top:12px;">Angaben gemäß § 5 DDG (Impressum)</h4>
         <div style="background:#172332; padding:12px; border-radius:8px; border:1px solid #27384a; margin-bottom:12px; color:#e2e8f0; font-family:monospace; font-size:12px; line-height:1.5;">
           <p style="font-weight:700; color:#fff; font-size:13px;">Andy Hessel</p>
@@ -2229,66 +2235,7 @@
     </div>
   </div>
 
-  <script type="text/x-server-plugin">
-    // Globaler Besucherzähler (Seitenaufrufe). Binärlayout in `state`:
-    // Byte 0: Version (1) · Bytes 1-4: Zähler (u32 LE) · Bytes 5-7: Reserve ·
-    // ab Byte 8: Drossel-Tabelle, 256 Einträge à 8 Byte (net3 u32 LE + Zeitstempel-Sekunden u32 LE).
-    var VCOUNT_VERSION = 1;
-    var VCOUNT_OFF = 1;
-    var VTHROTTLE_OFF = 8;
-    var VTHROTTLE_N = 256;
-    var VTHROTTLE_SEC = 10;
-    function vU32(o) {
-      return (state[o] | (state[o + 1] << 8) | (state[o + 2] << 16) | (state[o + 3] << 24)) >>> 0;
-    }
-    function vU32Set(o, v) {
-      state[o] = v & 255;
-      state[o + 1] = (v >>> 8) & 255;
-      state[o + 2] = (v >>> 16) & 255;
-      state[o + 3] = (v >>> 24) & 255;
-    }
-    function vEnsure() {
-      if (state[0] !== VCOUNT_VERSION) {
-        state[0] = VCOUNT_VERSION;
-        vU32Set(VCOUNT_OFF, 0);
-      }
-    }
-    function vAllowed(net3, nowSec) {
-      var empty = -1;
-      for (var i = 0; i < VTHROTTLE_N; i++) {
-        var o = VTHROTTLE_OFF + i * 8;
-        var n = vU32(o);
-        var t = vU32(o + 4);
-        if (n === net3) {
-          if (nowSec - t < VTHROTTLE_SEC) return false;
-          vU32Set(o + 4, nowSec);
-          return true;
-        }
-        if (empty < 0 && n === 0 && t === 0) empty = i;
-      }
-      var slot = empty >= 0 ? empty : (nowSec % VTHROTTLE_N);
-      var so = VTHROTTLE_OFF + slot * 8;
-      vU32Set(so, net3);
-      vU32Set(so + 4, nowSec);
-      return true;
-    }
-    self.rpc = {
-      visit: function (ctx, data) {
-        vEnsure();
-        var nowSec = Math.floor(Date.now() / 1000);
-        var net3 = 0;
-        try { net3 = (ctx.conn.net[3]) >>> 0; } catch (e) {}
-        if (vAllowed(net3, nowSec)) {
-          vU32Set(VCOUNT_OFF, (vU32(VCOUNT_OFF) + 1) >>> 0);
-        }
-        return String(vU32(VCOUNT_OFF));
-      },
-      getCount: function () {
-        vEnsure();
-        return String(vU32(VCOUNT_OFF));
-      }
-    };
-  </script>
+  
   <script>
     // Globaler Startfehler-Fänger: zeigt Boot-Abstürze (z. B. blockierter Speicher
     // bei file://-Öffnung) in der Statuszeile statt stillem Stillstand.
@@ -2425,6 +2372,60 @@
     }
 
     let MODELS = getAvailableModels(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude);
+
+    // Kurzfrist-Modelle mit der häufigsten Aktualisierung — Basis für die
+    // Trendanalyse (HEUTE/MORGEN): ICON-D2 RUC läuft stündlich, ICON-D2/EU,
+    // AROME (FR/HD), HARMONIE (KNMI) und D2-EPS ca. alle 3 Stunden neu.
+    // Globale Modelle (IFS/GFS … nur 2–4 Läufe/Tag) bleiben im 24h-Konsens.
+    const FRESH_IDS = new Set([
+      'dwd_icon_d2_ruc_native',
+      'icon_d2', 'dwd_icon_d2_native',
+      'icon_eu', 'dwd_icon_eu_native',
+      'meteofrance_arome_france', 'meteofrance_arome_france_hd',
+      'knmi_harmonie_arome_europe',
+      'ens_d2eps'
+    ]);
+
+    // Vergangene Stunden des Tages: echte DWD-Messwerte (Bright Sky,
+    // Stundenwerte der nächsten Station — gleiche Quelle wie Verifikation).
+    // Graue Balken in den Stundendiagrammen der Trendanalyse.
+    let todayPastObs = null, todayPastObsKey = '', todayPastObsAt = 0;
+    let lastTrendArgs = null, trendPastSig = '';
+    async function ensureTodayPastObs() {
+      const now = new Date();
+      const p2 = (n) => String(n).padStart(2, '0');
+      const dayKey = `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`;
+      const key = dayKey + '|' + Math.round(CURRENT_LOCATION.latitude * 100) + ',' + Math.round(CURRENT_LOCATION.longitude * 100);
+      if (key === todayPastObsKey && Date.now() - todayPastObsAt < 30 * 60 * 1000) return todayPastObs;
+      todayPastObsKey = key; todayPastObsAt = Date.now(); todayPastObs = null;
+      try {
+        const st = (typeof nearestDwdStation === 'function') ? nearestDwdStation(CURRENT_LOCATION.latitude, CURRENT_LOCATION.longitude) : null;
+        const u = new URL('https://api.brightsky.dev/weather');
+        u.searchParams.set('lat', (st && Number.isFinite(st.lat) ? st.lat : CURRENT_LOCATION.latitude).toFixed(4));
+        u.searchParams.set('lon', (st && Number.isFinite(st.lon) ? st.lon : CURRENT_LOCATION.longitude).toFixed(4));
+        // Einen Tag weiter fassen (beidseitig): 00:00 Ortszeit = 23:00 UTC
+        // des Vortags; last_date ist exklusiv (liefert nur den 00:00-Wert).
+        const y = new Date(now); y.setDate(y.getDate() - 1);
+        const t = new Date(now); t.setDate(t.getDate() + 1);
+        u.searchParams.set('date', `${y.getFullYear()}-${p2(y.getMonth() + 1)}-${p2(y.getDate())}`);
+        u.searchParams.set('last_date', `${t.getFullYear()}-${p2(t.getMonth() + 1)}-${p2(t.getDate())}`);
+        const res = await fetch(u.toString());
+        if (!res.ok) return null;
+        const j = await res.json();
+        const hourStart = new Date(now); hourStart.setMinutes(0, 0, 0);
+        const out = [];
+        for (const r of ((j && j.weather) || [])) {
+          const d = new Date(r.timestamp);
+          if (isNaN(d) || d >= hourStart) continue;
+          if (d.getFullYear() !== now.getFullYear() || d.getMonth() !== now.getMonth() || d.getDate() !== now.getDate()) continue;
+          if (!Number.isFinite(r.temperature)) continue;
+          out.push({ t: p2(d.getHours()) + ':00', temp: r.temperature, mm: Number.isFinite(r.precipitation) ? r.precipitation : 0 });
+        }
+        out.sort((a, b) => a.t < b.t ? -1 : 1);
+        todayPastObs = out;
+      } catch (e) { todayPastObs = null; }
+      return todayPastObs;
+    }
 
     let forecast = null;
     let loading = false;
@@ -4001,7 +4002,7 @@
       };
       try { rd.readAsText(file); } catch (e) {}
     }
-    let verifRunning = false, verifLeadSel = 1, verifOvModel = 'alle';
+    let verifRunning = false, verifLeadSel = 1, verifOvModel = 'alle', verifBestOverall = null;
     async function renderVerif() {
       const stEl = $('#verifStatus'), tEl = $('#verifTables');
       if (!stEl || !tEl) return;
@@ -4130,6 +4131,9 @@
           totals.push({ mid, n, mTmax: tmax / n, mTmin: tmin / n, mTemp: (tmax + tmin) / (2 * n), mPrec: pN ? pr / pN : null, bTmax: bT / n, qTemp: hT / (2 * n), qPrec: pN ? hP / pN : null });
         }
         totals.sort((x, y) => x.mTemp - y.mTemp);
+        // Treffsicherstes Modell merken (für die Tagesvorhersage-Badge).
+        try { verifBestOverall = totals.length ? { label: verifModelLabel(totals[0].mid).label, mTemp: totals[0].mTemp, n: totals[0].n } : null; } catch (e) {}
+        try { if (verifBestOverall) verifWrite('verifBest_v1_' + verifLocKey(), verifBestOverall); } catch (e) {}
         const rows2 = totals.map((t, i) => {
           const c = verifModelLabel(t.mid);
           const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : `#${i + 1} `;
@@ -5092,7 +5096,7 @@
         h24Model = H24_MEAN_ID;
       }
       sel.innerHTML =
-        `<option value="${H24_MEAN_ID}"${h24Model === H24_MEAN_ID ? ' selected' : ''}>📊 Mittel aller Modelle</option>` +
+        `<option value="${H24_MEAN_ID}"${h24Model === H24_MEAN_ID ? ' selected' : ''}>📊 Konsens aller Modelle (Median)</option>` +
         withData.map(m =>
           `<option value="${m.id}"${m.id === h24Model ? ' selected' : ''}${m.members ? ' style="color:#4ade80;font-weight:bold;"' : ''}>${m.label}</option>`
         ).join('');
@@ -5129,6 +5133,12 @@
     function h24Scales() {
       const tVals = h24Data.map(h => h.temp).filter(Number.isFinite);
       const dVals = h24Data.map(h => h.dew).filter(Number.isFinite);
+      if (h24Model === H24_MEAN_ID) {
+        for (const h of h24Data) {
+          if (Number.isFinite(h.tlo)) tVals.push(h.tlo);
+          if (Number.isFinite(h.thi)) tVals.push(h.thi);
+        }
+      }
       let lo = Math.min(...tVals, ...dVals), hi = Math.max(...tVals, ...dVals);
       if (!Number.isFinite(lo)) { lo = 0; hi = 20; }
       if (hi - lo < 2) { hi += 1; lo -= 1; }
@@ -5168,28 +5178,52 @@
       const times = forecast.hourly.time || [];
       if (!times.length || !h24Model) return;
       const H = forecast.hourly;
-      let T, D, P, MM, W, G, WD, WC, SN, SD, SL;
+      let T, D, P, MM, W, G, WD, WC, SN, SD, SL, TLo, THi;
       if (h24Model === H24_MEAN_ID) {
-        // Mittel aller Modelle mit Daten für diesen Ort
+        // Konsens aller Modelle mit Daten für diesen Ort:
+        // Median für stetige Größen (robust gegen Ausreißer),
+        // Mittelwert für Regen (erwartete Menge/Wahrscheinlichkeit),
+        // dazu Min/Max-Band als Unsicherheitsbereich.
         const ids = h24ModelsWithData().map(m => m.id);
-        const meanArr = (base) => {
-          const L = Math.max(0, ...ids.map(id => ((H[`${base}_${id}`] || []).length)));
-          const out = new Array(L);
-          for (let j = 0; j < L; j++) {
-            let s = 0, c = 0;
-            for (const id of ids) {
-              const v = (H[`${base}_${id}`] || [])[j];
-              if (Number.isFinite(v)) { s += v; c++; }
-            }
-            out[j] = c ? s / c : null;
+        const L = Math.max(0, ...ids.map(id => ((H[`temperature_2m_${id}`] || []).length)));
+        const valsAt = (base, j) => {
+          const out = [];
+          for (const id of ids) {
+            const v = (H[`${base}_${id}`] || [])[j];
+            if (Number.isFinite(v)) out.push(v);
           }
           return out;
         };
-        T = meanArr('temperature_2m'); D = meanArr('dew_point_2m'); P = meanArr('precipitation_probability');
-        MM = meanArr('precipitation'); W = meanArr('wind_speed_10m'); G = meanArr('wind_gusts_10m');
-        SN = meanArr('snowfall');
-        SD = meanArr('snow_depth');
-        SL = meanArr('soil_temperature_0cm');
+        const medOf = (arr) => {
+          if (!arr.length) return null;
+          const s = arr.slice().sort((a, b) => a - b);
+          const m = s.length >> 1;
+          return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+        };
+        const medianArr = (base) => {
+          const out = new Array(L);
+          for (let j = 0; j < L; j++) out[j] = medOf(valsAt(base, j));
+          return out;
+        };
+        const meanArr = (base) => {
+          const out = new Array(L);
+          for (let j = 0; j < L; j++) {
+            const a = valsAt(base, j);
+            out[j] = a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+          }
+          return out;
+        };
+        T = medianArr('temperature_2m'); D = medianArr('dew_point_2m'); P = meanArr('precipitation_probability');
+        MM = meanArr('precipitation'); W = medianArr('wind_speed_10m'); G = medianArr('wind_gusts_10m');
+        SN = medianArr('snowfall');
+        SD = medianArr('snow_depth');
+        SL = medianArr('soil_temperature_0cm');
+        TLo = new Array(L); THi = new Array(L);
+        for (let j = 0; j < L; j++) {
+          const a = valsAt('temperature_2m', j);
+          TLo[j] = a.length ? Math.min(...a) : null;
+          THi[j] = a.length ? Math.max(...a) : null;
+        }
         WD = []; WC = [];
       } else {
         const col = (base) => H[`${base}_${h24Model}`] || [];
@@ -5199,6 +5233,7 @@
         SD = col('snow_depth');
         SL = col('soil_temperature_0cm');
         WD = col('wind_direction_10m'); WC = col('weather_code');
+        TLo = []; THi = [];
       }
       if (!T.some(Number.isFinite)) {
         [svgT, svgR, svgW, svgS].forEach(s => { if (s) s.innerHTML = ''; });
@@ -5221,14 +5256,17 @@
       h24Data = [];
       for (let k = 0; k < 24 && start + k < times.length; k++) {
         const j = start + k;
-        h24Data.push({ time: times[j], temp: T[j], dew: D[j], prob: P[j], mm: MM[j], wind: W[j], gust: G[j], dir: WD[j], code: WC[j], snow: SN[j], snowd: SD[j], soil: SL[j] });
+        h24Data.push({ time: times[j], temp: T[j], dew: D[j], prob: P[j], mm: MM[j], wind: W[j], gust: G[j], dir: WD[j], code: WC[j], snow: SN[j], snowd: SD[j], soil: SL[j], tlo: TLo[j], thi: THi[j] });
       }
       if (h24Sel >= h24Data.length) h24Sel = 0;
       const cur = MODELS.find(m => m.id === h24Model);
-      const curLabel = h24Model === H24_MEAN_ID ? 'Mittel aller Modelle' : (cur ? cur.label : h24Model);
+      const nIds = h24Model === H24_MEAN_ID ? h24ModelsWithData().length : 0;
+      const curLabel = h24Model === H24_MEAN_ID ? `Konsens aller Modelle (Median, ${nIds})` : (cur ? cur.label : h24Model);
       const a = getTimestampParts(h24Data[0].time), b = getTimestampParts(h24Data[h24Data.length - 1].time);
       const sub = $('#h24Range');
       if (sub && a && b) sub.textContent = `${a.weekday}, ${a.time} Uhr → ${b.weekday}, ${b.time} Uhr · ${curLabel}`;
+      const ttl = $('#h24Title');
+      if (ttl) ttl.textContent = h24Model === H24_MEAN_ID ? '🕐 24-Stunden-Verlauf — Konsens aller Modelle' : `🕐 24-Stunden-Verlauf — ${curLabel}`;
 
       const n = h24Data.length;
       const x0 = 46, x1 = 906;
@@ -5290,6 +5328,15 @@
       const fillD = 'M ' + temps.map((v, i) => `${X(i).toFixed(1)},${TY(v).toFixed(1)}`).join(' L ')
         + ' L ' + dews.map((d, i) => `${X(n - 1 - i).toFixed(1)},${TY(dews[n - 1 - i]).toFixed(1)}`).join(' L ') + ' Z';
       t += `<path d="${fillD}" fill="#34d399" fill-opacity="0.10"/>`;
+      // Konsens-Streuband (Min–Max aller Modelle) hinter den Linien
+      if (h24Model === H24_MEAN_ID) {
+        const loA = h24Ffill(h24Data.map(h => h.tlo)), hiA = h24Ffill(h24Data.map(h => h.thi));
+        if (loA.some(Number.isFinite) && hiA.some(Number.isFinite)) {
+          const bandD = 'M ' + hiA.map((v, i) => `${X(i).toFixed(1)},${TY(v).toFixed(1)}`).join(' L ')
+            + ' L ' + loA.map((d, i) => `${X(n - 1 - i).toFixed(1)},${TY(loA[n - 1 - i]).toFixed(1)}`).join(' L ') + ' Z';
+          t += `<path d="${bandD}" fill="#f59e0b" fill-opacity="0.16"/>`;
+        }
+      }
       t += `<path d="${line(dews, TY)}" fill="none" stroke="#34d399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
       t += `<path d="${line(temps, TY)}" fill="none" stroke="#f59e0b" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
       // DWD-Nowcast (15-min RUC) auf die 24h-Achse projiziert, gepunktet
@@ -5615,15 +5662,13 @@
     let cloudCardViewMode = 'chart';
     let cloudTableDayFilter = 'all';
 
-    function getSelectedModels() {
-      const checked = [...$$('.model-check:checked')].map((i) => i.value);
-      const selectedIds = new Set(checked);
-      $('#modelCountLabel').textContent = selectedIds.size;
-
+    // Rohdaten je Modell aufbereiten (alle Modelle mit echten Daten).
+    // Wird für die Tabellen-Auswahl UND für die Tagesvorhersage mit
+    // ALLEN Modellen (Gesamt-Konsens) verwendet.
+    function buildModelData(list) {
       if (!forecast?.hourly) return [];
 
-      return MODELS
-        .filter((m) => selectedIds.has(m.id))
+      return list
         .map((model) => {
           const temperature = forecast.hourly[`temperature_2m_${model.id}`] || [];
           const probability = forecast.hourly[`precipitation_probability_${model.id}`] || [];
@@ -5669,6 +5714,14 @@
           };
         })
         .filter((m) => m.lastIndex >= 0);
+    }
+
+    function getSelectedModels() {
+      const checked = [...$$('.model-check:checked')].map((i) => i.value);
+      const selectedIds = new Set(checked);
+      $('#modelCountLabel').textContent = selectedIds.size;
+
+      return buildModelData(MODELS.filter((m) => selectedIds.has(m.id)));
     }
 
     function renderDayChips(times, lastHour) {
@@ -5838,10 +5891,26 @@
     function renderTrendAnalysis(availableModels, times, lastHour) {
       const trendEl = $('#trendSection');
       if (!trendEl) return;
-      if (!availableModels.length || !times.length) {
+      // Trendanalyse aus den am häufigsten aktualisierten Kurzfrist-Modellen
+      // (RUC stündlich, D2/EU/AROME/HARMONIE/D2-EPS ca. 3-stündlich) —
+      // für die nächsten Stunden schlägt Frische die Masse.
+      let targetModels = buildModelData(MODELS).filter(m => FRESH_IDS.has(m.id));
+      if (!targetModels.length) targetModels = buildModelData(MODELS);
+      if (!targetModels.length || !times.length) {
         trendEl.style.display = 'none';
         return;
       }
+      // Vergangene Stunden (gemessene Werte) nachladen → einmalig neu rendern
+      lastTrendArgs = { av: availableModels, times, lh: lastHour };
+      try {
+        ensureTodayPastObs().then((obs) => {
+          const sig = (obs ? obs.length + ':' + (obs.length ? obs[obs.length - 1].t : '') : 'none') + '|' + times.length + '|' + targetModels.length;
+          if (obs && obs.length && trendPastSig !== sig && lastTrendArgs && lastTrendArgs.times === times) {
+            trendPastSig = sig;
+            renderTrendAnalysis(lastTrendArgs.av, lastTrendArgs.times, lastTrendArgs.lh);
+          }
+        });
+      } catch (e) {}
 
       // Group indices by dayKey
       const days = [];
@@ -5861,8 +5930,38 @@
         return;
       }
 
-      const regModels = availableModels.filter(m => m.isRegional);
-      const targetModels = regModels.length ? regModels : availableModels;
+      // Mini-Stundendiagramm (wie die großen Charts): Y-Achse mit Werten +
+      // Hilfslinien, unten jede Stunde beschriftet.
+      const hourBarsSvg = (items, o) => {
+        const W = 960, AX = 46, PT = 24, PB = 24, PH = 104, PR = 8;
+        const n = Math.max(1, items.length);
+        const pw = W - AX - PR, slot = pw / n;
+        const bw = Math.max(4, Math.min(22, slot * 0.55));
+        const X = (i) => AX + slot * i + slot / 2;
+        const rng = Math.max(1e-9, o.max - o.min);
+        const Y = (v) => PT + PH - (Math.max(o.min, Math.min(o.max, v)) - o.min) / rng * PH;
+        let s = `<svg viewBox="0 0 ${W} ${PT + PH + PB}" style="width:100%;height:auto;display:block;" role="img">`;
+        const steps = Math.max(1, Math.round((o.max - o.min) / o.step));
+        for (let k = 0; k <= steps; k++) {
+          const g = o.min + k * o.step, y = Y(g);
+          s += `<line x1="${AX}" y1="${y.toFixed(1)}" x2="${W - PR}" y2="${y.toFixed(1)}" stroke="#1e2c3d" stroke-width="1"/>` +
+            `<text x="${AX - 5}" y="${(y + 4).toFixed(1)}" fill="#64748b" font-size="12" font-family="monospace" text-anchor="end">${o.fmt(g)}</text>`;
+        }
+        items.forEach((r, i) => {
+          const ok = Number.isFinite(r.v);
+          const y = ok ? Y(r.v) : PT + PH;
+          s += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(PT + PH - y).toFixed(1)}" rx="3" fill="${ok ? o.colorOf(r.v, r) : '#1e293b'}"><title>${ok ? o.tip(r.t, r.v, r) : ((r.t || '') + ' Uhr: keine Daten')}</title></rect>`;
+          if (ok && o.valFmt) {
+            const lbl = o.valFmt(r.v, r);
+            if (lbl) {
+              const vf = (typeof o.valFill === 'function') ? o.valFill(r.v, r) : (o.valFill || '#e2e8f0');
+              s += `<text x="${X(i).toFixed(1)}" y="${(y - 6).toFixed(1)}" fill="${vf}" font-size="12" text-anchor="middle" font-family="monospace">${lbl}</text>`;
+            }
+          }
+          s += `<text x="${X(i).toFixed(1)}" y="${PT + PH + 15}" fill="#7d8ea3" font-size="11" text-anchor="middle" font-family="monospace">${(r.t || '').slice(0, 2)}</text>`;
+        });
+        return s + '</svg>';
+      };
 
       function analyzeDay(dayObj, isToday, isTomorrow, refDay) {
         let minTemp = 999, maxTemp = -999, peakHour = '14:00';
@@ -5872,11 +5971,15 @@
         const allDayTemps = [];
         const allDayDews = [];
         let minSpread = 999, spreadHour = null;
+        let spreadSum = 0, spreadN = 0;
         const allDayClouds = [];
         const allDayLowClouds = [];
         const allDayMidClouds = [];
         const allDayHighClouds = [];
         const fogHours = [];
+        const codeVotesDay = {}, codeVotesAll = {};
+        const rainByHour = [];
+        const tempByHour = [];
         let dayMinVis = null;
 
         for (const idx of dayObj.indices) {
@@ -5907,6 +6010,7 @@
             }
             if (hourNum === 14 || hourNum === 15) afternoonTemp = hMax;
             if (hourNum === 20 || hourNum === 21) eveningTemp = hMin;
+            spreadSum += (hMax - hMin); spreadN++;
           }
 
           if (clouds.length) allDayClouds.push(...clouds);
@@ -5921,6 +6025,18 @@
           const isFoggy = (hMinVis !== null && hMinVis < 2500) || wCodes.includes(45) || wCodes.includes(48) || (hAvgLow >= 80 && (hourNum <= 9 || hourNum >= 21));
           if (isFoggy && tp) {
             fogHours.push(tp.time);
+          }
+          for (const c of wCodes) {
+            codeVotesAll[c] = (codeVotesAll[c] || 0) + 1;
+            if (hourNum >= 6 && hourNum <= 20) codeVotesDay[c] = (codeVotesDay[c] || 0) + 1;
+          }
+          rainByHour.push({ t: tp ? tp.time : '', mm: precips.length ? Math.max(...precips) : 0 });
+          if (temps.length) {
+            const sT = temps.slice().sort((a, b) => a - b);
+            const mid = sT.length >> 1;
+            tempByHour.push({ t: tp ? tp.time : '', med: sT.length % 2 ? sT[mid] : (sT[mid - 1] + sT[mid]) / 2 });
+          } else {
+            tempByHour.push({ t: tp ? tp.time : '', med: null });
           }
 
           if (rains.length) {
@@ -5946,6 +6062,28 @@
           }
         }
 
+        // Vergangene Stunden: echte DWD-Messwerte (graue Balken). Nur HEUTE.
+        // Messwerte zählen bei Min/Max/Ø/Summe mit (sie sind am wahrsten).
+        let pastTag = '';
+        if (isToday && todayPastObs && todayPastObs.length) {
+          const have = new Set();
+          for (const idx of dayObj.indices) {
+            const tp0 = getTimestampParts(times[idx]);
+            if (tp0) have.add(tp0.time);
+          }
+          const past = todayPastObs.filter(o => !have.has(o.t));
+          if (past.length) {
+            pastTag = ', grau = gemessen';
+            tempByHour.unshift(...past.map(o => ({ t: o.t, med: o.temp, past: true })));
+            rainByHour.unshift(...past.map(o => ({ t: o.t, mm: o.mm, past: true })));
+            for (const o of past) {
+              allDayTemps.push(o.temp);
+              if (o.temp < minTemp) minTemp = o.temp;
+              if (o.temp > maxTemp) maxTemp = o.temp;
+              precipMaxTotal += o.mm;
+            }
+          }
+        }
         if (minTemp === 999) minTemp = 0;
         if (maxTemp === -999) maxTemp = 0;
 
@@ -6040,6 +6178,100 @@
         const fogAddon = hasFog ? ' 🌫️ Früh/Nachts Nebel möglich.' : '';
         let headline = `Trend: ${tempDesc}. ${rainTiming}. ${coverageLevel}.${fogAddon} ${eveningDrop}.`;
 
+        const deFmt = (v) => (Math.round(v * 10) / 10).toFixed(1).replace('.', ',');
+        // Großes Tages-Wettersymbol: häufigster Wetter-Code der Tagstunden
+        const pickCode = (votes) => {
+          let best = null, bn = 0;
+          for (const [c, n] of Object.entries(votes)) if (n > bn) { bn = n; best = +c; }
+          return best;
+        };
+        let domCode = pickCode(codeVotesDay);
+        if (domCode === null) domCode = pickCode(codeVotesAll);
+        let bigIcon = '🌡️';
+        try {
+          if (domCode !== null) bigIcon = h24Icon(domCode);
+          else if (maxRain >= 50 || precipMaxTotal >= 5) bigIcon = '🌧️';
+          else if (avgCover >= 75) bigIcon = '☁️';
+          else if (avgCover >= 25) bigIcon = '⛅';
+          else bigIcon = '☀️';
+        } catch (e) { bigIcon = '🌡️'; }
+        // Temperatur pro Stunde (Median aller Kurzfrist-Modelle) als Diagramm
+        let tempBar = '';
+        if (tempByHour.length) {
+          const fin = tempByHour.filter(r => Number.isFinite(r.med));
+          let tLo = 0, tHi = 1;
+          if (fin.length) {
+            tLo = Math.floor(Math.min(...fin.map(r => r.med)));
+            tHi = Math.ceil(Math.max(...fin.map(r => r.med)));
+            if (tHi <= tLo) tHi = tLo + 1;
+          }
+          let tStep = 1;
+          if (tHi - tLo > 8) tStep = 2;
+          if (tHi - tLo > 16) tStep = 5;
+          const tColor = (v) => {
+            const f = Math.max(0, Math.min(1, (v - tLo) / Math.max(0.5, tHi - tLo)));
+            const c0 = [56, 189, 248], c1 = [251, 191, 36], c2 = [239, 68, 68];
+            const seg = f < 0.5 ? [c0, c1, f * 2] : [c1, c2, (f - 0.5) * 2];
+            const c = seg[0].map((x, i) => Math.round(x + (seg[1][i] - x) * seg[2]));
+            return `rgb(${c[0]},${c[1]},${c[2]})`;
+          };
+          tempBar = `<div style="margin:8px 0 2px;"><div style="font-size:10px;color:#fbbf24;font-weight:700;margin-bottom:3px;">🌡️ Temperatur pro Stunde (Median aller Modelle${pastTag})</div>` +
+            hourBarsSvg(tempByHour.map(r => ({ t: r.t, v: r.med, past: r.past })), {
+              min: tLo, max: tHi, step: tStep,
+              fmt: (v) => v.toFixed(0) + '°',
+              colorOf: (v, r) => (r && r.past) ? '#6b7280' : tColor(v),
+              valFmt: (v, r) => v.toFixed(1).replace('.', ',') + '°',
+              valFill: (v, r) => (r && r.past) ? '#9ca3af' : '#fde68a',
+              tip: (t, v, r) => `${t} Uhr: ${v.toFixed(1).replace('.', ',')} °C${(r && r.past) ? ' (gemessen)' : ''}`
+            }) + `</div>`;
+        }
+        // Regen pro Stunde (Maximum aller Kurzfrist-Modelle) als Diagramm
+        let rainBars = '';
+        if (rainByHour.length) {
+          const rMaxV = Math.max(0, ...rainByHour.map(r => r.mm));
+          let rTop = 1, rStep = 0.5;
+          if (rMaxV > 1) {
+            if (rMaxV <= 2.5) { rTop = 2.5; rStep = 0.5; }
+            else if (rMaxV <= 5) { rTop = 5; rStep = 1; }
+            else if (rMaxV <= 10) { rTop = 10; rStep = 2; }
+            else { rTop = Math.ceil(rMaxV / 10) * 10; rStep = rTop / 5; }
+          }
+          rainBars = `<div style="margin:8px 0 2px;"><div style="font-size:10px;color:#7dd3fc;font-weight:700;margin-bottom:3px;">🌧️ Regen pro Stunde (Maximum aller Modelle${pastTag})</div>` +
+            hourBarsSvg(rainByHour.map(r => ({ t: r.t, v: r.mm, past: r.past })), {
+              min: 0, max: rTop, step: rStep,
+              fmt: (v) => ((v % 1) ? v.toFixed(1).replace('.', ',') : v.toFixed(0)) + ' mm',
+              colorOf: (v, r) => (r && r.past) ? '#6b7280' : '#38bdf8',
+              valFmt: (v, r) => v > 0.049 ? v.toFixed(1).replace('.', ',') : '',
+              valFill: (v, r) => (r && r.past) ? '#9ca3af' : '#7dd3fc',
+              tip: (t, v, r) => `${t} Uhr: ${v.toFixed(1).replace('.', ',')} mm${(r && r.past) ? ' (gemessen)' : ''}`
+            }) + `</div>`;
+        }
+        let spreadTxt = '';
+        if (spreadN) {
+          const avgSp = spreadSum / spreadN;
+          const agree = avgSp < 1.5 ? 'sehr einig' : avgSp < 3 ? 'recht einig' : avgSp < 5 ? 'teils uneinig' : 'uneinig';
+          spreadTxt = ` · Ø-Modellspanne ${deFmt(avgSp)} °C (${agree})`;
+        }
+        let bestBullet = '';
+        try {
+          const vb = (verifBestOverall && verifBestOverall.label) ? verifBestOverall : (() => { try { const s = verifRead('verifBest_v1_' + verifLocKey()); return (s && s.label) ? s : null; } catch (e2) { return null; } })();
+          if (vb) {
+            bestBullet = `<div class="trend-bullet-item best"><span>🏆</span><div><strong>Gemessen am besten:</strong> ${vb.label} — treffsicherstes Modell im Langzeitvergleich (Ø-Fehler ${deFmt(vb.mTemp)} °C aus ${vb.n} Prüftagen)</div></div>`;
+          }
+        } catch (e) {}
+
+        // Astronomische Tageslänge (für Sonnen-Balken: Sonne vs. Tageslicht)
+        let dayLen = 12;
+        try {
+          const _dt = new Date(dayObj.key + 'T12:00:00');
+          const _N = Math.floor((_dt - new Date(_dt.getFullYear(), 0, 0)) / 864e5);
+          const _lat = CURRENT_LOCATION.latitude * Math.PI / 180;
+          const _decl = -23.44 * Math.PI / 180 * Math.cos(2 * Math.PI * (_N + 10) / 365);
+          let _c = -Math.tan(_lat) * Math.tan(_decl);
+          _c = Math.max(-1, Math.min(1, _c));
+          dayLen = Math.round(24 * Math.acos(_c) / Math.PI * 10) / 10;
+        } catch (e) {}
+
         return {
           weekday: dayObj.weekday,
           shortDate: dayObj.shortDate,
@@ -6057,6 +6289,7 @@
           sunHours,
           sunText,
           maxWind: Math.round(maxWind),
+          dayLen,
           avgCover,
           lowAvg,
           midAvg,
@@ -6066,7 +6299,11 @@
           coverageLevel,
           headline,
           isToday,
-          isTomorrow
+          isTomorrow,
+          modelCount: targetModels.length,
+          bigIcon, rainBars, tempBar,
+          spreadTxt,
+          bestBullet
         };
       }
 
@@ -6074,11 +6311,23 @@
       const tomorrowAnalysis = days.length > 1 ? analyzeDay(days[1], false, true, todayAnalysis) : null;
 
       function renderCardHtml(d, badgeClass, badgeLabel) {
+        // Helfer für Chip-Grafiken: normiert einen Wert auf 0–100 %
+        const cgPct = (v, lo, hi) => Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
+        const tP = v => cgPct(v, -15, 35); // Temperatur-Skala −15…+35 °C
+        const tMinP = tP(d.minTemp).toFixed(1), tAvgP = tP(d.avgTemp).toFixed(1), tMaxP = tP(d.maxTemp).toFixed(1);
+        const dewP = d.avgDew !== null ? cgPct(d.avgDew, -10, 20) : 0; // Taupunkt-Skala −10…+20 °C
+        const dewY = (24 - dewP * 0.2).toFixed(1); // Füllstand im Tropfen (Box 0–24)
+        const sunH = parseFloat(d.sunHours) || 0;
+        const sunFrac = Math.max(0, Math.min(1, sunH / (d.dayLen || 12)));
+        const windP = cgPct(d.maxWind, 0, 75).toFixed(1); // Wind-Skala 0–75 km/h
+        const fogCol = d.hasFog ? '#c084fc' : '#2b3a4f';
+        const dewId = 'dewclip-' + badgeLabel;
         return `
           <div class="trend-card">
             <div>
               <div class="trend-card-header">
                 <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:34px; line-height:1;">${d.bigIcon}</span>
                   <span class="trend-badge ${badgeClass}">${badgeLabel}</span>
                   <span style="font-weight:700; color:#f8fafc; font-size:13px;">${d.weekday}, ${d.shortDate}</span>
                 </div>
@@ -6094,34 +6343,65 @@
 
               <div class="trend-stat-row">
                 <div class="trend-stat-chip">
-                  <span>Temperatur (Min / Ø / Max)</span>
+                  <span>🌡️ Temperatur (Min / Ø / Max)</span>
                   <span>${Math.round(d.minTemp)}° · <span style="color:#fde68a;">Ø ${d.avgTemp.toFixed(1)}°</span> · ${Math.round(d.maxTemp)}°</span>
+                  <div title="Tagesspanne auf der Skala −15…+35 °C (Striche = Min/Max, Punkt = Ø)" style="position:relative; height:6px; margin-top:4px; background:linear-gradient(90deg,#60a5fa,#fde68a 55%,#f87171); border-radius:3px;">
+                    <div style="position:absolute; left:${tMinP}%; top:-2px; width:2px; height:10px; background:#fff; border-radius:1px;"></div>
+                    <div style="position:absolute; left:${tMaxP}%; top:-2px; width:2px; height:10px; background:#fff; border-radius:1px;"></div>
+                    <div title="Ø ${d.avgTemp.toFixed(1)} °C" style="position:absolute; left:calc(${tAvgP}% - 4px); top:-1px; width:8px; height:8px; background:#fde047; border:1px solid #713f12; border-radius:50%;"></div>
+                  </div>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>Wolken (Ø / T·M·H)</span>
-                  <span title="Tiefe: ${d.lowAvg}% · Mittlere: ${d.midAvg}% · Hohe: ${d.highAvg}%">Ø ${d.avgCover}% <span style="color:#94a3b8; font-size:10px;">(${d.lowAvg}/${d.midAvg}/${d.highAvg}%)</span></span>
+                  <span>☁️ Wolken (Ø / T·M·H)</span>
+                  <span title="Tiefe: ${d.lowAvg}% · Mittlere: ${d.midAvg}% · Hohe: ${d.highAvg}%">Ø ${d.avgCover}%</span>
+                  <div style="display:flex; flex-direction:column; gap:2px; margin-top:3px; font-family:monospace; font-size:9px; color:#cbd5e1;">
+                    <div style="display:flex; align-items:center; gap:4px;" title="Tiefe Wolken: ${d.lowAvg}%"><span style="width:8px; color:#c084fc; font-weight:700;">T</span><div style="flex:1; height:5px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.lowAvg}%; background:#a855f7; border-radius:3px;"></div></div><span style="width:26px; text-align:right;">${d.lowAvg}%</span></div>
+                    <div style="display:flex; align-items:center; gap:4px;" title="Mittlere Wolken: ${d.midAvg}%"><span style="width:8px; color:#f9a8d4; font-weight:700;">M</span><div style="flex:1; height:5px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.midAvg}%; background:#ec4899; border-radius:3px;"></div></div><span style="width:26px; text-align:right;">${d.midAvg}%</span></div>
+                    <div style="display:flex; align-items:center; gap:4px;" title="Hohe Wolken: ${d.highAvg}%"><span style="width:8px; color:#fde68a; font-weight:700;">H</span><div style="flex:1; height:5px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.highAvg}%; background:#fbbf24; border-radius:3px;"></div></div><span style="width:26px; text-align:right;">${d.highAvg}%</span></div>
+                  </div>
                 </div>
                 <div class="trend-stat-chip" style="${d.hasFog ? 'background:rgba(88,28,135,0.4); border-color:rgba(168,85,247,0.4);' : ''}">
-                  <span>Nebel-Prognose</span>
+                  <span>🌫️ Nebel-Prognose</span>
                   <span style="${d.hasFog ? 'color:#fde047; font-weight:700;' : ''}">${d.hasFog ? '🌫️ Nebel möglich' : 'Kein Nebel'}</span>
+                  <svg viewBox="0 0 96 24" style="width:100%; height:20px; display:block; margin-top:3px;" role="img" aria-label="${d.hasFog ? 'Nebel möglich' : 'Kein Nebel'}">
+                    <g fill="none" stroke="${fogCol}" stroke-width="3" stroke-linecap="round" opacity="${d.hasFog ? '1' : '0.9'}">
+                      <line x1="10" y1="5" x2="64" y2="5"/>
+                      <line x1="32" y1="12" x2="86" y2="12"/>
+                      <line x1="10" y1="19" x2="64" y2="19"/>
+                    </g>
+                  </svg>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>Taupunkt (Ø)</span>
-                  <span>${d.avgDew !== null ? 'Ø ' + d.avgDew.toFixed(1) + '°' : '—'}</span>
+                  <span>💧 Taupunkt (Ø)</span>
+                  <span style="display:inline-flex; align-items:center; gap:6px;">${d.avgDew !== null ? `<svg width="13" height="17" viewBox="0 0 20 26" style="flex:none;"><defs><clipPath id="${dewId}"><path d="M10 1.5 C10 1.5 2.5 12 2.5 16.5 a7.5 7.5 0 0 0 15 0 C17.5 12 10 1.5 10 1.5 Z"/></clipPath></defs><rect x="0" y="${dewY}" width="20" height="26" fill="#38bdf8" opacity="0.85" clip-path="url(#${dewId})"/><path d="M10 1.5 C10 1.5 2.5 12 2.5 16.5 a7.5 7.5 0 0 0 15 0 C17.5 12 10 1.5 10 1.5 Z" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="1.6"/></svg>` : ''}${d.avgDew !== null ? 'Ø ' + d.avgDew.toFixed(1) + '°' : '—'}</span>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>Regenrisiko</span>
+                  <span>🌧️ Regenrisiko</span>
                   <span>max. ${d.maxRain}%</span>
+                  <div title="Maximale Regenwahrscheinlichkeit des Tages" style="display:flex; align-items:center; gap:4px; margin-top:4px; font-family:monospace; font-size:9px; color:#7dd3fc;">
+                    <span>💧</span>
+                    <div style="flex:1; height:6px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${d.maxRain}%; background:linear-gradient(90deg,#38bdf8,#2563eb); border-radius:3px;"></div></div>
+                  </div>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>Sonnenschein</span>
+                  <span>☀️ Sonnenschein</span>
                   <span>~${d.sunHours} Std.</span>
+                  <div title="~${d.sunHours} von ${d.dayLen} Std. Tageslicht" style="display:flex; align-items:center; gap:4px; margin-top:4px; font-family:monospace; font-size:9px; color:#fcd34d;">
+                    <span style="opacity:${(0.35 + 0.65 * sunFrac).toFixed(2)};">☀️</span>
+                    <div style="flex:1; height:6px; background:#1e293b; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(sunFrac * 100).toFixed(0)}%; background:linear-gradient(90deg,#fde68a,#f59e0b); border-radius:3px;"></div></div>
+                  </div>
                 </div>
                 <div class="trend-stat-chip">
-                  <span>Spitzenwind</span>
+                  <span>💨 Spitzenwind</span>
                   <span>${d.maxWind} km/h</span>
+                  <div title="Spitzenwind auf der Skala 0–75 km/h" style="position:relative; height:6px; margin-top:4px; background:linear-gradient(90deg,#34d399,#fbbf24 60%,#f87171); border-radius:3px;">
+                    <div style="position:absolute; left:calc(${windP}% - 1px); top:-2px; width:2px; height:10px; background:#fff; border-radius:1px;"></div>
+                  </div>
                 </div>
               </div>
+
+              ${d.tempBar}
+              ${d.rainBars}
 
               <div class="trend-bullet-list">
                 <div class="trend-bullet-item">
@@ -6152,12 +6432,13 @@
                   <span>💨</span>
                   <div><strong>Wind:</strong> Bis zu ${d.maxWind} km/h</div>
                 </div>
+                ${d.bestBullet}
               </div>
             </div>
 
             <div class="trend-footer-consensus">
               <span style="color:#34d399;">✔</span>
-              <span><strong>Regionalmodell-Konsens:</strong> Hohe Übereinstimmung der hochauflösenden Regionalmodelle für ${CURRENT_LOCATION.name}</span>
+              <span><strong>Kurzfrist-Konsens aus ${d.modelCount} Modellen</strong> für ${CURRENT_LOCATION.name}${d.spreadTxt}</span>
             </div>
           </div>
         `;
@@ -6168,9 +6449,9 @@
           <div class="trend-header-title">
             <span style="display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; background:#064e3b; border-radius:4px; font-size:11px;">📈</span>
             <span>Trend-Analyse (${CURRENT_LOCATION.name})</span>
-            <span style="font-size:10px; font-family:monospace; background:rgba(5,150,105,0.2); border:1px solid rgba(16,185,129,0.4); padding:1px 6px; border-radius:10px; color:#6ee7b7;">REGIONAL-SYNTHESE (HEUTE & MORGEN)</span>
+            <span style="font-size:10px; font-family:monospace; background:rgba(5,150,105,0.2); border:1px solid rgba(16,185,129,0.4); padding:1px 6px; border-radius:10px; color:#6ee7b7;">KURZFRIST-KONSENS · ${targetModels.length} MODELLE</span>
           </div>
-          <span style="font-size:11px; color:var(--text-muted);">Automatische Synthese basierend auf den hochauflösenden Regionalmodellen</span>
+          <span style="font-size:11px; color:var(--text-muted);">Trend aus den am häufigsten aktualisierten Modellen (RUC stündlich, D2/EU/AROME/HARMONIE ca. 3-stündlich)</span>
         </div>
         <div class="trend-grid">
           ${todayAnalysis ? renderCardHtml(todayAnalysis, '', 'HEUTE') : ''}
@@ -7686,6 +7967,9 @@
       const myRun = ++forecastRunId;
       $('#refreshBtn').disabled = true;
       setStatus(`Lade 16-Tage-Modelle + 35-Tage-Ensemble für ${CURRENT_LOCATION.name} …`);
+      // Vergangene Tagesstunden (gemessene Werte) parallel laden, damit die
+      // Trendanalyse sie möglichst schon beim ersten Rendern einblenden kann.
+      try { ensureTodayPastObs(); } catch (e) {}
 
       try {
         const BATCH_SIZE = 8;
@@ -7894,52 +8178,7 @@
     });
 
     // PWA: Manifest + Icons + Service Worker nur bei gehosteter (http/https) Nutzung.
-    // Kleiner globaler Besucherzähler (Server-Plugin). Zählt Seitenaufrufe.
-    // Ohne Server (Standalone-Datei/offline) wird die Anzeige ausgeblendet.
-    function initVisitCounter() {
-      var wrap = document.getElementById('visitCountWrap');
-      if (!wrap) return;
-      var num = document.getElementById('visitCount');
-      var r = null;
-      try { r = (typeof root !== 'undefined') ? root : null; } catch (e) { r = null; }
-      if ((!r || !r.createServerSocket) && typeof createServerSocket !== 'undefined') r = { createServerSocket: createServerSocket };
-      if (!r || !r.createServerSocket) { localVisitFallback(); return; }
-      // Standalone-Datei / offline: kein Server vorhanden — stattdessen lokaler
-      // Geräte-Zähler, damit der Zählerplatz sichtbar bleibt (kein globaler Zähler).
-      function localVisitFallback() {
-        done = true;
-        let n = 0;
-        try {
-          n = (parseInt(storeGet('local_visit_count_v1') || '0', 10) || 0) + 1;
-          storeSet('local_visit_count_v1', String(n));
-        } catch (e) { n = 0; }
-        try {
-          wrap.innerHTML = '👁 <span id="visitCount">' + (n || '–') + '</span> Besuche (dieses Gerät)';
-          wrap.title = 'Lokaler Zähler: Aufrufe auf diesem Gerät (Standalone-Datei ohne Server).';
-          wrap.style.display = '';
-        } catch (e2) {}
-      }
-      var done = false;
-      var socket = null;
-      function finish(val) {
-        if (done) return;
-        done = true;
-        try { if (socket) socket.close(1000); } catch (e) {}
-        if (val == null) { wrap.style.display = 'none'; }
-        else if (num) { num.textContent = val; }
-      }
-      try { socket = r.createServerSocket(); }
-      catch (e) { wrap.style.display = 'none'; return; }
-      try {
-        socket.addEventListener('close', function () { finish(null); });
-        socket.opened.then(function () {
-          socket.rpc.visit('').then(function (n) { finish(String(n)); }, function () {
-            socket.rpc.getCount('').then(function (g) { finish(String(g)); }, function () { finish(null); });
-          });
-        }, function () { finish(null); });
-      } catch (e) { finish(null); }
-      setTimeout(function () { finish(null); }, 12000);
-    }
+
     // Bei lokaler file://-Öffnung: Laufzeit-Manifest als Rückfall, kein Service Worker.
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
       try { navigator.serviceWorker.register('src/sw.js').catch(function () {}); } catch (e) {}
@@ -7993,11 +8232,9 @@
     } // file:-Rückfall Ende
 
     try { initCookieConsent(); } catch (e) {}
-    try { initVisitCounter(); } catch (e) {}
 
     // Initial load (läuft auch bei blockiertem Speicher / Cookie-Fehlern)
     loadForecast();
   </script>
 
-</body>
 </html>
