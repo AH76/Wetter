@@ -919,8 +919,16 @@
       display: block;
       min-width: 650px;
       cursor: crosshair;
+      /* Finger wischt nur den Fadenkreuz-Strich, die Seite bleibt stehen (Browser-Scroll per touch-action abgeschaltet) */
+      touch-action: none;
     }
     /* Ensemble: feststehende Y-Achsen-Spalte (scrollt nicht mit) */
+    @media (max-width: 700px) {
+      /* Handy: Ensembleband auf volle Breite schrumpfen, damit jede Stunde per Finger-Strich erreichbar ist (kein Wisch-Scroll nötig) */
+      .svg-wrapper svg { min-width: 0; }
+    }
+    /* Doppeltippen-Zoom: Diagramm vergrößert + seitlich wischbar, nochmal tippen = zurück auf Displaygröße */
+    .svg-wrapper.zoomed svg { min-width: 650px; touch-action: pan-x pan-y; cursor: zoom-out; }
     .chart-plot { display: flex; align-items: stretch; }
     .yaxis-frozen {
       flex: 0 0 46px;
@@ -1245,8 +1253,8 @@
       .chart-container .chart-hud .hud-row { white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
       .chart-container .chart-hud { padding: 6px 10px; gap: 8px; min-height: 0; flex-direction: column; align-items: stretch; }
       .hud-3rows { gap: 5px; }
-      /* Diagramme: weniger Wischweg, Schrift bleibt lesbar */
-      .svg-wrapper svg { min-width: 560px; }
+      /* Diagramme: volle Breite statt Wischweg — Finger bewegt nur den Fadenkreuz-Strich (Werte via HUD) */
+      .svg-wrapper svg { min-width: 0; }
       /* Karten-Titel kompakt */
       .chart-card-title { font-size: 14px; }
       /* Modell-Dropdown vollflächig = größeres Touch-Target */
@@ -1544,7 +1552,7 @@
         <div class="svg-wrapper">
           <svg id="h24MetaSvg" viewBox="0 0 960 258" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
-        <div class="mobile-tip">👆 Finger auflegen &amp; wischen (oder Maus bewegen): zeigt alle Werte der jeweiligen Stunde.</div>
+        <div class="mobile-tip">👆 Finger auflegen &amp; wischen (oder Maus bewegen): zeigt alle Werte der jeweiligen Stunde. Doppeltippen = Zoomen.</div>
       </div>
       </div><!-- /#h24Group -->
       <!-- TREND-ANALYSE MODUL (HEUTE & MORGEN) -->
@@ -1849,7 +1857,7 @@
       </div>
 
       <div class="mobile-tip">
-        <span>👆 Finger auflegen &amp; wischen: zeigt sofort die Werte aller Dimensionen zeitgleich an.</span>
+        <span>👆 Finger auflegen &amp; wischen: zeigt sofort die Werte aller Dimensionen zeitgleich an. Doppeltippen = Zoomen.</span>
       </div>
     </div>
 
@@ -1934,7 +1942,7 @@
           <div class="yaxis-frozen" data-for="seasPrecipSvg"></div>
           <div class="svg-wrapper"><svg id="seasPrecipSvg" viewBox="0 0 960 210"></svg></div>
         </div>
-        <div class="mobile-tip">👆 Tageswerte (keine Stundenwerte) · antippen/wischen wie in den Ensemble-Charts · Treffsicherheit nimmt mit dem Vorlauf deutlich ab.</div>
+        <div class="mobile-tip">👆 Tageswerte (keine Stundenwerte) · antippen/wischen wie in den Ensemble-Charts · Treffsicherheit nimmt mit dem Vorlauf deutlich ab. Doppeltippen = Zoomen.</div>
       </div>
       <div class="chart-card" style="margin-bottom:14px;">
         <div class="chart-card-title" style="margin-bottom:6px;">🌍 Quellen jenseits der Kurzfrist-APIs</div>
@@ -3625,6 +3633,13 @@
     if ($('#viewHistoryBtn')) $('#viewHistoryBtn').addEventListener('click', () => switchView('history'));
     if ($('#viewModelBtn')) $('#viewModelBtn').addEventListener('click', () => switchView('models'));
     if ($('#viewRadarBtn')) $('#viewRadarBtn').addEventListener('click', () => switchView('radar'));
+
+    // Doppeltippen auf ein Diagramm: Zoom an/aus (vergrößert + wischbar bzw. zurück auf Displaygröße)
+    document.addEventListener('dblclick', (e) => {
+      const t = e.target && e.target.closest ? e.target.closest('.svg-wrapper svg') : null;
+      const w = t && t.closest ? t.closest('.svg-wrapper') : null;
+      if (w) w.classList.toggle('zoomed');
+    });
 
     function switchView(view) {
       currentView = view;
@@ -6460,10 +6475,11 @@
         if (!svg) return;
         svg.onmousemove = (e) => selectHourH24(h24IdxFromEvent(e.clientX, svg));
         svg.ontouchstart = (e) => { if (e.touches && e.touches[0]) selectHourH24(h24IdxFromEvent(e.touches[0].clientX, svg)); };
-        // Hinweis: kein preventDefault hier – sonst wäre natives Wischen
-        // (horizontal im Diagramm, vertikal auf der Seite) auf dem Handy blockiert.
-        // Die Auswahl folgt dem Finger bis der Browser das Scrollen übernimmt.
+        // Finger wischt nur den Fadenkreuz-Strich, die Seite bleibt stehen
+        // (Browser-Scroll per touch-action:none im CSS abgeschaltet).
         svg.ontouchmove = (e) => {
+          const w = svg.closest('.svg-wrapper');
+          if (!w || !w.classList.contains('zoomed')) { if (e.cancelable) e.preventDefault(); }
           if (e.touches && e.touches[0]) selectHourH24(h24IdxFromEvent(e.touches[0].clientX, svg));
         };
       };
@@ -8643,6 +8659,8 @@
           }
         };
         svgEl.ontouchmove = (e) => {
+          const w = svgEl.closest('.svg-wrapper');
+          if (!w || !w.classList.contains('zoomed')) { if (e.cancelable) e.preventDefault(); }
           if (e.touches && e.touches[0]) {
             handlePointer(svgEl, e.touches[0].clientX);
           }
