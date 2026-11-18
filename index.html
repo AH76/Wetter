@@ -40,6 +40,10 @@
       padding-bottom: max(20px, env(safe-area-inset-bottom));
       padding-top: max(10px, env(safe-area-inset-top));
     }
+    /* App-/Handy-Sperre (Klasse .app-lock auf <html>): Seite sitzt fest —
+       kein Verschieben über den Rand, kein Gummiband, kein Pull-to-Refresh */
+    html.app-lock, html.app-lock body { overscroll-behavior: none; }
+    html.app-lock body { overflow-x: clip; }
     @media (min-width: 640px) {
       body { padding: 16px; }
     }
@@ -3604,6 +3608,15 @@
       const ua = navigator.userAgent || '';
       const grossMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua) ||
         ((navigator.maxTouchPoints > 0) && Math.min(window.screen.width, window.screen.height) < 820);
+      // App + Handy-Browser: Seite festsetzen (nicht über den Rand verschiebbar)
+      // und Aktualisieren-/Klein-Button ausblenden (Auto-Refresh läuft weiter).
+      const isAppLock = grossApp || grossMobile;
+      document.documentElement.classList.toggle('app-lock', isAppLock);
+      if (isAppLock) {
+        const rb = $('#refreshBtn');
+        if (rb) rb.hidden = true;
+        if (gb) gb.hidden = true;
+      }
       if (!grossApp && !grossMobile) {
         if (gb) gb.hidden = true;
         document.body.classList.remove('gross');
