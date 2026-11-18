@@ -706,10 +706,14 @@
       min-height: 34px;
       white-space: nowrap;
     }
-    #radarSlider { -webkit-appearance:none; appearance:none; height:6px; border-radius:3px; background:#1f2d3d; outline:none; cursor:pointer; }
-    #radarSlider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:#2563eb; border:2px solid #fff; cursor:pointer; }
-    #radarSlider::-moz-range-thumb { width:12px; height:12px; border-radius:50%; background:#2563eb; border:2px solid #fff; cursor:pointer; }
-    #radarSlider::-moz-range-track { height:6px; border-radius:3px; background:#1f2d3d; }
+    #radarSlider { -webkit-appearance:none; appearance:none; height:34px; background:transparent; outline:none; cursor:pointer; touch-action:pan-y; }
+    #radarSlider::-webkit-slider-runnable-track { height:10px; border-radius:5px; background:#1f2d3d; }
+    #radarSlider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:28px; height:28px; margin-top:-9px; border-radius:50%; background:#2563eb; border:3px solid #fff; cursor:pointer; box-shadow:0 1px 5px rgba(0,0,0,.5); }
+    #radarSlider::-moz-range-track { height:10px; border-radius:5px; background:#1f2d3d; }
+    #radarSlider::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:#2563eb; border:3px solid #fff; cursor:pointer; }
+    /* Meteogramm: die 4 Werte-Zeilen über dem Diagramm sind ausgeblendet
+       (User-Wunsch) — die gewählte Stunde steht weiter in der Kopf-HUD. */
+    #h24MetaCard .chart-hud.h24val { display:none; }
     .seas-pill.active {
       background: var(--accent);
       color: #fff;
@@ -1038,14 +1042,17 @@
     body.gross input.search-input { font-size: 17px; }
     body.gross #refreshBtn, body.gross #grossBtn { font-size: 16px; padding: 12px 18px; }
     body.gross #grossBtn.active { outline: 2px solid var(--accent); }
+    /* 24h-Kopfzeile: Werte groß (Desktop 15 px statt 11, Handy 19 px) */
+    #h24Hud .hud-3rows .hud-row { font-size: 15px; line-height: 1.5; }
+    body.gross #h24Hud .hud-3rows .hud-row { font-size: 18px; }
     /* Handy: 24h-Kopfzeile grundsätzlich größer (auch ohne Groß-Modus) —
        oben Datum/Uhrzeit, darunter die Wertereihen vollbreit + seitlich wischbar */
     @media (max-width: 640px) {
       #h24Hud { flex-direction: column; align-items: stretch; }
       #h24Hud .hud-left { margin-bottom: 2px; }
       #h24Hud .hud-3rows { width: 100%; }
-      #h24Hud .hud-3rows .hud-row { font-size: 16px; line-height: 1.6; white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
-      body.gross #h24Hud .hud-3rows .hud-row { font-size: 20px; }
+      #h24Hud .hud-3rows .hud-row { font-size: 19px; line-height: 1.6; white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
+      body.gross #h24Hud .hud-3rows .hud-row { font-size: 22px; }
       #h24Hud .hud-date-block { font-size: 15.5px; }
       #h24Hud .hud-time-pill { font-size: 14px; padding: 5px 12px; }
     }
@@ -1097,6 +1104,16 @@
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
     }
+    /* Modell-Blätterknöpfe neben dem Dropdown (durchscrollen mit sofortiger Anzeige) */
+    .h24-step-row { display: flex; gap: 8px; align-items: stretch; }
+    .h24-step-row #h24ModelSelect { flex: 1 1 auto; min-width: 0; width: auto; }
+    .h24-step-btn {
+      flex: 0 0 auto; min-width: 48px; min-height: 44px; padding: 0 12px;
+      background: #141f2c; color: #e2e8f0; border: 1px solid #2e4056; border-radius: 8px;
+      font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+      touch-action: manipulation;
+    }
+    .h24-step-btn:active { background: #1e2c3d; border-color: #3b82f6; }
     .hist-select {
       background: #141f2c;
       color: #e2e8f0;
@@ -1115,6 +1132,14 @@
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
     }
+    /* Verifikationstabellen (Modelle-Tab): Spalten nur so breit wie der längste Inhalt + 3 Zeichen (je 1,5ch links/rechts dazu, kein Umbruch; Tabelle schrumpft auf Inhaltsbreite) */
+    #verifTables table { width: auto !important; }
+    #verifTables th, #verifTables td { white-space: nowrap !important; padding-left: calc(6px + 1.5ch) !important; padding-right: calc(6px + 1.5ch) !important; }
+    /* Sortierpfeile (▲/▼): fester 1,3em-Platz als Inhalt in JEDEM sortierbaren Kopf (inaktiv blass, aktiv deckend), damit alle Pfeile immer sichtbar sind und die Tabelle beim Sortieren nicht springt */
+    #verifTables th .verif-arrow { display: inline-block; width: 1.3em; text-align: center; opacity: .28; }
+    #verifTables th .verif-arrow.on { opacity: 1; }
+    /* Tabellenkopf: deckender Hintergrund, damit beim Nachführen per JS keine Zeilen durchscheinen */
+    #verifTables thead th { background: var(--card-bg); box-shadow: 0 1px 0 var(--border); }
 
     .note { margin-top: 12px; font-size: 11px; color: var(--text-muted); line-height: 1.5; }
 
@@ -1423,12 +1448,12 @@
       <div class="actions">
         <div class="view-switch">
           <button id="viewForecastBtn" class="tab-btn active" type="button">✨ Vorhersage</button>
-          <button id="viewTableBtn" class="tab-btn" type="button">📊 Tabelle</button>
+          <button id="viewRadarBtn" class="tab-btn" type="button">🌧️ Wetterradar</button>
           <button id="viewChartBtn" class="tab-btn" type="button">📈 Ensemble-Charts</button>
           <button id="viewSeasonalBtn" class="tab-btn" type="button">🔭 Langfrist</button>
+          <button id="viewTableBtn" class="tab-btn" type="button">📊 Tabelle</button>
           <button id="viewHistoryBtn" class="tab-btn" type="button">📜 Messwerte</button>
           <button id="viewModelBtn" class="tab-btn" type="button">💻 Modelle</button>
-          <button id="viewRadarBtn" class="tab-btn" type="button">🌧️ Wetterradar</button>
         </div>
         <button id="refreshBtn" type="button">Aktualisieren</button>
         <button id="grossBtn" type="button" title="Große Schrift & Felder an/aus (App: automatisch an)">🔠 Groß</button>
@@ -1471,11 +1496,15 @@
         <div class="h24-controls" style="margin-bottom:0;">
           <div class="h24-select-wrap">
             <label for="h24ModelSelect">Modell für diese Anzeige</label>
-            <select id="h24ModelSelect"></select>
+            <div class="h24-step-row">
+              <button type="button" id="h24PrevBtn" class="h24-step-btn" title="Voriges Modell">◀</button>
+              <select id="h24ModelSelect"></select>
+              <button type="button" id="h24NextBtn" class="h24-step-btn" title="Nächstes Modell">▶</button>
+            </div>
           </div>
         </div>
         <div id="dwdWarnBanner" style="display:none; margin:10px 0 0 0;"></div>
-        <div id="nowcastLine" style="display:none; font-size:11px; color:var(--text-muted); margin-top:8px;">··· <span style="color:#10b981; font-weight:700;">ICON-D2 RUC Nowcast (15-min, DWD)</span> als gepunktete Linie im Temperatur-Diagramm – stündlich aktualisiertes Kurzfristmodell.</div>
+        <div id="nowcastLine" style="display:none; font-size:11px; color:var(--text-muted); margin-top:8px;">··· <span style="color:#10b981; font-weight:700;">ICON-D2 RUC Nowcast (15-min, DWD)</span> als gepunktete Linie im Temperatur-Diagramm – stündlich aktualisiertes Kurzfristmodell (modellunabhängig: beim Blättern wandert die Linie nur optisch mit, weil die Temperatur-Achse je Modell skaliert).</div>
       </div>
       <div class="chart-hud" id="h24Hud">
         <div class="hud-left">
@@ -1832,14 +1861,14 @@
       </div>
       <div id="verifCard" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
         <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">🏆 Modell-Treffgenauigkeit — Prognose gegen Messung</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Täglich wird der erste Abruf je Modell gespeichert (tiefste/höchste Tagestemperatur &amp; Tagesniederschlag für +1 bis +46 Tage) und mit den echten Tagesmesswerten der nächsten DWD-Station verglichen. Treffer = Temperaturfehler ≤ 0,5 °C bzw. Niederschlagsfehler ≤ 0,1 mm. Stundenmodelle zählen gegen Tmin/Tmax, die Tagesmittel-Modelle EC46 (46 Tage) und SEAS5 gegen das gemessene Tagesmittel. Läufe aller Geräte fließen in eine gemeinsame Datenbank-Auswertung. Rückwirkend geht das nicht — abgelaufene Prognosen werden nirgends archiviert, nur Messwerte. Die Sammlung startet daher mit dem ersten Abruf.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Täglich wird der erste Abruf je Modell gespeichert (tiefste/höchste Tagestemperatur &amp; Tagesniederschlag für +1 bis +46 Tage) und mit den echten Tagesmesswerten der nächsten DWD-Station verglichen. Treffer = Temperatur-Ung. ≤ 1,2 °C bzw. Niederschlags-Ung. ≤ 1,5 mm. Stundenmodelle zählen gegen Tmin/Tmax, die Tagesmittel-Modelle EC46 (46 Tage) und SEAS5 gegen das gemessene Tagesmittel. Läufe aller Geräte fließen in eine gemeinsame Datenbank-Auswertung. Rückwirkend geht das nicht — abgelaufene Prognosen werden nirgends archiviert, nur Messwerte. Die Sammlung startet daher mit dem ersten Abruf. Tipp: Auf einen Spaltenkopf tippen, um die Tabelle danach zu sortieren (erneut tippen kehrt die Richtung um).</p>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
           <button type="button" class="seas-pill" id="verifExportBtn">💾 Sammlung als JSON sichern</button>
           <button type="button" class="seas-pill" id="verifImportBtn">📂 JSON einlesen</button>
           <input type="file" id="verifImportFile" accept="application/json,.json" style="display:none;">
         </div>
         <div id="verifStatus" style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Noch nicht ausgewertet — Auswertung läuft …</div>
-        <div id="verifTables" style="overflow-x: auto;"></div>
+        <div id="verifTables"></div>
       </div>
       <div id="modelCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;"></div>
     </div>
@@ -3739,7 +3768,9 @@
         if (Object.keys(radarDwdCache).length > 900) { for (const k in radarDwdCache) delete radarDwdCache[k]; }
         radarDwdCache[url] = (async () => {
           try {
-            const r = await radarFetchTimeout(url, 15000);
+            // 30 s Timeout: der DWD-Server braucht derzeit 10–25 s pro Bild —
+            // kürzer gäbe Fehl-Retrys, die ihn zusätzlich belasten.
+            const r = await radarFetchTimeout(url, 30000);
             const ct = (r.headers.get('content-type') || '');
             // Fehler liefert der Server als XML (kein Bild) → Frame entfällt.
             if (!r.ok || ct.indexOf('image/') !== 0) return null;
@@ -3865,17 +3896,34 @@
       sub.textContent = '🌧️ Regenradar für ' + locName + countyTag + ' — Stand: ' + radarFmtTime(np.time) +
         ' · ' + past + ' Bilder' + (fut ? ' + ' + fut + ' Vorhersage (bis +' + lead + ' Min)' : '') + ' · DWD, alle 10 Min neu';
     }
-    async function loadRadarDwdFast(lat, lon, key, token) {
-      // Progressives Laden: Stufe 1 rendert das neueste Bild sofort in 1024 px
-      // (1:1 zur 1-km-Auflösung — ein Fetch, gleich schnell wie 640; plus
-      // 640-Eintrag für Logik/Dublettenprüfung), Landkreis parallel; Stufe 2
-      // füllt Vergangenheit und Zukunft im Hintergrund auf. Rückgabe: true =
-      // fertig, false = DWD leer (klassischer Fallback), 'retry' = abgelöst
-      // (Aufrufer startet neu).
+    async function loadRadarDwdFast(lat, lon, key, token, rvFrames) {
+      // Progressives Laden: Stufe 0 zeigt die RainViewer-Vergangenheit SOFORT
+      // (CDN, ~1–2 s), Stufe 1 rendert das neueste DWD-Bild (640 px, danach
+      // 1024-Upgrade im Hintergrund), Stufe 2 füllt Vergangenheit und Zukunft
+      // im Hintergrund auf. Rückgabe: true = fertig, false = DWD leer
+      // (klassischer Fallback), 'retry' = abgelöst (Aufrufer startet neu).
       if (radarLocKey !== key) { radarLocKey = key; radarZoom = radarZoomFor100km(); }
       const locKey = key + '|' + radarLayer;
       if (radarKey !== locKey) radarKey = locKey;
       const tz = Math.min(radarZoom, 7);
+      if (rvFrames && rvFrames.length && token === radarLoadToken) {
+        // Stufe 0: Karte sofort füllen, damit sie nicht leer bleibt, während
+        // der DWD-Server rendert. Slider ist gleich nutzbar; der DWD-Swap
+        // erhält die Zeitposition (mergeRadarDwdJobs).
+        radarDwd5 = false; radarHasFuture = false; radarFutureLead = 0;
+        radarFrames = rvFrames.slice();
+        radarIdx = rvFrames.length - 1;
+        const sl = $('#radarSlider');
+        if (sl) { sl.max = Math.max(0, radarFrames.length - 1); sl.value = radarIdx; sl.disabled = false; }
+        radarNotice = 'DWD-10-Min-Takt lädt im Hintergrund …';
+        try {
+          const locName0 = CURRENT_LOCATION.name || 'den Ort';
+          const sub0 = $('#radarSub');
+          if (sub0) sub0.textContent = '🌧️ Regenradar für ' + locName0 + ' lädt … (Schnellansicht, DWD folgt)';
+          await renderRadar();
+        } catch (e) {}
+        if (token !== radarLoadToken) return 'retry';
+      }
       // 10-Min-Raster (bewusst: halb so viele Frames wie 5-min → deutlich schnelleres Laden).
       const base = Math.floor(Date.now() / 600000) * 600000;
       const mk = m => ({ time: Math.round((base + m * 60000) / 1000), path: null, kind: 'dwd', iso: new Date(base + m * 60000).toISOString(), past: m < 0, entry: null });
@@ -3883,16 +3931,18 @@
       const futJobs = dwdRange(10, 120).map(mk);
       const newest = pastJobs[pastJobs.length - 1];
       const countyP = loadRadarCounty(lat, lon);
-      const [first, firstHi] = await Promise.all([
-        radarDwdEntry({ iso: newest.iso }, tz),
-        radarDwdEntry({ iso: newest.iso }, tz, null, 1024)
-      ]);
+      // Nur EIN Fetch auf dem kritischen Pfad (640 → sofort malen); das
+      // 1024-Scharfbild lädt danach im Hintergrund (Upgrade-Pfad in
+      // renderRadar). Zwei parallele Server-Render würden den ersten
+      // Bildaufbau bei Last nur verzögern.
+      let first = await radarDwdEntry({ iso: newest.iso }, tz);
+      if (!first || !first.img) { try { first = await radarDwdEntry({ iso: newest.iso }, tz, null, 1024); } catch (e) {} }
       await countyP;
       if (token !== radarLoadToken) return 'retry';
-      if ((!first || !first.img) && firstHi && firstHi.img) { first = firstHi; }
       if (!first || !first.img) return false;
       newest.entry = first;
-      if (firstHi && firstHi.img) { newest.hi = firstHi.img; newest.hiTz = tz; radarHiOrder = [newest]; }
+      radarNotice = '';
+      if (newest.entry.img.naturalWidth >= 1000) { newest.hi = newest.entry.img; newest.hiTz = tz; radarHiOrder = [newest]; }
       radarDwd5 = true; radarHasFuture = false; radarFutureLead = 0;
       radarFrames = [newest];
       radarIdx = 0;
@@ -4009,8 +4059,9 @@
         radarHasFuture = false; radarFutureLead = 0; radarDwd5 = false;
         if (radarLayer === 'radar' && radarDwdCovered(lat, lon)) {
           try {
-            // Progressiv: neuestes Bild sofort, Rest im Hintergrund (lädt ~5× schneller zur ersten Ansicht).
-            const fr = await loadRadarDwdFast(lat, lon, key, radarLoadToken);
+            // Progressiv: Schnellansicht sofort, neuestes DWD-Bild danach,
+            // Rest im Hintergrund (der DWD-Server braucht 10–25 s pro Bild).
+            const fr = await loadRadarDwdFast(lat, lon, key, radarLoadToken, frames);
             if (fr === 'retry') { radarBusy = false; return loadRadar({ snap: true }); }
             if (fr) { radarBusy = false; return; }
             // fr === false → DWD liefert nichts → klassischer Fallback unten (radarKey zurücksetzen).
@@ -4388,10 +4439,10 @@
     // gegen Tmin/Tmax geprüft, Tagesmittel-Modelle (ECMWF EC46 bis 46 Tage, SEAS5) gegen
     // das gemessene Tagesmittel. Geprüft wird gegen die echten Tagesmesswerte der
     // nächsten DWD-Station (Bright Sky). Trefferquote:
-    // Temperaturfehler ≤ 0,5 °C bzw. Niederschlagsfehler ≤ 0,1 mm (streng, seit
-    // 2026-11-12). Alte Prognosen lassen sich nicht nachholen — kein Dienst
+    // Temperatur-Ung. ≤ 1,2 °C bzw. Niederschlags-Ung. ≤ 1,5 mm (seit
+    // 2026-11-18; davor streng 0,5 °C / 0,1 mm). Alte Prognosen lassen sich nicht nachholen — kein Dienst
     // archiviert abgelaufene Vorhersagen.
-    const VERIF_MAX_LEAD = 46, VERIF_TEMP_HIT = 0.5, VERIF_PRECIP_HIT = 0.1;
+    const VERIF_MAX_LEAD = 46, VERIF_TEMP_HIT = 1.2, VERIF_PRECIP_HIT = 1.5;
     const VERIF_DAILY_MEAN_IDS = ['ec46', 'seas5'];
     // Geteilte Sammlung (Supabase, Free-Plan): ein Prognose-/Messwertsatz je Tag und
     // Standort, Doppelte werden per Primärschlüssel ignoriert. Der Key ist der
@@ -4773,7 +4824,27 @@
       };
       try { rd.readAsText(file); } catch (e) {}
     }
-    let verifRunning = false, verifLeadSel = 1, verifOvModel = 'alle', verifBestOverall = null;
+    let verifRunning = false, verifLeadSel = 1, verifOvModel = 'alle', verifBestOverall = null, verifBestLeads = null;
+    let verifSort = { best: { k: 'lead', d: 1 }, rank: { k: 'mTemp', d: 1 }, tot: { k: 'mTemp', d: 1 }, ov: { k: 'ld', d: 1 }, t3: { k: 'mean', d: 1 } };
+    // Sortierbare Spalten in den Verifikationstabellen: Klick auf eine
+    // Überschrift sortiert danach (erneut = Richtung wechseln). Fehlend/—
+    // landet immer unten. Medaillen bleiben an der Genauigkeits-Rangfolge.
+    function verifCmp(a, b, d) {
+      const aN = (a == null) || (typeof a === 'number' && !Number.isFinite(a));
+      const bN = (b == null) || (typeof b === 'number' && !Number.isFinite(b));
+      if (aN && bN) return 0;
+      if (aN) return 1;
+      if (bN) return -1;
+      if (typeof a === 'string' || typeof b === 'string') return String(a).localeCompare(String(b), 'de') * d;
+      return (a - b) * d;
+    }
+    function verifTh(tbl, key, label, title, left) {
+      const s = (verifSort && verifSort[tbl]) || {};
+      const on = s.k === key;
+      const arrow = `<span class="verif-arrow${on ? ' on' : ''}">${on ? (s.d === 1 ? '▲' : '▼') : '▲'}</span>`;
+      const ti = (title ? title + ' — ' : '') + 'Klicken = sortieren';
+      return `<th style="padding:4px 6px;${left ? '' : 'text-align:right;'}cursor:pointer;" title="${ti}" data-verif-sort="${tbl}:${key}">${label}${arrow}</th>`;
+    }
     async function renderVerif() {
       const stEl = $('#verifStatus'), tEl = $('#verifTables');
       if (!stEl || !tEl) return;
@@ -4871,9 +4942,9 @@
           tEl.innerHTML = '';
           return;
         }
-        stEl.textContent = `Sammle seit ${since} · ` + (useView && !runs.length ? 'geteilte Sammlung' : `${runs.length} ${runs.length === 1 ? 'Prognoselauf' : 'Prognoseläufe'}`) + `${sharedTxt} · ${pairs} geprüfte Tagespaare · Wahrheit: DWD-Station ${stName} (Tmin/Tmax/Niederschlagssumme je Tag).`;
-        // Tabelle 1: bestes Modell je Vorlaufzeit (Tag für Tag bis +16)
-        let rows1 = '';
+        stEl.textContent = `Sammle seit ${since} · ` + (useView && !runs.length ? 'geteilte Sammlung' : `${runs.length} ${runs.length === 1 ? 'Prognoselauf' : 'Prognoseläufe'}`) + `${sharedTxt} · Wahrheit: DWD-Station ${stName} (Tmin/Tmax/Niederschlagssumme je Tag).`;
+        // Tabelle 1: bestes Modell je Vorhersagezeit (Tag für Tag bis +16)
+        const best1rows = [];
         for (let lead = 1; lead <= VERIF_MAX_LEAD; lead++) {
           let bestT = null, bestP = null;
           for (const [mid, a] of Object.entries(agg)) {
@@ -4883,13 +4954,59 @@
             if (L.mPrec != null && (!bestP || L.mPrec < bestP.v)) bestP = { mid, v: L.mPrec, n: L.n, q: L.qPrec };
           }
           if (!bestT && !bestP) continue;
+          best1rows.push({ lead, bestT, bestP });
+        }
+        const sb1 = verifSort.best || { k: 'lead', d: 1 };
+        const b1Val = (r, k) => k === 'tv' ? (r.bestT ? r.bestT.v : null) : k === 'pv' ? (r.bestP ? r.bestP.v : null) : r.lead;
+        best1rows.sort((x, y) => verifCmp(b1Val(x, sb1.k), b1Val(y, sb1.k), sb1.d));
+        let rows1 = '';
+        for (const { lead, bestT, bestP } of best1rows) {
           const cT = bestT ? verifModelLabel(bestT.mid) : null;
           const cP = bestP ? verifModelLabel(bestP.mid) : null;
           rows1 += `<tr><td style="font-weight:700;">+${lead} ${lead === 1 ? 'Tag' : 'Tage'}</td>` +
-            `<td>${cT ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cT.color};margin-right:5px;"></span>${cT.label} <span style="color:var(--text-muted);">(${verifDe(bestT.v)} °C · <strong style="color:#4ade80;">${verifPct(bestT.q)}</strong>, n=${bestT.n})</span>` : '—'}</td>` +
-            `<td>${cP ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cP.color};margin-right:5px;"></span>${cP.label} <span style="color:var(--text-muted);">(${verifDe(bestP.v)} mm · <strong style="color:#4ade80;">${verifPct(bestP.q)}</strong>, n=${bestP.n})</span>` : '—'}</td></tr>`;
+            `<td>${cT ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cT.color};margin-right:5px;"></span>${cT.label} <span style="color:var(--text-muted);">(${verifDe(bestT.v)} °C · <strong style="color:#4ade80;">${verifPct(bestT.q)}</strong>)</span>` : '—'}</td>` +
+            `<td>${cP ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cP.color};margin-right:5px;"></span>${cP.label} <span style="color:var(--text-muted);">(${verifDe(bestP.v)} mm · <strong style="color:#4ade80;">${verifPct(bestP.q)}</strong>)</span>` : '—'}</td></tr>`;
         }
-        // Tabelle 2: Gesamtrangliste über alle Vorlaufzeiten
+        // Rangliste für gewählten Vorhersagetag: Einzelauswahl (ein Tag oder
+        // alle), Modelle nach Genauigkeit sortiert (mittlerer
+        // Temperatur-Ung. aus Tmin+Tmax über die gewählte Vorhersage).
+        const leadSetB = new Set();
+        for (const a of Object.values(agg)) for (const [ld, L] of Object.entries(a)) if (L.n > 0) leadSetB.add(+ld);
+        const leadListB = [...leadSetB].sort((x, y) => x - y);
+        if (!Array.isArray(verifBestLeads) || !verifBestLeads.length) verifBestLeads = leadListB.slice();
+        else { verifBestLeads = verifBestLeads.filter(ld => leadSetB.has(ld)); if (!verifBestLeads.length) verifBestLeads = leadListB.slice(); }
+        const bestAll = leadListB.length > 0 && verifBestLeads.length === leadListB.length;
+        const bestPills = (leadListB.length ? `<button type="button" class="seas-pill${bestAll ? ' active' : ''}" data-verif-best="all">Alle</button>` : '') + leadListB.map(ld =>
+          `<button type="button" class="seas-pill${verifBestLeads.includes(ld) ? ' active' : ''}" data-verif-best="${ld}">Tag ${ld}</button>`
+        ).join('');
+        const rankB = [];
+        for (const [mid, a] of Object.entries(agg)) {
+          let nB = 0, eTB = 0, hTB = 0, ePB = 0, pNB = 0, hPB = 0, eTxB = 0, eTnB = 0;
+          for (const ld of verifBestLeads) {
+            const L = a[ld];
+            if (!L || !L.n) continue;
+            nB += L.n; eTB += L.tmax + L.tmin; hTB += L.tmaxH + L.tminH; eTxB += L.tmax; eTnB += L.tmin;
+            if (L.pN) { ePB += L.prec; pNB += L.pN; hPB += L.precH; }
+          }
+          if (!nB) continue;
+          rankB.push({ mid, n: nB, mTemp: eTB / (2 * nB), mTmax: eTxB / nB, mTmin: eTnB / nB, qTemp: hTB / (2 * nB), mPrec: pNB ? ePB / pNB : null, qPrec: pNB ? hPB / pNB : null });
+        }
+        rankB.forEach(t => { t.lab = verifModelLabel(t.mid).label; });
+        rankB.sort((a, b) => a.mTemp - b.mTemp);
+        rankB.forEach((t, i) => { t.rank = i; });
+        const sbR = verifSort.rank || { k: 'mTemp', d: 1 };
+        rankB.sort((a, b) => verifCmp(sbR.k === 'model' ? a.lab : a[sbR.k], sbR.k === 'model' ? b.lab : b[sbR.k], sbR.d));
+        const rowsBest = rankB.map((t) => {
+          const c = verifModelLabel(t.mid);
+          const medal = t.rank === 0 ? '🥇 ' : t.rank === 1 ? '🥈 ' : t.rank === 2 ? '🥉 ' : `#${t.rank + 1} `;
+          return `<tr><td style="padding:4px 6px;">${medal}<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.color};margin-right:5px;"></span>${c.label}</td>` +
+            `<td style="padding:4px 6px;text-align:right;">${verifDe(t.mTmax)} °C</td>` +
+            `<td style="padding:4px 6px;text-align:right;">${verifDe(t.mTmin)} °C</td>` +
+            `<td style="padding:4px 6px;text-align:right;color:#4ade80;font-weight:700;">${verifPct(t.qTemp)}</td>` +
+            `<td style="padding:4px 6px;text-align:right;">${t.mPrec != null ? verifDe(t.mPrec) + ' mm' : '—'}</td>` +
+            `<td style="padding:4px 6px;text-align:right;color:#4ade80;font-weight:700;">${t.qPrec != null ? verifPct(t.qPrec) : '—'}</td></tr>`;
+        }).join('');
+        // Tabelle 2: Gesamtrangliste über alle Vorhersagezeiten
         const totals = [];
         for (const [mid, a] of Object.entries(agg)) {
           let n = 0, tmax = 0, tmin = 0, pr = 0, pN = 0, bT = 0, hT = 0, hP = 0;
@@ -4901,21 +5018,25 @@
           if (!n) continue;
           totals.push({ mid, n, mTmax: tmax / n, mTmin: tmin / n, mTemp: (tmax + tmin) / (2 * n), mPrec: pN ? pr / pN : null, bTmax: bT / n, qTemp: hT / (2 * n), qPrec: pN ? hP / pN : null });
         }
-        totals.sort((x, y) => x.mTemp - y.mTemp);
+        totals.forEach(t => { t.lab = verifModelLabel(t.mid).label; });
+        totals.sort((a, b) => a.mTemp - b.mTemp);
+        totals.forEach((t, i) => { t.rank = i; });
         // Treffsicherstes Modell merken (für die Tagesvorhersage-Badge).
-        try { verifBestOverall = totals.length ? { label: verifModelLabel(totals[0].mid).label, mTemp: totals[0].mTemp, n: totals[0].n, mid: totals[0].mid } : null; } catch (e) {}
+        try { const bt = totals.find(t => t.rank === 0); verifBestOverall = bt ? { label: bt.lab, mTemp: bt.mTemp, n: bt.n, mid: bt.mid } : null; } catch (e) {}
         try { if (verifBestOverall) verifWrite('verifBest_v1_' + verifLocKey(), verifBestOverall); } catch (e) {}
-        const rows2 = totals.map((t, i) => {
+        const sb2 = verifSort.tot || { k: 'mTemp', d: 1 };
+        totals.sort((a, b) => verifCmp(sb2.k === 'model' ? a.lab : a[sb2.k], sb2.k === 'model' ? b.lab : b[sb2.k], sb2.d));
+        const rows2 = totals.map((t) => {
           const c = verifModelLabel(t.mid);
-          const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : `#${i + 1} `;
+          const medal = t.rank === 0 ? '🥇 ' : t.rank === 1 ? '🥈 ' : t.rank === 2 ? '🥉 ' : `#${t.rank + 1} `;
           return `<tr><td>${medal}<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.color};margin-right:5px;"></span>${c.label}</td>` +
-            `<td style="text-align:right;">${t.n}</td><td style="text-align:right;">${verifDe(t.mTmax)} °C</td>` +
+            `<td style="text-align:right;">${verifDe(t.mTmax)} °C</td>` +
             `<td style="text-align:right;">${verifDe(t.mTmin)} °C</td><td style="text-align:right;">${t.mPrec != null ? verifDe(t.mPrec) + ' mm' : '—'}</td>` +
             `<td style="text-align:right;color:#4ade80;font-weight:700;">${verifPct(t.qTemp)}</td><td style="text-align:right;color:#4ade80;font-weight:700;">${t.qPrec != null ? verifPct(t.qPrec) : '—'}</td>` +
           `<td style="text-align:right;">${(t.bTmax > 0 ? '+' : '') + verifDe(t.bTmax)} °C</td></tr>`;
         }).join('');
-        // Tabelle 3: Abweichung je Vorlauftag — pro Modell zeigt der gewählte
-        // Vorlauftag (Tag 1, Tag 2, …): Ø-Prognose vs. Ø-Messwert für den
+        // Tabelle 3: Abweichung je Vorhersagetag — pro Modell zeigt der gewählte
+        // Vorhersagetag (Tag 1, Tag 2, …): Ø-Prognose vs. Ø-Messwert für den
         // kältesten (Tmin) und wärmsten (Tmax) Tageswert, dazu die mittlere
         // Abweichung in °C (signed: + zu warm/rot, − zu kalt/blau) und in %
         // (Betrag, auf Kelvin bezogen, da °C keinen absoluten Nullpunkt hat).
@@ -4935,15 +5056,17 @@
             else pct = (errAbs / (oC + 273.15) * 100).toFixed(2).replace('.', ',') + ' %';
           }
           const hitTxt = Number.isFinite(hit) ? verifPct(hit) : '—';
-          return `<td style="padding:4px 6px;text-align:right;white-space:nowrap;" title="${n} geprüfte Tage (Vorlauf Tag ${verifLeadSel})"><strong style="color:${col};">${sgnDe3(bias)} ${unit}</strong><br><span style="font-size:11px;color:var(--text-muted);">${pct}</span><br><span style="font-size:11px;color:#4ade80;">Treffer ${hitTxt}</span></td>`;
+          return `<td style="padding:4px 6px;text-align:right;white-space:nowrap;" title="Vorhersage Tag ${verifLeadSel}"><strong style="color:${col};">${sgnDe3(bias)} ${unit}</strong><br><span style="font-size:11px;color:var(--text-muted);">${pct}</span><br><span style="font-size:11px;color:#4ade80;">Treffer ${hitTxt}</span></td>`;
         };
         const t3rows = [];
         for (const [mid, a] of Object.entries(agg)) {
           const L = a[verifLeadSel];
           if (L && L.n) t3rows.push({ mid, L });
         }
-        t3rows.sort((x, y) => ((x.L.mTmax + x.L.mTmin) / 2) - ((y.L.mTmax + y.L.mTmin) / 2));
-        // ⌀-Zeile: Mittel aller Modelle dieses Vorlaufs (Tmin/Tmax/Niederschlag:
+        const sb3 = verifSort.t3 || { k: 'mean', d: 1 };
+        const t3Val = (r, k) => k === 'model' ? verifModelLabel(r.mid).label : k === 'mean' ? (r.L.mTmax + r.L.mTmin) / 2 : r.L[k];
+        t3rows.sort((x, y) => verifCmp(t3Val(x, sb3.k), t3Val(y, sb3.k), sb3.d));
+        // ⌀-Zeile: Mittel aller Modelle dieser Vorhersage (Tmin/Tmax/Niederschlag:
         // Ø-Prognose, Ø-Messwert und mittlere Abweichung über alle Modell-Tag-Paare)
         let rowMean3 = '';
         if (t3rows.length) {
@@ -4956,8 +5079,7 @@
           const pMissM = S.pN ? missCell3(S.pB / S.pN, S.prec / S.pN, S.oP / S.pN, S.pN, S.precH / S.pN, 'mm', 'mm')
             : `<td style="padding:4px 6px;text-align:right;color:#475569;">—</td>`;
           rowMean3 = `<tr style="background:#1e293b;border-bottom:2px solid var(--border);">`
-            + `<td style="padding:4px 6px;white-space:nowrap;font-weight:700;" title="Mittel über alle Modelle mit Daten für Vorlauf Tag ${verifLeadSel}">⌀ alle Modelle</td>`
-            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${S.n}</td>`
+            + `<td style="padding:4px 6px;white-space:nowrap;font-weight:700;" title="Mittel über alle Modelle mit Daten für Vorhersage Tag ${verifLeadSel}">⌀ alle Modelle</td>`
             + `<td style="padding:4px 6px;text-align:right;">${verifDe(S.fMin / S.n)} °C</td>`
             + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${verifDe(S.oMin / S.n)} °C</td>`
             + missCell3(S.tminB / S.n, S.tmin / S.n, S.oMin / S.n, S.n, S.tminH / S.n, '°C', 'K')
@@ -4968,7 +5090,7 @@
             + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${S.pN ? verifDe(S.oP / S.pN) + ' mm' : '—'}</td>`
             + pMissM + `</tr>`;
         }
-        // Übersicht: Trefferquote je Vorlauftag — alle Modelle oder ein gewähltes
+        // Übersicht: Trefferquote je Vorhersagetag — alle Modelle oder ein gewähltes
         // Modell. Jeder Tageslauf zählt Tag 1, 2, … neu und fließt in dieselbe
         // Statistik (n wächst mit der Zeit); kurze Modelle enden früher.
         if (verifOvModel !== 'alle' && !(agg[verifOvModel] && Object.keys(agg[verifOvModel]).length)) verifOvModel = 'alle';
@@ -4992,21 +5114,30 @@
           const col = p >= 0.6 ? '#4ade80' : p >= 0.3 ? '#facc15' : '#f87171';
           return `<span style="display:inline-block;width:70px;height:8px;background:#1e293b;border-radius:4px;vertical-align:middle;margin-right:6px;"><span style="display:block;height:100%;width:${(p * 100).toFixed(0)}%;background:${col};border-radius:4px;"></span></span>`;
         };
-        const rowsOv = Object.entries(leadOv).map(([ld, o]) => ({ ld: +ld, o })).sort((a, b) => a.ld - b.ld).map(({ ld, o }) =>
+        const sbO = verifSort.ov || { k: 'ld', d: 1 };
+        const ovVal = (r, k) => {
+          const o = r.o;
+          if (k === 'ld') return r.ld;
+          if (k === 'hMin') return o.hMin / o.n;
+          if (k === 'hMax') return o.hMax / o.n;
+          if (k === 'hP') return o.pN ? o.hP / o.pN : null;
+          if (k === 'eP') return o.pN ? o.eP / o.pN : null;
+          return (o.eMin + o.eMax) / (2 * o.n);
+        };
+        const rowsOv = Object.entries(leadOv).map(([ld, o]) => ({ ld: +ld, o })).sort((a, b) => verifCmp(ovVal(a, sbO.k), ovVal(b, sbO.k), sbO.d)).map(({ ld, o }) =>
           `<tr><td style="padding:4px 6px;font-weight:700;white-space:nowrap;">Tag ${ld}</td>`
           + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${barOv(o.hMin / o.n)}${verifPct(o.hMin / o.n)}</td>`
           + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${barOv(o.hMax / o.n)}${verifPct(o.hMax / o.n)}</td>`
           + `<td style="padding:4px 6px;text-align:right;white-space:nowrap;">${o.pN ? barOv(o.hP / o.pN) + verifPct(o.hP / o.pN) : '—'}</td>`
           + `<td style="padding:4px 6px;text-align:right;">${o.pN ? verifDe(o.eP / o.pN) + ' mm' : '—'}</td>`
           + `<td style="padding:4px 6px;text-align:right;">${verifDe((o.eMin + o.eMax) / (2 * o.n))} °C</td>`
-          + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${o.n}</td></tr>`
+          + `</tr>`
         ).join('');
         const rows3 = t3rows.map(({ mid, L }) => {
           const c = verifModelLabel(mid);
           const pMiss = L.pN ? missCell3(L.bPrec, L.mPrec, L.aOP, L.pN, L.precH / L.pN, 'mm', 'mm')
             : `<td style="padding:4px 6px;text-align:right;color:#475569;">—</td>`;
           return `<tr><td style="padding:4px 6px;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.color};margin-right:5px;"></span>${c.label}</td>`
-            + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${L.n}</td>`
             + `<td style="padding:4px 6px;text-align:right;">${verifDe(L.aFMin)} °C</td>`
             + `<td style="padding:4px 6px;text-align:right;color:var(--text-muted);">${verifDe(L.aOMin)} °C</td>`
             + missCell3(L.bTmin, L.mTmin, L.aOMin, L.n, L.tminH / L.n, '°C', 'K')
@@ -5018,36 +5149,94 @@
             + pMiss + `</tr>`;
         }).join('');
         tEl.innerHTML =
-          `<div style="font-size:13px;font-weight:700;color:#fff;margin:10px 0 4px;">Bestes Modell je Vorhersagezeitraum (mittlerer Fehler)</div>` +
+          `<div style="font-size:13px;font-weight:700;color:#fff;margin:10px 0 4px;">Bestes Modell je Vorhersagezeitraum (mittlere Ung.)</div>` +
           `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
-          `<th style="padding:4px 6px;">Vorlauf</th><th style="padding:4px 6px;">🌡️ Genaueste Temperatur</th><th style="padding:4px 6px;">🌧️ Genauester Niederschlag</th></tr></thead>` +
+          `${verifTh('best', 'lead', 'Vorhersage Tage', '', true)}${verifTh('best', 'tv', '🌡️ Genaueste Temperatur')}${verifTh('best', 'pv', '🌧️ Genauester Niederschlag')}</tr></thead>` +
           `<tbody>${rows1}</tbody></table>` +
-          `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Gesamtrangliste (alle Vorlaufzeiten, sortiert nach Temperaturfehler)</div>` +
+          (rowsBest ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Rangliste für gewählte Tage (sortiert nach Genauigkeit)</div>` +
+          `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px;">${bestPills}</div>` +
+          `<div style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Vorhersage ${bestAll ? 'alle Tage' : 'Tag ' + verifBestLeads.join(', Tag ')} — sortiert nach mittlerer Temperatur-Ung. (Tmin+Tmax)</div>` +
           `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
-          `<th style="padding:4px 6px;">Modell</th><th style="padding:4px 6px;text-align:right;">Tage</th>` +
-          `<th style="padding:4px 6px;text-align:right;">Fehler Tmax</th><th style="padding:4px 6px;text-align:right;">Fehler Tmin</th>` +
-          `<th style="padding:4px 6px;text-align:right;">Fehler Nieder.</th><th style="padding:4px 6px;text-align:right;">Treffer Temp.</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;">Tendenz Tmax</th></tr></thead>` +
+          `${verifTh('rank', 'model', 'Modell', '', true)}` +
+          `${verifTh('rank', 'mTmax', 'Ung. Tmax')}${verifTh('rank', 'mTmin', 'Ung. Tmin')}${verifTh('rank', 'qTemp', 'Treffer Temp.')}` +
+          `${verifTh('rank', 'mPrec', 'Ung. Nieder.')}${verifTh('rank', 'qPrec', 'Treffer Nieder.')}</tr></thead>` +
+          `<tbody>${rowsBest}</tbody></table>` : ``) +
+          `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Gesamtrangliste (alle Vorhersagezeiten, sortiert nach Temperatur-Ung.)</div>` +
+          `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
+          `${verifTh('tot', 'model', 'Modell', '', true)}` +
+          `${verifTh('tot', 'mTmax', 'Ung. Tmax')}${verifTh('tot', 'mTmin', 'Ung. Tmin')}` +
+          `${verifTh('tot', 'mPrec', 'Ung. Nieder.')}${verifTh('tot', 'qTemp', 'Treffer Temp.')}${verifTh('tot', 'qPrec', 'Treffer Nieder.')}${verifTh('tot', 'bTmax', 'Tendenz Tmax')}</tr></thead>` +
           `<tbody>${rows2}</tbody></table>` +
-          (rowsOv ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Trefferquote je Vorlauftag (so fällt die Quote mit der Vorhersagedauer)</div>` +
+          (rowsOv ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Trefferquote je Vorhersagetag (so fällt die Quote mit der Vorhersagedauer)</div>` +
           `<div style="display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;color:var(--text-muted);">Modell: <select id="verifOvModelSel" class="hist-select">${ovModelOpts}</select></div>` +
           `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
-          `<th style="padding:4px 6px;">Vorlauf</th><th style="padding:4px 6px;text-align:right;">Treffer Tmin</th><th style="padding:4px 6px;text-align:right;">Treffer Tmax</th><th style="padding:4px 6px;text-align:right;">Treffer Nieder.</th><th style="padding:4px 6px;text-align:right;" title="Mittlerer absoluter Fehler der Niederschlagssumme über alle Modelle">Fehler Nieder.</th><th style="padding:4px 6px;text-align:right;" title="Mittlerer absoluter Fehler Tmin+Tmax über alle Modelle">Ø-Fehler</th><th style="padding:4px 6px;text-align:right;" title="Geprüfte Modell-Tag-Paare">Paare</th></tr></thead>` +
+          `${verifTh('ov', 'ld', 'Vorhersage Tage', '', true)}${verifTh('ov', 'hMin', 'Treffer Tmin')}${verifTh('ov', 'hMax', 'Treffer Tmax')}${verifTh('ov', 'hP', 'Treffer Nieder.')}${verifTh('ov', 'eP', 'Ung. Nieder.', 'Mittlere absolute Ung. der Niederschlagssumme über alle Modelle')}${verifTh('ov', 'eMean', 'Ø-Ung.', 'Mittlere absolute Ung. Tmin+Tmax über alle Modelle')}</tr></thead>` +
           `<tbody>${rowsOv}</tbody></table>` : ``) +
-          (rows3 ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Abweichung je Vorlauftag (Ø-Prognose vs. Ø-Messwert — kältester &amp; wärmster Tageswert)</div>` +
+          (rows3 ? `<div style="font-size:13px;font-weight:700;color:#fff;margin:12px 0 4px;">Abweichung je Vorhersagetag (Prognose vs. Messwert — kältester &amp; wärmster Tageswert)</div>` +
           `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px;">${leadPills3}</div>` +
-          `<div style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Vorlauf Tag ${verifLeadSel} — sortiert nach mittlerem Fehler (Tmin+Tmax) · ⌀-Zeile = Mittel aller Modelle</div>` +
+          `<div style="font-size:12px;color:var(--text-muted);margin:0 0 4px;">Vorhersage Tag ${verifLeadSel} — sortiert nach mittlerer Ung. (Tmin+Tmax) · ⌀-Zeile = Mittel aller Modelle</div>` +
           `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--text-muted);text-align:left;">` +
-          `<th style="padding:4px 6px;">Modell</th><th style="padding:4px 6px;text-align:right;" title="Anzahl geprüfter Tage für diesen Vorlauf">n</th>` +
-          `<th style="padding:4px 6px;text-align:right;">Tmin Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Tmin gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung des kältesten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote">Tmin daneben</th>` +
-          `<th style="padding:4px 6px;text-align:right;">Tmax Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Tmax gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung des wärmsten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote">Tmax daneben</th>` +
-          `<th style="padding:4px 6px;text-align:right;">Nieder. Progn. Ø</th><th style="padding:4px 6px;text-align:right;">Nieder. gemessen Ø</th><th style="padding:4px 6px;text-align:right;" title="Mittlere Abweichung der Niederschlagssumme — darunter Trefferquote">Nieder. daneben</th></tr></thead>` +
+          `${verifTh('t3', 'model', 'Modell', '', true)}` +
+          `${verifTh('t3', 'aFMin', 'Tmin Progn. Ø')}${verifTh('t3', 'aOMin', 'Tmin gemessen Ø')}${verifTh('t3', 'bTmin', 'Tmin daneben', 'Mittlere Abweichung des kältesten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote')}` +
+          `${verifTh('t3', 'aFMax', 'Tmax Progn. Ø')}${verifTh('t3', 'aOMax', 'Tmax gemessen Ø')}${verifTh('t3', 'bTmax', 'Tmax daneben', 'Mittlere Abweichung des wärmsten Tageswerts: + zu warm, − zu kalt — darunter Trefferquote')}` +
+          `${verifTh('t3', 'aFP', 'Nieder. Progn. Ø')}${verifTh('t3', 'aOP', 'Nieder. gemessen Ø')}${verifTh('t3', 'bPrec', 'Nieder. daneben', 'Mittlere Abweichung der Niederschlagssumme — darunter Trefferquote')}</tr></thead>` +
           `<tbody>${rowMean3}${rows3}</tbody></table>` : ``) +
-          `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Fehler = mittlerer absoluter Fehler der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm. EC46/SEAS5 liefern Tagesmittel und werden gegen das gemessene Tagesmittel ((Tmin+Tmax)/2) geprüft. Tendenz: + = Modell zu warm, − = zu kalt. n = geprüfte Tage. Tabelle „Vorlauftag": Ø-Werte = Mittel über alle geprüften Tage dieses Vorlaufs; „daneben" = systematische Abweichung (°C bzw. mm) plus mittlerer |Fehler| in % plus Trefferquote (Treffer = Temperaturfehler ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlagsfehler ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm). Temperatur-% auf Kelvin bezogen (Messwert + 273,15), weil °C keinen absoluten Nullpunkt hat; Niederschlag-% auf die gemessene Summe bezogen (— wenn nichts gemessen wurde). Aussagekraft wächst mit jedem Sammeltag.</div>`;
+          `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Ung. = mittlere absolute Abweichung der Tageswerte (Prognose vs. DWD-Messung). Treffer = Temperatur-Ung. ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlags-Ung. ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm. EC46/SEAS5 liefern Tagesmittel und werden gegen das gemessene Tagesmittel ((Tmin+Tmax)/2) geprüft. Tendenz: + = Modell zu warm, − = zu kalt. Tabelle „Vorhersagetag": Werte = Mittel über alle geprüften Tage dieser Vorhersage; „daneben" = systematische Abweichung (°C bzw. mm) plus mittlere |Ung.| in % plus Trefferquote (Treffer = Temperatur-Ung. ≤ ${VERIF_TEMP_HIT.toFixed(1).replace('.', ',')} °C bzw. Niederschlags-Ung. ≤ ${VERIF_PRECIP_HIT.toFixed(1).replace('.', ',')} mm). Temperatur-% auf Kelvin bezogen (Messwert + 273,15), weil °C keinen absoluten Nullpunkt hat; Niederschlag-% auf die gemessene Summe bezogen (— wenn nichts gemessen wurde). Aussagekraft wächst mit jedem Sammeltag.</div>`;
+        // Jede Tabelle bekommt einen eigenen Horizontal-Scroll-Wrapper, damit
+        // die sticky Kopfzeilen beim Seiten-Scrollen haften bleiben (ein
+        // overflow-Container auf #verifTables würde das blockieren).
+        tEl.querySelectorAll('table').forEach(t => {
+          const w = document.createElement('div');
+          w.style.cssText = 'overflow-x:auto;';
+          t.replaceWith(w); w.appendChild(t);
+        });
+        tEl.querySelectorAll('[data-verif-best]').forEach(b => {
+          b.onclick = () => {
+            const v = b.dataset.verifBest;
+            // Einzelauswahl: ein Tag oder alle Tage
+            verifBestLeads = (v === 'all') ? null : [+v];
+            renderVerif();
+          };
+        });
         tEl.querySelectorAll('[data-verif-lead]').forEach(b => {
           b.onclick = () => { const v = +b.dataset.verifLead; if (v !== verifLeadSel) { verifLeadSel = v; renderVerif(); } };
         });
         const ovSel = tEl.querySelector('#verifOvModelSel');
         if (ovSel) ovSel.onchange = () => { verifOvModel = ovSel.value; renderVerif(); };
+        tEl.querySelectorAll('[data-verif-sort]').forEach(th => {
+          th.onclick = () => {
+            const parts = th.dataset.verifSort.split(':');
+            const cur = verifSort[parts[0]] || { k: null, d: 1 };
+            if (cur.k === parts[1]) cur.d = -cur.d;
+            else { cur.k = parts[1]; cur.d = /^(q|h)/.test(parts[1]) ? -1 : 1; }
+            verifSort[parts[0]] = cur;
+            renderVerif();
+          };
+        });
+        // Sticky-Köpf per JS nachführen (CSS position:sticky greift nicht,
+        // weil die Horizontal-Scroll-Wrapper Scroll-Container sind)
+        try {
+          if (!window.__verifStickyInit) {
+            window.__verifStickyInit = true;
+            window.__verifStickyApply = () => {
+              document.querySelectorAll('#verifTables table').forEach(t => {
+                const head = t.querySelector('thead');
+                if (!head) return;
+                const r = t.getBoundingClientRect(), hh = head.offsetHeight || 0;
+                let y = 0;
+                if (r.top < 0 && r.bottom > hh && hh > 0) y = Math.min(-r.top, r.height - hh);
+                head.style.transform = y > 0 ? `translateY(${Math.round(y)}px)` : '';
+              });
+            };
+            let stTick = false;
+            window.addEventListener('scroll', () => {
+              if (stTick) return; stTick = true;
+              requestAnimationFrame(() => { stTick = false; try { window.__verifStickyApply(); } catch (e) {} });
+            }, { passive: true });
+            window.addEventListener('resize', () => { try { window.__verifStickyApply(); } catch (e) {} });
+          }
+          window.__verifStickyApply();
+        } catch (e) {}
       } finally {
         verifRunning = false;
       }
@@ -5949,7 +6138,7 @@
       const times = forecast.hourly.time || [];
       if (!times.length || !h24Model) return;
       const H = forecast.hourly;
-      let T, D, P, MM, W, G, WD, WC, SN, SD, SL, TLo, THi;
+      let T, D, P, MM, W, G, WD, WC, SN, SD, SL, TLo, THi, WW, WWN, WWT;
       if (h24Model === H24_MEAN_ID) {
         // Konsens aller Modelle mit Daten für diesen Ort:
         // Median für stetige Größen (robust gegen Ausreißer),
@@ -5995,8 +6184,9 @@
           TLo[j] = a.length ? Math.min(...a) : null;
           THi[j] = a.length ? Math.max(...a) : null;
         }
-        WD = []; WC = [];
+        WD = []; WC = []; WW = []; WWN = []; WWT = [];
         // Konsens-Richtung (Kreismittel) + Konsens-Wetterlage (häufigster Code) für Symbole/Pfeile
+        // + Regen-Anteil der Modelle (für 🌦️-Mischsymbol bei Uneinigkeit: Sonne UND Regen möglich)
         for (let j = 0; j < L; j++) {
           const da = valsAt('wind_direction_10m', j).filter(Number.isFinite);
           if (da.length) {
@@ -6012,6 +6202,24 @@
             if (ca[v] > bn) { bn = ca[v]; bk = v; }
           }
           WC[j] = bk;
+          // Regen-Anteil: Modell zählt als nass bei Regen-Code/Sturm-Code
+          // oder Niederschlag > 0,049 mm/h (warm, kein Schnee-Code). Pro Modell
+          // gelesen (nicht via valsAt), damit Code/Menge/Temperatur desselben
+          // Modells zusammengehören.
+          let wN = 0, wT = 0;
+          for (const id of ids) {
+            const c = (H[`weather_code_${id}`] || [])[j];
+            if (!Number.isFinite(c)) continue;
+            wT++;
+            const p = (H[`precipitation_${id}`] || [])[j];
+            const tp = (H[`temperature_2m_${id}`] || [])[j];
+            const pv = Number.isFinite(p) ? p : 0;
+            const snowCode = (c >= 71 && c <= 77) || c === 85 || c === 86;
+            const rainCode = (c >= 51 && c <= 67) || (c >= 80 && c <= 82) || (c >= 95 && c <= 99);
+            const warm = !Number.isFinite(tp) || tp > 0.5;
+            if (!snowCode && (rainCode || (pv > 0.049 && warm))) wN++;
+          }
+          WWT[j] = wT; WWN[j] = wN; WW[j] = wT ? wN / wT : null;
         }
       } else {
         const col = (base) => H[`${base}_${h24Model}`] || [];
@@ -6044,7 +6252,7 @@
       h24Data = [];
       for (let k = 0; k < 24 && start + k < times.length; k++) {
         const j = start + k;
-        h24Data.push({ time: times[j], temp: T[j], dew: D[j], prob: P[j], mm: MM[j], wind: W[j], gust: G[j], dir: WD[j], code: WC[j], snow: SN[j], snowd: SD[j], soil: SL[j], tlo: TLo[j], thi: THi[j] });
+        h24Data.push({ time: times[j], temp: T[j], dew: D[j], prob: P[j], mm: MM[j], wind: W[j], gust: G[j], dir: WD[j], code: WC[j], snow: SN[j], snowd: SD[j], soil: SL[j], tlo: TLo[j], thi: THi[j], wet: (WW && Number.isFinite(WW[j]) ? WW[j] : null), wetN: (WWN && Number.isFinite(WWN[j]) ? WWN[j] : null), wetTot: (WWT && Number.isFinite(WWT[j]) ? WWT[j] : null) });
       }
       if (h24Sel >= h24Data.length) h24Sel = 0;
       const cur = MODELS.find(m => m.id === h24Model);
@@ -6052,7 +6260,8 @@
       const curLabel = h24Model === H24_MEAN_ID ? `Konsens aller Modelle (Median, ${nIds})` : (cur ? cur.label : h24Model);
       const a = getTimestampParts(h24Data[0].time), b = getTimestampParts(h24Data[h24Data.length - 1].time);
       const sub = $('#h24Range');
-      if (sub && a && b) sub.textContent = `${a.weekday}, ${a.time} Uhr → ${b.weekday}, ${b.time} Uhr · ${curLabel}`;
+      const mixNote = (h24Model === H24_MEAN_ID && h24Data.some(h => Number.isFinite(h.wet) && h.wet >= 0.25 && h.wet <= 0.75)) ? ' · 🌦️ = Modelle uneinig (Regen möglich)' : '';
+      if (sub && a && b) sub.textContent = `${a.weekday}, ${a.time} Uhr → ${b.weekday}, ${b.time} Uhr · ${curLabel}${mixNote}`;
       const ttl = $('#h24Title');
       if (ttl) ttl.textContent = h24Model === H24_MEAN_ID ? '🕐 24-Stunden-Verlauf — Konsens aller Modelle' : `🕐 24-Stunden-Verlauf — ${curLabel}`;
 
@@ -6195,13 +6404,25 @@
         const fog = !snow && !storm && !rain && (code === 45 || code === 48);
         const cloudy = !snow && !storm && !rain && !fog && (code === 3 || prob >= 50);
         const partly = !snow && !storm && !rain && !fog && !cloudy && (code === 1 || code === 2 || prob >= 20);
+        // Modelle uneinig (mind. 1/4 nass, mind. 1/4 trocken, kein Schnee/Sturm):
+        // Sonne UND Regen möglich → Schauer-Symbol statt Einheits-Symbol.
+        const wetShare = Number.isFinite(h.wet) ? h.wet : null;
+        const mixed = wetShare !== null && wetShare >= 0.25 && wetShare <= 0.75 && !snow && !storm && (rain || cloudy || partly || code === 0);
         let s = `<g transform="translate(${x.toFixed(1)},${y})">`;
+        if (mixed) s += `<title>${h.wetN} von ${h.wetTot} Modellen mit Regen</title>`;
         if (snow) {
           s += cloudG('#cbd5e1');
           s += `<g fill="#e0f2fe"><circle cx="-4" cy="10" r="1.3"/><circle cx="1" cy="12" r="1.3"/><circle cx="6" cy="10" r="1.3"/></g>`;
         } else if (storm) {
           s += cloudG('#64748b');
           s += `<path d="M1 5 L-2.5 11 L0 11 L-1.5 15.5 L3.5 8.5 L1 8.5 Z" fill="#fde047"/>`;
+        } else if (mixed) {
+          // 🌦️ Schauer: Sonne/Mond + Wolke + Tropfen (Modelle uneinig)
+          s += day
+            ? `<circle cx="-5" cy="-4" r="3.6" fill="#fbbf24"/>${sunRays(-5, -4, 5, 6.8, 1.3)}`
+            : `<g transform="translate(-5,-4) scale(0.8)">${moonPath}</g>`;
+          s += cloudG(day ? '#e2e8f0' : '#7d8ea3');
+          for (const dx of [-2.5, 2.5]) s += `<line x1="${dx}" y1="8.5" x2="${dx}" y2="12" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>`;
         } else if (rain) {
           s += cloudG('#94a3b8');
           const drops = mm >= 2.5 ? [-5, 0, 5] : [-2.5, 2.5];
@@ -6274,7 +6495,7 @@
         $('#h24Time').textContent = `${tp.time} Uhr`;
       }
       $('#h24TempRow').innerHTML = `🌡️ <strong style="color:#fbbf24;">${formatTemperature(h.temp)}</strong><span style="color:#64748b;"> · </span>💦 Taupunkt <strong style="color:#34d399;">${formatTemperature(h.dew)}</strong>`;
-      $('#h24RainRow').innerHTML = `🌧️ <strong style="color:#38bdf8;">${Number.isFinite(h.prob) ? Math.round(h.prob) + ' %' : '—'}</strong><span style="color:#64748b;"> · </span><span>${Number.isFinite(h.mm) ? h.mm.toFixed(1) + ' mm/h' : '—'}</span>`;
+      $('#h24RainRow').innerHTML = `${(Number.isFinite(h.wet) && h.wet >= 0.25 && h.wet <= 0.75) ? '🌦️' : '🌧️'} <strong style="color:#38bdf8;">${Number.isFinite(h.prob) ? Math.round(h.prob) + ' %' : '—'}</strong><span style="color:#64748b;"> · </span><span>${Number.isFinite(h.mm) ? h.mm.toFixed(1) + ' mm/h' : '—'}</span>`;
       const gustTxt = Number.isFinite(h.gust) ? ` · Böen ${h.gust.toFixed(0)} km/h` : '';
       $('#h24WindRow').innerHTML = `💨 <strong style="color:#2dd4bf;">${Number.isFinite(h.wind) ? h.wind.toFixed(1) + ' km/h' : '—'}</strong><span style="color:#64748b;">${gustTxt} · ${h24Compass(h.dir)} (${Number.isFinite(h.dir) ? Math.round(h.dir) + '°' : '—'})</span>`;
       $('#h24SnowRow').innerHTML = `❄️ <strong style="color:#7dd3fc;">${Number.isFinite(h.snow) ? h.snow.toFixed(1) + ' cm/h' : '—'}</strong><span style="color:#64748b;"> · </span>🧊 Decke <strong style="color:#c4b5fd;">${Number.isFinite(h.snowd) ? (h.snowd * 100).toFixed(0) + ' cm' : '—'}</strong>`;
@@ -6288,7 +6509,7 @@
         const frost3 = Number.isFinite(h.soil) && h.soil <= 0 ? ' <span style="color:#7dd3fc; background:rgba(2,132,199,0.25); border:1px solid rgba(125,211,252,0.4); font-weight:700; padding:1px 6px; border-radius:4px; margin-left:4px;">❄️ Bodenfrost</span>' : '';
         hud3.innerHTML =
           `<div class="hud-row">🌡️ Temp. <strong style="color:#fbbf24;">${formatTemperature(h.temp)}</strong><span style="color:#64748b;"> · </span>💧 Taupunkt <strong style="color:#34d399;">${formatTemperature(h.dew)}</strong><span style="color:#64748b;"> · </span>🌱 Boden <strong style="color:#a3e635;">${soil3}</strong>${frost3}</div>`
-          + `<div class="hud-row">🌧️ Regen <strong style="color:#38bdf8;">${Number.isFinite(h.prob) ? Math.round(h.prob) + ' %' : '—'}</strong><span style="color:#64748b;"> · </span><span>${Number.isFinite(h.mm) ? h.mm.toFixed(1) + ' mm/h' : '—'}</span><span style="color:#64748b;"> · </span>💨 Wind <strong style="color:#2dd4bf;">${Number.isFinite(h.wind) ? h.wind.toFixed(1) + ' km/h' : '—'}</strong><span style="color:#64748b;">${gust3}</span></div>`
+          + `<div class="hud-row">${(Number.isFinite(h.wet) && h.wet >= 0.25 && h.wet <= 0.75) ? '🌦️' : '🌧️'} Regen <strong style="color:#38bdf8;">${Number.isFinite(h.prob) ? Math.round(h.prob) + ' %' : '—'}</strong><span style="color:#64748b;"> · </span><span>${Number.isFinite(h.mm) ? h.mm.toFixed(1) + ' mm/h' : '—'}</span><span style="color:#64748b;"> · </span>💨 Wind <strong style="color:#2dd4bf;">${Number.isFinite(h.wind) ? h.wind.toFixed(1) + ' km/h' : '—'}</strong><span style="color:#64748b;">${gust3}</span></div>`
           + `<div class="hud-row">🌨️ Schnee <strong style="color:#7dd3fc;">${snowMm}</strong><span style="color:#64748b;"> · </span>📏 Decke <strong style="color:#c4b5fd;">${deckeMm}</strong></div>`;
       }
       const cross = (gid, lid) => {
@@ -6315,6 +6536,21 @@
       h24Sel = 0;
       renderHour24();
     });
+    // Modell blättern (◀/▶): gleiche Wirkung wie Dropdown, zum Durchscrollen
+    function h24StepModel(dir) {
+      const sel = $('#h24ModelSelect');
+      if (!sel || !sel.options.length) return;
+      let i = sel.selectedIndex;
+      if (i < 0) i = 0;
+      i = (i + dir + sel.options.length) % sel.options.length;
+      sel.selectedIndex = i;
+      h24Model = sel.options[i].value;
+      try { storeSet('h24Model_v1', h24Model); } catch (err) {}
+      h24Sel = 0;
+      renderHour24();
+    }
+    if ($('#h24PrevBtn')) $('#h24PrevBtn').addEventListener('click', () => h24StepModel(-1));
+    if ($('#h24NextBtn')) $('#h24NextBtn').addEventListener('click', () => h24StepModel(1));
 
     function moonPhaseSvg(p) {
       const c = Math.cos(2 * Math.PI * p);
@@ -7053,7 +7289,7 @@
         try {
           const vb = (verifBestOverall && verifBestOverall.label) ? verifBestOverall : (() => { try { const s = verifRead('verifBest_v1_' + verifLocKey()); return (s && s.label) ? s : null; } catch (e2) { return null; } })();
           if (vb) {
-            bestBullet = `<div class="trend-bullet-item best"><span>🏆</span><div><strong>Gemessen am besten:</strong> ${vb.label} — treffsicherstes Modell im Langzeitvergleich (Ø-Fehler ${deFmt(vb.mTemp)} °C aus ${vb.n} Prüftagen)</div></div>`;
+            bestBullet = `<div class="trend-bullet-item best"><span>🏆</span><div><strong>Gemessen am besten:</strong> ${vb.label} — treffsicherstes Modell im Langzeitvergleich (Ø-Ung. ${deFmt(vb.mTemp)} °C aus ${vb.n} Prüftagen)</div></div>`;
           }
         } catch (e) {}
 
