@@ -3,6 +3,6 @@
   "namespace": "wetter-altenburg",
   "key": "besucher",
   "besucher_gesamt": 12,
-  "aktualisiert": "2026-11-26T12:29:53Z",
+  "aktualisiert": "2026-11-27T12:15:26Z",
   "hinweis": "Wird automatisch per GitHub Action aus dem Live-Zähler aktualisiert."
 }
